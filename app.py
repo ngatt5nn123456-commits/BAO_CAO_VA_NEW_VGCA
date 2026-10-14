@@ -1,7 +1,9 @@
 import io
 import re
+import csv
 import warnings
 import urllib.request
+import urllib.parse
 import http.client
 import tempfile
 import os
@@ -165,11 +167,86 @@ def process_giam_dinh_web(uploaded_file, start_day, end_day):
 # ============================================================
 # LOGIC XỬ LÝ BÁO CÁO P.CNTT & TẢI GOOGLE SHEETS
 # ============================================================
-def download_google_sheet(url):
+def extract_spreadsheet_id(url):
     match = re.search(r'/spreadsheets/d/([a-zA-Z0-9\-_]+)', url)
     if not match:
         raise ValueError("URL không hợp lệ. Vui lòng cung cấp link Google Sheets hợp lệ.")
-    spreadsheet_id = match.group(1)
+    return match.group(1)
+
+def get_google_sheet_names(url):
+    spreadsheet_id = extract_spreadsheet_id(url)
+    
+    # Cách 1: Quét siêu tốc qua HTML Google Sheets (~1 giây)
+    html_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/edit"
+    req = urllib.request.Request(html_url, headers={
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            html = resp.read().decode("utf-8", errors="ignore")
+        
+        # Tìm các tab caption: <div class="...docs-sheet-tab-caption...">Tên sheet</div>
+        sheets = re.findall(r'class="[^"]*docs-sheet-tab-caption[^"]*">([^<]+)<', html)
+        if sheets:
+            seen = set()
+            clean_sheets = []
+            for s in sheets:
+                s_clean = s.strip()
+                if s_clean and s_clean not in seen:
+                    seen.add(s_clean)
+                    clean_sheets.append(s_clean)
+            if clean_sheets:
+                return clean_sheets
+    except Exception:
+        pass
+
+    # Cách 2 (Dự phòng): Tải file qua export XLSX
+    stream = download_google_sheet(url)
+    wb = load_workbook(stream, read_only=True)
+    return wb.sheetnames
+
+def download_google_sheet_single_tab(url, sheet_name):
+    spreadsheet_id = extract_spreadsheet_id(url)
+    encoded_sheet = urllib.parse.quote(sheet_name)
+    csv_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/gviz/tq?tqx=out:csv&sheet={encoded_sheet}"
+
+    try:
+        req = urllib.request.Request(csv_url, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        })
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            raw_csv = resp.read().decode("utf-8", errors="ignore")
+
+        if raw_csv and not raw_csv.startswith("<!DOCTYPE html>"):
+            wb_temp = Workbook()
+            ws_temp = wb_temp.active
+            ws_temp.title = sheet_name
+
+            reader = csv.reader(io.StringIO(raw_csv))
+            for r_idx, row in enumerate(reader, 1):
+                for c_idx, val in enumerate(row, 1):
+                    if val != "":
+                        try:
+                            if "." in val:
+                                val = float(val)
+                            else:
+                                val = int(val)
+                        except ValueError:
+                            pass
+                        ws_temp.cell(r_idx, c_idx, val)
+
+            temp_stream = io.BytesIO()
+            wb_temp.save(temp_stream)
+            temp_stream.seek(0)
+            return temp_stream
+    except Exception:
+        pass
+
+    # Dự phòng: Tải toàn bộ file nếu gviz bị giới hạn
+    return download_google_sheet(url)
+
+def download_google_sheet(url):
+    spreadsheet_id = extract_spreadsheet_id(url)
     export_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=xlsx"
 
     req = urllib.request.Request(export_url, headers={"User-Agent": "Mozilla/5.0"})
@@ -1107,15 +1184,26 @@ HTML_PAGE = """<!DOCTYPE html>
     async function loadSheetsIntoSelect(formData, selectId, alertId) {
       const sel = document.getElementById(selectId);
       sel.innerHTML = '<option value="">⏳ Đang nạp danh sách các sheet ngày...</option>';
+      hideAlert(alertId);
       try {
         const res = await fetch('/api/get-sheets', {
           method: 'POST',
           body: formData
         });
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
+        let data;
+        try {
+          data = await res.json();
+        } catch (jsonErr) {
+          throw new Error('Máy chủ phản hồi không hợp lệ (Mã HTTP ' + res.status + '). Vui lòng thử lại!');
+        }
+        if (!res.ok || data.error) {
+          throw new Error(data.error || ('Lỗi tải sheet: ' + res.status));
+        }
 
         sel.innerHTML = '';
+        if (!data.sheets || data.sheets.length === 0) {
+          throw new Error('Không tìm thấy sheet nào trong tài liệu này!');
+        }
         data.sheets.forEach((s, idx) => {
           const opt = document.createElement('option');
           opt.value = s;
@@ -1125,6 +1213,7 @@ HTML_PAGE = """<!DOCTYPE html>
           }
           sel.appendChild(opt);
         });
+        showAlert(alertId, 'success', `✅ Đã nạp thành công ${data.sheets.length} sheet ngày!`);
       } catch (err) {
         sel.innerHTML = '<option value="">❌ Không đọc được sheet. Vui lòng kiểm tra lại!</option>';
         showAlert(alertId, 'error', 'Lỗi: ' + err.message);
@@ -1308,9 +1397,7 @@ def handle_get_sheets():
             sheets = wb.sheetnames
         elif request.form.get("url"):
             url = request.form.get("url").strip()
-            stream = download_google_sheet(url)
-            wb = load_workbook(stream, read_only=True)
-            sheets = wb.sheetnames
+            sheets = get_google_sheet_names(url)
         else:
             return jsonify({"error": "Vui lòng cung cấp file hoặc URL Google Sheets."}), 400
 
@@ -1353,7 +1440,7 @@ def handle_process_cntt():
             stream = request.files["file"].stream
         elif request.form.get("url"):
             url = request.form.get("url").strip()
-            stream = download_google_sheet(url)
+            stream = download_google_sheet_single_tab(url, sheet_name)
         else:
             return jsonify({"error": "Vui lòng cung cấp file hoặc URL Google Sheets."}), 400
 
