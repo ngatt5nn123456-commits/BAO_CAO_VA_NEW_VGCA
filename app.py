@@ -616,28 +616,38 @@ def process_giam_dinh_web(file_stream, start_day, end_day):
             target_cell = result.cell(row, new_col)
             target_cell.value = source_cell.value
             copy_style(source_cell, target_cell)
+            if row in (4, 5):
+                target_cell.font = Font(name="Times New Roman", size=14, bold=True)
 
     title = source["A1"].value
     for col in range(2, result_last_col + 1):
         result.cell(1, col).value = None
     result["A1"] = title
+    result["A1"].font = Font(name="Times New Roman", size=16, bold=True)
     result.merge_cells(start_row=1, start_column=1, end_row=1, end_column=result_last_col)
     center_cell(result["A1"], wrap=False)
-    result.row_dimensions[1].height = 32
+    result.row_dimensions[1].height = 36
 
     note = source["A2"].value
     for col in range(2, result_last_col + 1):
         result.cell(2, col).value = None
     result["A2"] = note
+    result["A2"].font = Font(name="Times New Roman", size=13, italic=True)
     result.merge_cells(start_row=2, start_column=1, end_row=2, end_column=result_last_col)
+    result.row_dimensions[2].height = 24
 
     result["A5"] = None
     result.merge_cells("A4:A5")
     center_cell(result["A4"], wrap=False)
+    result["A4"].font = Font(name="Times New Roman", size=14, bold=True)
 
     result["B5"] = None
     result.merge_cells("B4:B5")
     center_cell(result["B4"], wrap=False)
+    result["B4"].font = Font(name="Times New Roman", size=14, bold=True)
+
+    result.row_dimensions[4].height = 28
+    result.row_dimensions[5].height = 26
 
     output_row = 6
     stt = 1
@@ -654,6 +664,14 @@ def process_giam_dinh_web(file_stream, start_day, end_day):
             target_cell = result.cell(output_row, new_col)
             target_cell.value = stt if new_col == 1 else source_cell.value
             copy_style(source_cell, target_cell)
+            target_cell.font = Font(name="Times New Roman", size=14)
+            if new_col == 1:
+                center_cell(target_cell, wrap=False)
+            elif new_col == 2:
+                target_cell.alignment = Alignment(horizontal="left", vertical="center")
+            else:
+                center_cell(target_cell, wrap=False)
+        result.row_dimensions[output_row].height = 25
         stt += 1
         output_row += 1
 
@@ -663,21 +681,23 @@ def process_giam_dinh_web(file_stream, start_day, end_day):
 
     for new_col in range(1, result_last_col + 1):
         cell = result.cell(total_row, new_col)
-        cell.font = Font(name="Times New Roman", size=11, bold=True)
+        cell.font = Font(name="Times New Roman", size=14, bold=True)
         cell.border = Border(left=Side(style="thin"), right=Side(style="thin"), top=Side(style="thin"), bottom=Side(style="thin"))
 
     center_cell(result.cell(total_row, 2), wrap=False)
+    result.row_dimensions[total_row].height = 28
 
     for new_col in range(3, result_last_col + 1):
         col_letter = get_column_letter(new_col)
         cell = result.cell(total_row, new_col)
         cell.value = f"=SUM({col_letter}6:{col_letter}{total_row - 1})"
+        cell.font = Font(name="Times New Roman", size=14, bold=True)
         center_cell(cell, wrap=False)
 
-    result.column_dimensions["A"].width = 6
-    result.column_dimensions["B"].width = 22
+    result.column_dimensions["A"].width = 8
+    result.column_dimensions["B"].width = 28
     for col in range(3, result_last_col + 1):
-        result.column_dimensions[get_column_letter(col)].width = 7.5
+        result.column_dimensions[get_column_letter(col)].width = 9.5
 
     result.print_title_rows = "4:5"
     result.page_setup.orientation = result.ORIENTATION_PORTRAIT
