@@ -811,6 +811,12 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
                 sub_line = sub_line.strip()
                 if not sub_line:
                     continue
+                nh_sub = norm_name(sub_line)
+                # Loại bỏ hoàn toàn dòng tiêu đề hoặc mã số hồ sơ bị lẫn
+                if "noidungdexuat" in nh_sub or "suachuavabosung" in nh_sub:
+                    continue
+                if re.search(r"\b\d{6,}\b", sub_line):
+                    continue
                 if sub_line.startswith("+") or sub_line.startswith("-"):
                     err_lines.append(sub_line)
                 else:
@@ -916,20 +922,20 @@ def process_cntt_web(file_stream, sheet_name):
                 break
         ws_source = wb_source[target_name] if target_name else wb_source.active
 
-    # 1. Tự động phát hiện dòng tiêu đề cột (tìm dòng chứa 'KHOA, PHÒNG, TRUNG TÂM' hoặc 'STT')
+    # 1. Tự động phát hiện dòng tiêu đề cột
     header_row_source = None
     for r in range(1, 15):
         c2_val = clean_text(ws_source.cell(r, 2).value).upper()
         c1_val = clean_text(ws_source.cell(r, 1).value).upper()
-        if "KHOA" in c2_val or "PHÒNG" in c2_val or "TRUNG TÂM" in c2_val or c1_val == "STT":
+        if "KHOA" in c2_val or "PHÒNG" in c2_val or "TRUNG TÂM" in c2_val or "STT" in c1_val:
             header_row_source = r
             break
     if not header_row_source:
-        header_row_source = 4
+        header_row_source = 4 if ws_source.max_row >= 4 else 1
 
-    # 2. Tìm cột 'Sửa chữa khác' và xây dựng map cột phần mềm
+    # 2. Tìm cột 'Sửa chữa khác' (bắt đầu tìm từ cột 5 để bỏ qua STT, Khoa/Phòng, Số hồ sơ, Số phiếu)
     other_col = None
-    for c in range(3, ws_source.max_column + 1):
+    for c in range(5, ws_source.max_column + 1):
         h = clean_text(ws_source.cell(header_row_source, c).value)
         if not h and header_row_source > 1:
             h = clean_text(ws_source.cell(header_row_source - 1, c).value)
@@ -939,28 +945,32 @@ def process_cntt_web(file_stream, sheet_name):
             break
 
     if not other_col:
-        other_col = 25 if ws_source.max_column <= 30 else 35
+        other_col = 35 if ws_source.max_column >= 30 else 25
 
+    # 3. Chỉ quét các cột phần mềm từ cột 5 đến trước cột Sửa chữa khác (bỏ qua cột 1, 2, 3, 4)
     sw_col_target_map = {}
-    for col in range(3, ws_source.max_column + 1):
-        if col in (1, 2, other_col):
-            continue
+    for col in range(5, min(other_col, ws_source.max_column + 1)):
         h = clean_text(ws_source.cell(header_row_source, col).value)
         if not h and header_row_source > 1:
             h = clean_text(ws_source.cell(header_row_source - 1, col).value)
         nh = norm_name(h)
-        if any(skip_kw in nh for skip_kw in ("sohoso", "sophieu", "canboyeucau", "canbothuchien", "ghichu", "thuchien")):
+        # Bỏ qua các cột không phải phần mềm (số hồ sơ, số phiếu, cán bộ, ghi chú, phần cứng...)
+        if any(skip_kw in nh for skip_kw in (
+            "sohoso", "sophieu", "noidung", "dexuat", "canbo", "ghichu",
+            "phancung", "domuc", "caiwin", "loimang", "suamaytinh", "nguon",
+            "ocung", "suamayin", "loep", "cambien", "tinhtrang"
+        )):
             continue
         t_idx = map_software_header_to_index(h)
         sw_col_target_map[col] = (t_idx, h)
 
-    # 3. Quét các dòng dữ liệu (bắt đầu ngay sau header_row_source)
+    # 4. Quét các dòng dữ liệu (bắt đầu ngay sau header_row_source)
     departments_order = []
     data_matrix = {}
     other_errors = {}
 
     data_start_row = header_row_source + 1
-    max_scan_row = min(ws_source.max_row, 300)
+    max_scan_row = min(ws_source.max_row, 350)
     consecutive_empty = 0
 
     for row in range(data_start_row, max_scan_row + 1):
@@ -986,27 +996,21 @@ def process_cntt_web(file_stream, sheet_name):
             val = ws_source.cell(row, col).value
             if val in (None, ""):
                 continue
-            if isinstance(val, str):
-                val_str = val.strip()
-                if not val_str or val_str == "0":
-                    continue
-                try:
-                    val_num = int(float(val_str))
-                    if val_num <= 0:
-                        continue
-                except (ValueError, TypeError):
-                    val_num = 1
-            elif isinstance(val, (int, float)):
-                val_num = int(val)
+            try:
+                val_num = int(float(str(val).strip()))
                 if val_num <= 0:
                     continue
-            else:
+            except (ValueError, TypeError):
                 val_num = 1
+
+            # Bỏ qua các số lớn > 50 (chỉ có thể là số hồ sơ hoặc mã bệnh nhân nhầm lẫn)
+            if val_num > 50:
+                continue
 
             if t_idx is not None:
                 data_matrix[dept_str][t_idx] += val_num
             else:
-                if col_name:
+                if col_name and not any(k in norm_name(col_name) for k in ("noidung", "dexuat", "hoso", "phieu")):
                     other_errors[dept_str].append(f"{col_name}: {val_num}")
 
         # Đọc cột Sửa chữa khác
@@ -1014,8 +1018,12 @@ def process_cntt_web(file_stream, sheet_name):
         if err_val is not None:
             err_str = str(err_val).strip()
             if err_str and err_str not in ("0", "None"):
-                if err_str not in other_errors[dept_str]:
-                    other_errors[dept_str].append(err_str)
+                nh_err = norm_name(err_str)
+                # Loại bỏ hoàn toàn dòng tiêu đề hoặc mã số hồ sơ
+                if not any(k in nh_err for k in ("noidungdexuat", "suachuavabosung")):
+                    if not re.search(r"^\d{6,}$", err_str):
+                        if err_str not in other_errors[dept_str]:
+                            other_errors[dept_str].append(err_str)
 
     valid_departments = [
         dept for dept in departments_order
@@ -2448,9 +2456,9 @@ def handle_task_6():
             return jsonify({"error": "Vui lòng chọn Sheet ngày cần xử lý."}), 400
 
         try:
-            stream = download_google_sheet(url.strip())
-        except Exception:
             stream = download_google_sheet_single_tab(url.strip(), sheet_name)
+        except Exception:
+            stream = download_google_sheet(url.strip())
         out_io = process_cntt_web(stream, sheet_name)
         return send_file(
             out_io,
@@ -2494,9 +2502,9 @@ def handle_task_8():
 
         url = request.form.get("url") or DEFAULT_FIXED_GSHEET_URL
         try:
-            stream = download_google_sheet(url.strip())
-        except Exception:
             stream = download_google_sheet_single_tab(url.strip(), sheet_name)
+        except Exception:
+            stream = download_google_sheet(url.strip())
         out_io = process_cntt_web(stream, sheet_name)
         return send_file(
             out_io,
