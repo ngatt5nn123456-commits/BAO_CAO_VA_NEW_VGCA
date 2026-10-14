@@ -1186,7 +1186,7 @@ HTML_PAGE = """<!DOCTYPE html>
       sel.innerHTML = '<option value="">⏳ Đang nạp danh sách các sheet ngày...</option>';
       hideAlert(alertId);
       try {
-        const res = await fetch('/api/get-sheets', {
+        const res = await fetch('/api/get-sheets?action=get-sheets', {
           method: 'POST',
           body: formData
         });
@@ -1251,7 +1251,7 @@ HTML_PAGE = """<!DOCTYPE html>
       setLoading('gd', true);
 
       try {
-        const res = await fetch('/api/process-giam-dinh', {
+        const res = await fetch('/api/process-giam-dinh?action=process-giam-dinh', {
           method: 'POST',
           body: formData
         });
@@ -1295,7 +1295,7 @@ HTML_PAGE = """<!DOCTYPE html>
       setLoading('cntt-file', true);
 
       try {
-        const res = await fetch('/api/process-cntt', {
+        const res = await fetch('/api/process-cntt?action=process-cntt', {
           method: 'POST',
           body: formData
         });
@@ -1339,7 +1339,7 @@ HTML_PAGE = """<!DOCTYPE html>
       setLoading('cntt-gsheet', true);
 
       try {
-        const res = await fetch('/api/process-cntt', {
+        const res = await fetch('/api/process-cntt?action=process-cntt', {
           method: 'POST',
           body: formData
         });
@@ -1454,38 +1454,41 @@ def handle_process_cntt():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/", methods=["GET", "POST"])
-@app.route("/api", methods=["GET", "POST"])
-@app.route("/api/index", methods=["GET", "POST"])
-@app.route("/api/index.py", methods=["GET", "POST"])
-def index_view():
+def dispatch_request(path=""):
+    matched = (
+        (path or "") + " " +
+        request.path + " " +
+        request.headers.get("x-matched-path", "") + " " +
+        request.environ.get("HTTP_X_MATCHED_PATH", "") + " " +
+        request.args.get("action", "")
+    ).lower()
+
+    if request.method == "POST":
+        if "get-sheets" in matched or request.args.get("action") == "get-sheets":
+            return handle_get_sheets()
+        if "process-giam-dinh" in matched or request.args.get("action") == "process-giam-dinh" or "date_range" in request.form:
+            return handle_process_giam_dinh()
+        if "process-cntt" in matched or request.args.get("action") == "process-cntt" or "sheet_name" in request.form:
+            return handle_process_cntt()
+        if "url" in request.form and "sheet_name" not in request.form:
+            return handle_get_sheets()
+
     return render_template_string(HTML_PAGE)
 
-@app.route("/api/get-sheets", methods=["POST"])
-def get_sheets_route():
-    return handle_get_sheets()
-
-@app.route("/api/process-giam-dinh", methods=["POST"])
-def process_giam_dinh_route():
-    return handle_process_giam_dinh()
-
-@app.route("/api/process-cntt", methods=["POST"])
-def process_cntt_route():
-    return handle_process_cntt()
-
+@app.route("/", defaults={"path": ""}, methods=["GET", "POST"])
+@app.route("/api", defaults={"path": "api"}, methods=["GET", "POST"])
+@app.route("/api/index", defaults={"path": "api/index"}, methods=["GET", "POST"])
+@app.route("/api/index.py", defaults={"path": "api/index.py"}, methods=["GET", "POST"])
+@app.route("/api/get-sheets", defaults={"path": "get-sheets"}, methods=["GET", "POST"])
+@app.route("/api/process-giam-dinh", defaults={"path": "process-giam-dinh"}, methods=["GET", "POST"])
+@app.route("/api/process-cntt", defaults={"path": "process-cntt"}, methods=["GET", "POST"])
 @app.route("/<path:path>", methods=["GET", "POST"])
-def catch_all(path):
-    if "get-sheets" in path and request.method == "POST":
-        return handle_get_sheets()
-    if "process-giam-dinh" in path and request.method == "POST":
-        return handle_process_giam_dinh()
-    if "process-cntt" in path and request.method == "POST":
-        return handle_process_cntt()
-    return render_template_string(HTML_PAGE)
+def master_router(path=""):
+    return dispatch_request(path)
 
 @app.errorhandler(404)
 def error_404(e):
-    return render_template_string(HTML_PAGE), 200
+    return dispatch_request(request.path)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
