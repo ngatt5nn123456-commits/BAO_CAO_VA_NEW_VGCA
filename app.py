@@ -2204,6 +2204,50 @@ HTML_PAGE = """<!DOCTYPE html>
       a.remove();
     }
 
+    async function promptSaveFile(suggestedName) {
+      if ('showSaveFilePicker' in window) {
+        try {
+          const parts = suggestedName.split('.');
+          const ext = parts.pop().toLowerCase();
+          let mimeType = 'application/octet-stream';
+          let description = 'Tệp tin';
+          if (ext === 'xlsx') {
+            mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            description = 'Tệp Excel (*.xlsx)';
+          } else if (ext === 'docx') {
+            mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+            description = 'Tệp Word (*.docx)';
+          }
+          const handle = await window.showSaveFilePicker({
+            suggestedName: suggestedName,
+            types: [{
+              description: description,
+              accept: { [mimeType]: ['.' + ext] }
+            }]
+          });
+          return { handle: handle, canceled: false };
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            return { handle: null, canceled: true };
+          }
+          console.warn('showSaveFilePicker không khả dụng hoặc bị từ chối:', err);
+        }
+      }
+      return { handle: null, canceled: false };
+    }
+
+    async function writeBlobToHandleOrDownload(blob, fileHandle, defaultFilename) {
+      if (fileHandle) {
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return fileHandle.name || defaultFilename;
+      } else {
+        downloadBlob(blob, defaultFilename);
+        return defaultFilename;
+      }
+    }
+
     // Nạp Sheet cho Task 4 từ file Excel
     async function onTask4FileSelected(input) {
       previewFiles(input, 'chosen-t4');
@@ -2279,6 +2323,10 @@ HTML_PAGE = """<!DOCTYPE html>
         showAlert('alert-t1', 'error', '⚠️ Vui lòng chọn ít nhất 1 file Word (.docx) hoặc .zip!');
         return;
       }
+
+      const picker = await promptSaveFile('Ket_qua.xlsx');
+      if (picker.canceled) return;
+
       const formData = new FormData();
       for (let i = 0; i < wInput.files.length; i++) {
         formData.append('word_files', wInput.files[i]);
@@ -2295,8 +2343,12 @@ HTML_PAGE = """<!DOCTYPE html>
           throw new Error(errData.error || 'Xử lý thất bại.');
         }
         const blob = await res.blob();
-        downloadBlob(blob, 'Ket_qua_VGCA.xlsx');
-        showAlert('alert-t1', 'success', '✅ Đã đối chiếu thành công và tải xuống Ket_qua.xlsx chuẩn 19 cột!');
+        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, 'Ket_qua.xlsx');
+        if (picker.handle) {
+          showAlert('alert-t1', 'success', `✅ Đã đối chiếu thành công và lưu file "${savedName}" tại vị trí bạn đã chọn!`);
+        } else {
+          showAlert('alert-t1', 'success', `✅ Đã đối chiếu thành công và tải xuống file "${savedName}" chuẩn 19 cột!`);
+        }
       } catch (err) {
         showAlert('alert-t1', 'error', '❌ Lỗi: ' + err.message);
       } finally {
@@ -2314,6 +2366,10 @@ HTML_PAGE = """<!DOCTYPE html>
         showAlert('alert-t2', 'error', '⚠️ Vui lòng chọn ít nhất 1 file Word (.docx)!');
         return;
       }
+
+      const picker = await promptSaveFile('Cong_van_de_nghi_Mau_02.docx');
+      if (picker.canceled) return;
+
       const formData = new FormData();
       for (let i = 0; i < wInput.files.length; i++) {
         formData.append('word_files', wInput.files[i]);
@@ -2330,8 +2386,12 @@ HTML_PAGE = """<!DOCTYPE html>
           throw new Error(errData.error || 'Xử lý thất bại.');
         }
         const blob = await res.blob();
-        downloadBlob(blob, 'Cong_van_de_nghi_Mau_02.docx');
-        showAlert('alert-t2', 'success', '✅ Đã xuất Công văn Mẫu 02 (.docx) thành công!');
+        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, 'Cong_van_de_nghi_Mau_02.docx');
+        if (picker.handle) {
+          showAlert('alert-t2', 'success', `✅ Đã xuất Công văn Mẫu 02 và lưu file "${savedName}" tại vị trí bạn đã chọn!`);
+        } else {
+          showAlert('alert-t2', 'success', `✅ Đã xuất Công văn Mẫu 02 (.docx) thành công!`);
+        }
       } catch (err) {
         showAlert('alert-t2', 'error', '❌ Lỗi: ' + err.message);
       } finally {
@@ -2349,6 +2409,11 @@ HTML_PAGE = """<!DOCTYPE html>
         return;
       }
       const fmt = document.querySelector('input[name="email_format"]:checked').value;
+      const defaultName = fmt === 'word' ? 'De_nghi_cap_email_cong_vu.docx' : 'Danh_sach_cap_email_cong_vu.xlsx';
+
+      const picker = await promptSaveFile(defaultName);
+      if (picker.canceled) return;
+
       const formData = new FormData();
       for (let i = 0; i < wInput.files.length; i++) {
         formData.append('word_files', wInput.files[i]);
@@ -2363,8 +2428,12 @@ HTML_PAGE = """<!DOCTYPE html>
           throw new Error(errData.error || 'Xử lý thất bại.');
         }
         const blob = await res.blob();
-        downloadBlob(blob, fmt === 'word' ? 'De_nghi_cap_email_cong_vu.docx' : 'Danh_sach_cap_email_cong_vu.xlsx');
-        showAlert('alert-t3', 'success', '✅ Đã tổng hợp và tải xuống danh sách cấp Email công vụ thành công!');
+        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, defaultName);
+        if (picker.handle) {
+          showAlert('alert-t3', 'success', `✅ Đã lưu file "${savedName}" thành công tại vị trí bạn đã chọn!`);
+        } else {
+          showAlert('alert-t3', 'success', `✅ Đã tổng hợp và tải xuống danh sách cấp Email công vụ thành công!`);
+        }
       } catch (err) {
         showAlert('alert-t3', 'error', '❌ Lỗi: ' + err.message);
       } finally {
@@ -2386,6 +2455,10 @@ HTML_PAGE = """<!DOCTYPE html>
         showAlert('alert-t4', 'error', '⚠️ Vui lòng chọn Sheet ngày cần tổng hợp!');
         return;
       }
+
+      const picker = await promptSaveFile('TỔNG HỢP CÔNG VIỆC P.CNTT.xlsx');
+      if (picker.canceled) return;
+
       const formData = new FormData();
       formData.append('file', fInput.files[0]);
       formData.append('sheet_name', sheet);
@@ -2398,8 +2471,12 @@ HTML_PAGE = """<!DOCTYPE html>
           throw new Error(errData.error || 'Xử lý thất bại.');
         }
         const blob = await res.blob();
-        downloadBlob(blob, 'TỔNG HỢP CÔNG VIỆC P.CNTT.xlsx');
-        showAlert('alert-t4', 'success', '✅ Đã tổng hợp thành công và tải file A4 ngang!');
+        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, 'TỔNG HỢP CÔNG VIỆC P.CNTT.xlsx');
+        if (picker.handle) {
+          showAlert('alert-t4', 'success', `✅ Đã lưu file "${savedName}" thành công tại vị trí bạn đã chọn!`);
+        } else {
+          showAlert('alert-t4', 'success', `✅ Đã tổng hợp thành công và tải file A4 ngang!`);
+        }
       } catch (err) {
         showAlert('alert-t4', 'error', '❌ Lỗi: ' + err.message);
       } finally {
@@ -2416,6 +2493,13 @@ HTML_PAGE = """<!DOCTYPE html>
         showAlert('alert-t5', 'error', '⚠️ Vui lòng chọn file Excel Cổng Giám Định BHYT!');
         return;
       }
+
+      // Mở hộp thoại chọn vị trí và tên file lưu trên máy tính
+      const picker = await promptSaveFile('DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM.xlsx');
+      if (picker.canceled) {
+        return;
+      }
+
       const range = document.querySelector('input[name="t5_date_range"]:checked').value;
       const formData = new FormData();
       formData.append('file', fInput.files[0]);
@@ -2429,8 +2513,12 @@ HTML_PAGE = """<!DOCTYPE html>
           throw new Error(errData.error || 'Xử lý thất bại.');
         }
         const blob = await res.blob();
-        downloadBlob(blob, 'DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM.xlsx');
-        showAlert('alert-t5', 'success', '✅ Đã xuất và tải xuống file Giám Định A4 dọc thành công!');
+        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, 'DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM.xlsx');
+        if (picker.handle) {
+          showAlert('alert-t5', 'success', `✅ Đã lưu file "${savedName}" thành công tại vị trí bạn đã chọn!`);
+        } else {
+          showAlert('alert-t5', 'success', `✅ Đã xuất và tải xuống file "${savedName}" A4 dọc thành công!`);
+        }
       } catch (err) {
         showAlert('alert-t5', 'error', '❌ Lỗi: ' + err.message);
       } finally {
@@ -2452,6 +2540,10 @@ HTML_PAGE = """<!DOCTYPE html>
         showAlert('alert-t6', 'error', '⚠️ Vui lòng nhấn "Nạp Danh Sách Sheet Ngày" và chọn sheet cần xử lý!');
         return;
       }
+
+      const picker = await promptSaveFile('TỔNG HỢP CÔNG VIỆC P.CNTT (TỰ ĐỘNG).xlsx');
+      if (picker.canceled) return;
+
       const formData = new FormData();
       formData.append('url', url);
       formData.append('sheet_name', sheet);
@@ -2464,8 +2556,12 @@ HTML_PAGE = """<!DOCTYPE html>
           throw new Error(errData.error || 'Xử lý thất bại.');
         }
         const blob = await res.blob();
-        downloadBlob(blob, 'TỔNG HỢP CÔNG VIỆC P.CNTT (TỰ ĐỘNG).xlsx');
-        showAlert('alert-t6', 'success', '✅ Đã tổng hợp từ Google Sheets và tải xuống file thành công!');
+        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, 'TỔNG HỢP CÔNG VIỆC P.CNTT (TỰ ĐỘNG).xlsx');
+        if (picker.handle) {
+          showAlert('alert-t6', 'success', `✅ Đã lưu file "${savedName}" thành công tại vị trí bạn đã chọn!`);
+        } else {
+          showAlert('alert-t6', 'success', `✅ Đã tổng hợp từ Google Sheets và tải xuống file thành công!`);
+        }
       } catch (err) {
         showAlert('alert-t6', 'error', '❌ Lỗi: ' + err.message);
       } finally {
@@ -2482,6 +2578,13 @@ HTML_PAGE = """<!DOCTYPE html>
         showAlert('alert-t7', 'error', '⚠️ Vui lòng chọn các file Word (.docx) để tổng hợp!');
         return;
       }
+
+      // Mở hộp thoại chọn vị trí và tên file lưu trên máy tính
+      const picker = await promptSaveFile('Ket_qua.xlsx');
+      if (picker.canceled) {
+        return;
+      }
+
       const formData = new FormData();
       for (let i = 0; i < wInput.files.length; i++) {
         formData.append('word_files', wInput.files[i]);
@@ -2495,8 +2598,12 @@ HTML_PAGE = """<!DOCTYPE html>
           throw new Error(errData.error || 'Xử lý thất bại.');
         }
         const blob = await res.blob();
-        downloadBlob(blob, 'Ket_qua_VGCA.xlsx');
-        showAlert('alert-t7', 'success', '✅ Đã tổng hợp từ Word và tải xuống Ket_qua.xlsx 19 cột thành công!');
+        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, 'Ket_qua.xlsx');
+        if (picker.handle) {
+          showAlert('alert-t7', 'success', `✅ Đã tổng hợp từ Word và lưu file "${savedName}" thành công tại vị trí bạn đã chọn!`);
+        } else {
+          showAlert('alert-t7', 'success', `✅ Đã tổng hợp từ Word và tải xuống file "${savedName}" chuẩn 19 cột thành công!`);
+        }
       } catch (err) {
         showAlert('alert-t7', 'error', '❌ Lỗi: ' + err.message);
       } finally {
@@ -2513,6 +2620,10 @@ HTML_PAGE = """<!DOCTYPE html>
         showAlert('alert-t8', 'error', '⚠️ Vui lòng nhấn "Nạp Danh Sách Sheet Ngày" và chọn sheet cần xử lý!');
         return;
       }
+
+      const picker = await promptSaveFile('TỔNG HỢP CÔNG VIỆC P.CNTT (CỐ ĐỊNH).xlsx');
+      if (picker.canceled) return;
+
       const formData = new FormData();
       formData.append('url', document.getElementById('url-t8').value);
       formData.append('sheet_name', sheet);
@@ -2525,14 +2636,19 @@ HTML_PAGE = """<!DOCTYPE html>
           throw new Error(errData.error || 'Xử lý thất bại.');
         }
         const blob = await res.blob();
-        downloadBlob(blob, 'TỔNG HỢP CÔNG VIỆC P.CNTT (CỐ ĐỊNH).xlsx');
-        showAlert('alert-t8', 'success', '✅ Đã tổng hợp từ Google Sheets của viện và tải xuống file thành công!');
+        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, 'TỔNG HỢP CÔNG VIỆC P.CNTT (CỐ ĐỊNH).xlsx');
+        if (picker.handle) {
+          showAlert('alert-t8', 'success', `✅ Đã lưu file "${savedName}" thành công tại vị trí bạn đã chọn!`);
+        } else {
+          showAlert('alert-t8', 'success', `✅ Đã tổng hợp từ Google Sheets của viện và tải xuống file thành công!`);
+        }
       } catch (err) {
         showAlert('alert-t8', 'error', '❌ Lỗi: ' + err.message);
       } finally {
         setLoading('t8', false, '🚀 Tổng Hợp Từ Google Sheets (A4 Ngang)');
       }
     }
+
   </script>
 </body>
 </html>
@@ -2733,7 +2849,7 @@ def handle_task_7():
         return send_file(
             out_io,
             as_attachment=True,
-            download_name="Ket_qua_VGCA.xlsx",
+            download_name="Ket_qua.xlsx",
             mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
     except Exception as e:
