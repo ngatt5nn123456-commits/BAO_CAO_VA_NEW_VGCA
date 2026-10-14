@@ -1135,6 +1135,44 @@ HTML_PAGE = """<!DOCTYPE html>
     .sidebar-menu li .nav-desc { font-size: 0.72rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sidebar-menu li.active .nav-desc { color: #dbeafe; }
 
+    .sidebar-menu li.sidebar-group-header {
+      background: transparent !important;
+      padding: 0 !important;
+      cursor: default !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    .sidebar-group-label {
+      padding: 8px 8px 4px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .sidebar-group-label.group-secondary {
+      margin-top: 10px;
+      color: #a78bfa;
+      border-top: 1px solid #1e293b;
+      padding-top: 14px;
+    }
+    .sidebar-badge-count {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+    }
+    .sidebar-group-label.group-secondary .sidebar-badge-count {
+      background: rgba(167, 139, 250, 0.15);
+      color: #c4b5fd;
+    }
+
     .sidebar-footer {
       padding: 14px 18px;
       border-top: 1px solid #1e293b;
@@ -1336,56 +1374,71 @@ HTML_PAGE = """<!DOCTYPE html>
         <div class="sidebar-subtitle">Nhấp chọn tác vụ bên dưới để thực thi</div>
       </div>
       <ul class="sidebar-menu">
-        <li class="active" onclick="switchTask(1)">
+        <!-- NHÓM 1: CHỨNG THƯ SỐ + MAIL CV -->
+        <li class="sidebar-group-header">
+          <div class="sidebar-group-label">
+            <span>🔐 Chứng Thư Số + Mail CV</span>
+            <span class="sidebar-badge-count">4 tác vụ</span>
+          </div>
+        </li>
+        <li class="active" data-task="1" onclick="switchTask(1)">
           <div class="nav-icon">🎯</div>
           <div class="nav-text">
             <span class="nav-title">1. VGCA (Word + Excel SSO)</span>
             <span class="nav-desc">Đối chiếu cấp CKS Word & Excel SSO</span>
           </div>
         </li>
-        <li onclick="switchTask(2)">
+        <li data-task="2" onclick="switchTask(2)">
           <div class="nav-icon">📝</div>
           <div class="nav-text">
             <span class="nav-title">2. CKS (Công văn Mẫu 02)</span>
             <span class="nav-desc">Xuất Công văn Word Mẫu 02 chuẩn</span>
           </div>
         </li>
-        <li onclick="switchTask(3)">
+        <li data-task="3" onclick="switchTask(3)">
           <div class="nav-icon">📧</div>
           <div class="nav-text">
             <span class="nav-title">3. Cấp Email Công Vụ</span>
             <span class="nav-desc">Tổng hợp danh sách xin cấp Email</span>
           </div>
         </li>
-        <li onclick="switchTask(4)">
-          <div class="nav-icon">📊</div>
-          <div class="nav-text">
-            <span class="nav-title">4. Báo Cáo P.CNTT (File)</span>
-            <span class="nav-desc">Tổng hợp từ file Excel máy tính</span>
-          </div>
-        </li>
-        <li onclick="switchTask(5)">
-          <div class="nav-icon">🏥</div>
-          <div class="nav-text">
-            <span class="nav-title">5. Giám Định BHYT</span>
-            <span class="nav-desc">Lọc người dùng & xuất Excel A4</span>
-          </div>
-        </li>
-        <li onclick="switchTask(6)">
-          <div class="nav-icon">🤖</div>
-          <div class="nav-text">
-            <span class="nav-title">6. P.CNTT Tự Động</span>
-            <span class="nav-desc">Quét từ link Google Sheets bất kỳ</span>
-          </div>
-        </li>
-        <li onclick="switchTask(7)">
+        <li data-task="7" onclick="switchTask(7)">
           <div class="nav-icon">📄</div>
           <div class="nav-text">
             <span class="nav-title">7. VGCA (Từ File Word)</span>
             <span class="nav-desc">Đọc nhiều file Word không cần SSO</span>
           </div>
         </li>
-        <li onclick="switchTask(8)">
+
+        <!-- NHÓM 2: BÁO CÁO VÀ GIÁM ĐỊNH BHYT -->
+        <li class="sidebar-group-header">
+          <div class="sidebar-group-label group-secondary">
+            <span>📊 Báo Cáo & Giám Định BHYT</span>
+            <span class="sidebar-badge-count">4 tác vụ</span>
+          </div>
+        </li>
+        <li data-task="4" onclick="switchTask(4)">
+          <div class="nav-icon">📊</div>
+          <div class="nav-text">
+            <span class="nav-title">4. Báo Cáo P.CNTT (File)</span>
+            <span class="nav-desc">Tổng hợp từ file Excel máy tính</span>
+          </div>
+        </li>
+        <li data-task="5" onclick="switchTask(5)">
+          <div class="nav-icon">🏥</div>
+          <div class="nav-text">
+            <span class="nav-title">5. Giám Định BHYT</span>
+            <span class="nav-desc">Lọc người dùng & xuất Excel A4</span>
+          </div>
+        </li>
+        <li data-task="6" onclick="switchTask(6)">
+          <div class="nav-icon">🤖</div>
+          <div class="nav-text">
+            <span class="nav-title">6. P.CNTT Tự Động</span>
+            <span class="nav-desc">Quét từ link Google Sheets bất kỳ</span>
+          </div>
+        </li>
+        <li data-task="8" onclick="switchTask(8)">
           <div class="nav-icon">⚡</div>
           <div class="nav-text">
             <span class="nav-title">8. P.CNTT (Sheet Cố Định)</span>
@@ -1897,8 +1950,9 @@ HTML_PAGE = """<!DOCTYPE html>
     };
 
     function switchTask(taskId) {
-      document.querySelectorAll('.sidebar-menu li').forEach((el, idx) => {
-        el.classList.toggle('active', (idx + 1) === taskId);
+      document.querySelectorAll('.sidebar-menu li[data-task]').forEach((el) => {
+        const id = parseInt(el.getAttribute('data-task'));
+        el.classList.toggle('active', id === taskId);
       });
       document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
       const activePage = document.getElementById('page-task-' + taskId);
