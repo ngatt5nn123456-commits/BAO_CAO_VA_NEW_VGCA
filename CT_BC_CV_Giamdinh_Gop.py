@@ -6,8 +6,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from pathlib import Path
 from copy import copy
-import zipfile
-import xml.etree.ElementTree as ET
+
 import openpyxl
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side
@@ -266,10 +265,11 @@ def find_columns(
 def choose_day_range():
 
     today = datetime.datetime.now().day
-    start_7 = max(1, today - 7)
-    end_7 = min(31, today + 7)
 
-    default_value = "7days"
+    if today <= 14:
+        default_value = "01-14"
+    else:
+        default_value = "15-31"
 
     result = {
         "value": None
@@ -282,7 +282,7 @@ def choose_day_range():
     )
 
     window.geometry(
-        "440x310"
+        "420x270"
     )
 
     window.resizable(
@@ -299,35 +299,23 @@ def choose_day_range():
             "bold"
         )
     ).pack(
-        pady=12
+        pady=15
     )
 
     tk.Label(
         window,
         text=(
-            f"Ngày hiện tại: {today:02d} | Mặc định: Hôm nay ± 7 ngày"
+            f"Ngày hiện tại: "
+            f"{today:02d}\n"
+            f"Mặc định: "
+            f"{default_value}"
         )
     ).pack(
-        pady=3
+        pady=5
     )
 
     selected = tk.StringVar(
         value=default_value
-    )
-
-    tk.Radiobutton(
-        window,
-        text=f"Trước & sau 7 ngày (Ngày {start_7:02d} → {end_7:02d})",
-        variable=selected,
-        value="7days",
-        font=(
-            "Arial",
-            11
-        )
-    ).pack(
-        anchor="w",
-        padx=50,
-        pady=4
     )
 
     tk.Radiobutton(
@@ -341,8 +329,8 @@ def choose_day_range():
         )
     ).pack(
         anchor="w",
-        padx=50,
-        pady=4
+        padx=80,
+        pady=5
     )
 
     tk.Radiobutton(
@@ -356,8 +344,8 @@ def choose_day_range():
         )
     ).pack(
         anchor="w",
-        padx=50,
-        pady=4
+        padx=80,
+        pady=5
     )
 
     def confirm():
@@ -683,55 +671,43 @@ def process_giam_dinh(
         output_row += 1
 
     # ------------------------------------------------------
-    # CẤU HÌNH TRANG IN (KHỔ A4 DỌC, FIT 1 TRANG NGANG)
+    # KÍCH THƯỚC CỘT
     # ------------------------------------------------------
 
-    result.page_setup.orientation = result.ORIENTATION_PORTRAIT
-    result.page_setup.paperSize = result.PAPERSIZE_A4
-    result.sheet_properties.pageSetUpPr.fitToPage = True
-    result.page_setup.fitToWidth = 1
-    result.page_setup.fitToHeight = 0
+    for new_col, old_col in enumerate(
+        source_columns,
+        start=1
+    ):
 
-    result.page_margins.left = 0.25
-    result.page_margins.right = 0.25
-    result.page_margins.top = 0.4
-    result.page_margins.bottom = 0.4
+        old_letter = (
+            get_column_letter(
+                old_col
+            )
+        )
 
-    # ------------------------------------------------------
-    # ĐỘ RỘNG CỘT (AUTOFIT COLUMN DỰA TRÊN DỮ LIỆU)
-    # ------------------------------------------------------
+        new_letter = (
+            get_column_letter(
+                new_col
+            )
+        )
 
-    for col in range(1, result_last_col + 1):
-        col_letter = get_column_letter(col)
-        max_len = 0
-        for row in range(4, result.max_row + 1):
-            val = result.cell(row, col).value
-            if val is not None:
-                for line in str(val).split('\n'):
-                    max_len = max(max_len, len(line.strip()))
-        
-        if col == 1:
-            width = max(max_len + 3, 6)
-        elif col == 2:
-            width = max(max_len + 4, 20)
-        else:
-            width = max(max_len + 2, 7)
+        width = source.column_dimensions[
+            old_letter
+        ].width
 
-        result.column_dimensions[col_letter].width = width
+        if width:
 
-    # ------------------------------------------------------
-    # ĐỊNH DẠNG FONT TIMES NEW ROMAN & CỠ CHỮ 13
-    # ------------------------------------------------------
+            result.column_dimensions[
+                new_letter
+            ].width = width
 
-    for row in range(1, result.max_row + 1):
-        for col in range(1, result_last_col + 1):
-            cell = result.cell(row, col)
-            old_font = cell.font
-            if old_font:
-                is_bold = old_font.bold
-                is_italic = old_font.italic
-                sz = 16 if row == 1 else (11 if row == 2 else 13)
-                cell.font = Font(name="Times New Roman", size=sz, bold=is_bold, italic=is_italic)
+    result.column_dimensions[
+        "A"
+    ].width = 8
+
+    result.column_dimensions[
+        "B"
+    ].width = 25
 
     result.freeze_panes = "C6"
 
@@ -755,7 +731,10 @@ def process_giam_dinh(
 
     # Nếu file đã tồn tại thì hỏi ghi đè
 
-    if os.path.exists(output_file) and tk._default_root:
+    if os.path.exists(
+        output_file
+    ):
+
         answer = messagebox.askyesno(
             "File đã tồn tại",
             (
@@ -769,11 +748,9 @@ def process_giam_dinh(
         if not answer:
             return None
 
-    try:
-        result_wb.save(output_file)
-    except PermissionError:
-        output_file = os.path.join(folder, f"DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
-        result_wb.save(output_file)
+    result_wb.save(
+        output_file
+    )
 
     # ------------------------------------------------------
     # KIỂM TRA SAU KHI LƯU
@@ -846,121 +823,110 @@ def process_giam_dinh(
     return output_file
 
 
-def get_excel_sheet_names_fast(file_path):
-    try:
-        with zipfile.ZipFile(file_path, 'r') as z:
-            with z.open('xl/workbook.xml') as f:
-                tree = ET.parse(f)
-                root = tree.getroot()
-                sheets = root.findall('.//{http://schemas.openxmlformats.org/spreadsheetml/2006/main}sheet')
-                names = [elem.attrib['name'] for elem in sheets if 'name' in elem.attrib]
-                if names:
-                    return names
-    except Exception:
-        pass
-    try:
-        wb = openpyxl.load_workbook(file_path, read_only=True)
-        names = wb.sheetnames
-        wb.close()
-        return names
-    except Exception:
-        return []
+# ==========================================================
+# ==========================================================
+# CHỨC NĂNG 2
+# BÁO CÁO CÔNG VIỆC P.CNTT
+# ==========================================================
+# ==========================================================
+
 
 def process_cntt(
     input_file,
-    output_file=None,
-    sheet_name=None
+    output_file
 ):
 
     # ------------------------------------------------------
-    # HỖ TRỢ ĐỌC TỪ THƯ MỤC HOẶC FILE
+    # ĐỌC FILE
     # ------------------------------------------------------
-    if os.path.isdir(input_file):
-        folder = input_file
-        excel_files = [
-            os.path.join(folder, f)
-            for f in os.listdir(folder)
-            if f.endswith(('.xlsx', '.xlsm'))
-            and not f.startswith('~$')
-            and f != TEN_FILE_CNTT
-        ]
-        if not excel_files:
-            raise Exception(f"Không tìm thấy file Excel nào trong thư mục:\n{folder}")
-        
-        target_file = None
-        for ef in excel_files:
-            if "BÁO CÁO CÔNG TÁC SỬA CHỮA" in os.path.basename(ef).upper():
-                target_file = ef
-                break
-        if not target_file:
-            target_file = excel_files[0]
-            
-        actual_input_file = target_file
-        if not output_file:
-            output_file = os.path.join(folder, TEN_FILE_CNTT)
-    else:
-        actual_input_file = input_file
-        if not output_file:
-            folder = os.path.dirname(input_file)
-            output_file = os.path.join(folder, TEN_FILE_CNTT)
-
-    # ------------------------------------------------------
-    # CHỌN SHEET SIÊU TỐC (0.003s) -> MỞ POPUP KHÔNG CẦN TẢI TOÀN BỘ FILE
-    # ------------------------------------------------------
-    if sheet_name is None:
-        sheetnames = get_excel_sheet_names_fast(actual_input_file)
-        if not sheetnames:
-            sheetnames = ["Sheet1"]
-
-        if len(sheetnames) == 1:
-            sheet_name = sheetnames[0]
-        elif tk._default_root is None:
-            sheet_name = sheetnames[-1]
-        else:
-            sheet_window = tk.Toplevel()
-            sheet_window.title("Chọn Sheet P.CNTT")
-            sheet_window.geometry("450x180")
-            sheet_window.resizable(False, False)
-
-            tk.Label(
-                sheet_window,
-                text=f"CHỌN SHEET CẦN XỬ LÝ ({len(sheetnames)} Sheets)",
-                font=("Arial", 12, "bold")
-            ).pack(pady=15)
-
-            combo = ttk.Combobox(
-                sheet_window,
-                values=sheetnames,
-                state="readonly",
-                width=45
-            )
-            combo.pack(pady=5)
-            combo.current(len(sheetnames) - 1 if sheetnames else 0)
-
-            selected = {"value": sheetnames[-1]}
-
-            def confirm_sheet():
-                selected["value"] = combo.get()
-                sheet_window.destroy()
-
-            tk.Button(
-                sheet_window,
-                text="TIẾP TỤC",
-                command=confirm_sheet,
-                width=15
-            ).pack(pady=15)
-
-            sheet_window.grab_set()
-            sheet_window.wait_window()
-            sheet_name = selected["value"]
-
-            if not sheet_name:
-                return None
 
     wb_source = load_workbook(
-        actual_input_file,
+        input_file,
         data_only=True
     )
+
+    # ------------------------------------------------------
+    # CHỌN SHEET
+    # ------------------------------------------------------
+
+    if len(
+        wb_source.sheetnames
+    ) == 1:
+
+        sheet_name = (
+            wb_source.sheetnames[0]
+        )
+
+    else:
+
+        sheet_window = tk.Toplevel()
+
+        sheet_window.title(
+            "Chọn Sheet P.CNTT"
+        )
+
+        sheet_window.geometry(
+            "450x180"
+        )
+
+        tk.Label(
+            sheet_window,
+            text="CHỌN SHEET CẦN XỬ LÝ",
+            font=(
+                "Arial",
+                12,
+                "bold"
+            )
+        ).pack(
+            pady=15
+        )
+
+        combo = ttk.Combobox(
+            sheet_window,
+            values=wb_source.sheetnames,
+            state="readonly",
+            width=45
+        )
+
+        combo.pack(
+            pady=5
+        )
+
+        combo.current(0)
+
+        selected = {
+            "value": None
+        }
+
+        def confirm_sheet():
+
+            selected["value"] = (
+                combo.get()
+            )
+
+            sheet_window.destroy()
+
+        tk.Button(
+            sheet_window,
+            text="TIẾP TỤC",
+            command=confirm_sheet,
+            width=15
+        ).pack(
+            pady=15
+        )
+
+        sheet_window.grab_set()
+
+        sheet_window.wait_window()
+
+        sheet_name = selected[
+            "value"
+        ]
+
+        if not sheet_name:
+
+            return None
+
     ws_source = wb_source[
         sheet_name
     ]
@@ -1306,7 +1272,7 @@ def process_cntt(
     )
 
     title_cell.font = Font(
-        name="Times New Roman",
+        name="Arial",
         size=16,
         bold=True
     )
@@ -1369,8 +1335,8 @@ def process_cntt(
         cell.value = header
 
         cell.font = Font(
-            name="Times New Roman",
-            size=13,
+            name="Arial",
+            size=10,
             bold=True
         )
 
@@ -1473,8 +1439,8 @@ def process_cntt(
             )
 
             cell.font = Font(
-                name="Times New Roman",
-                size=13
+                name="Arial",
+                size=10
             )
 
             cell.border = border
@@ -1661,8 +1627,8 @@ def process_cntt(
         )
 
         cell.font = Font(
-            name="Times New Roman",
-            size=13,
+            name="Arial",
+            size=10,
             bold=True
         )
 
@@ -1682,45 +1648,41 @@ def process_cntt(
         )
 
     # ======================================================
-    # CẤU HÌNH TRANG IN (FULL KHỔ A4 NẰM NGANG, FIT 1 TRANG NGANG)
+    # ĐỘ RỘNG CỘT
     # ======================================================
 
-    ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
-    ws.page_setup.paperSize = ws.PAPERSIZE_A4
-    ws.sheet_properties.pageSetUpPr.fitToPage = True
-    ws.page_setup.fitToWidth = 1
-    ws.page_setup.fitToHeight = 0
+    ws.column_dimensions[
+        "A"
+    ].width = 7
 
-    ws.page_margins.left = 0.25
-    ws.page_margins.right = 0.25
-    ws.page_margins.top = 0.4
-    ws.page_margins.bottom = 0.4
-    ws.page_margins.header = 0.2
-    ws.page_margins.footer = 0.2
+    ws.column_dimensions[
+        "B"
+    ].width = 28
 
-    # ======================================================
-    # ĐỘ RỘNG CỘT (AUTOFIT COLUMN)
-    # ======================================================
+    for col in range(
+        3,
+        total_columns + 1
+    ):
 
-    for col in range(1, total_columns + 1):
-        col_letter = get_column_letter(col)
-        max_len = 0
-        for row in range(3, ws.max_row + 1):
-            val = ws.cell(row, col).value
-            if val is not None:
-                for line in str(val).split('\n'):
-                    max_len = max(max_len, len(line.strip()))
-        
-        if col == 1:
-            width = max(max_len + 3, 6)
-        elif col == 2:
-            width = max(max_len + 4, 22)
-        elif col == total_columns and has_other_error_column and ws.cell(header_row, col).value == "SỬA LỖI KHÁC":
-            width = min(max(max_len + 4, 30), 60)
+        header = ws.cell(
+            header_row,
+            col
+        ).value
+
+        if (
+            header
+            == "SỬA LỖI KHÁC"
+        ):
+
+            ws.column_dimensions[
+                get_column_letter(col)
+            ].width = 55
+
         else:
-            width = max(max_len + 3, 14)
 
-        ws.column_dimensions[col_letter].width = width
+            ws.column_dimensions[
+                get_column_letter(col)
+            ].width = 17
 
     ws.freeze_panes = "C4"
 
@@ -1952,21 +1914,18 @@ class MainApplication:
 
                 return
 
-            if selected == "01-14":
+            if (
+                selected
+                == "01-14"
+            ):
 
                 start_day = 1
                 end_day = 14
 
-            elif selected == "15-31":
+            else:
 
                 start_day = 15
                 end_day = 31
-
-            else:
-
-                today = datetime.datetime.now().day
-                start_day = max(1, today - 7)
-                end_day = min(31, today + 7)
 
             self.status_label.config(
                 text=(
@@ -2030,36 +1989,33 @@ class MainApplication:
     def run_cntt(self):
 
         try:
-            choice = messagebox.askyesnocancel(
-                "Chọn nguồn dữ liệu P.CNTT",
-                "Bạn muốn chọn dữ liệu từ đâu?\n\n"
-                "• Bấm [YES] để chọn THƯ MỤC chứa file Excel (Folder)\n"
-                "• Bấm [NO] để chọn FILE Excel trực tiếp\n"
-                "• Bấm [CANCEL] để Hủy"
-            )
 
-            if choice is None:
-                return
-            elif choice is True:
-                input_path = filedialog.askdirectory(
-                    title="Chọn THƯ MỤC chứa file Excel báo cáo công việc P.CNTT"
-                )
-            else:
-                input_path = filedialog.askopenfilename(
-                    title="Chọn file Excel báo cáo công việc P.CNTT",
+            input_file = (
+                filedialog.askopenfilename(
+                    title=(
+                        "Chọn file Excel "
+                        "báo cáo công việc P.CNTT"
+                    ),
                     filetypes=[
-                        ("Excel files", "*.xlsx *.xlsm"),
-                        ("All files", "*.*")
+                        (
+                            "Excel files",
+                            "*.xlsx *.xlsm"
+                        ),
+                        (
+                            "All files",
+                            "*.*"
+                        )
                     ]
                 )
+            )
 
-            if not input_path:
+            if not input_file:
+
                 return
 
-            if os.path.isdir(input_path):
-                folder = input_path
-            else:
-                folder = os.path.dirname(input_path)
+            folder = os.path.dirname(
+                input_file
+            )
 
             output_file = os.path.join(
                 folder,
@@ -2097,7 +2053,7 @@ class MainApplication:
             self.root.update()
 
             result = process_cntt(
-                input_path,
+                input_file,
                 output_file
             )
 

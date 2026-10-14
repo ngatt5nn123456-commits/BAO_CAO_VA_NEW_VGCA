@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.spec
+build/
+dist/
+*.xlsx
+*.xlsm
+*.docx
+*.doc
+*.db
