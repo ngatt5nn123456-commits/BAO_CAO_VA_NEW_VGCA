@@ -633,7 +633,7 @@ def run_task_doi_chieu(word_input, excel_input, log_func=print, progress_func=la
 # ============================================================
 # LOGIC TÁC VỤ 7: TỔNG HỢP VGCA TỪ NHIỀU FILE WORD (XUẤT Ket_qua.xlsx)
 # ============================================================
-def run_task_vgca_word(word_input, log_func=print, progress_func=lambda v: None):
+def run_task_vgca_word(word_input, log_func=print, progress_func=lambda v: None, output_file=None):
     log_func("=== BẮT ĐẦU TÁC VỤ 7: TỔNG HỢP VGCA TỪ CÁC FILE WORD (XUẤT Ket_qua.xlsx) ===")
 
     word_files = get_file_list(word_input, extensions=(".docx", ".doc"))
@@ -911,9 +911,12 @@ def run_task_vgca_word(word_input, log_func=print, progress_func=lambda v: None)
         for col in range(1, 20):
             ws.cell(row=row_num, column=col).number_format = "@"
 
-    output_file = os.path.join(output_dir, "Ket_qua.xlsx")
+    if not output_file:
+        output_file = os.path.join(output_dir, "Ket_qua.xlsx")
     saved = False
-    for candidate in [output_file, os.path.join(output_dir, "Ket_qua_moi.xlsx"), os.path.join(output_dir, "Ket_qua_final.xlsx")]:
+    target_dir = os.path.dirname(output_file) or output_dir
+    target_base = os.path.splitext(os.path.basename(output_file))[0]
+    for candidate in [output_file, os.path.join(target_dir, f"{target_base}_moi.xlsx"), os.path.join(target_dir, f"{target_base}_final.xlsx")]:
         try:
             wb.save(candidate)
             output_file = candidate
@@ -923,7 +926,7 @@ def run_task_vgca_word(word_input, log_func=print, progress_func=lambda v: None)
             continue
 
     if not saved:
-        output_file = os.path.join(output_dir, f"Ket_qua_{int(datetime.now().timestamp())}.xlsx")
+        output_file = os.path.join(target_dir, f"{target_base}_{int(datetime.now().timestamp())}.xlsx")
         wb.save(output_file)
 
     progress_func(100)
@@ -1785,7 +1788,7 @@ def find_columns(ws, header_row):
         raise ValueError("Không tìm thấy các cột ngày (1-31).")
     return user_col, day_columns
 
-def run_task_giam_dinh(excel_input, day_range_choice="7days", log_func=print, progress_func=lambda v: None):
+def run_task_giam_dinh(excel_input, day_range_choice="7days", log_func=print, progress_func=lambda v: None, output_file=None):
     log_func("=== BẮT ĐẦU TÁC VỤ 5: BÁO CÁO CỔNG GIÁM ĐỊNH BẢO HIỂM ===")
 
     if os.path.isdir(excel_input):
@@ -1812,9 +1815,13 @@ def run_task_giam_dinh(excel_input, day_range_choice="7days", log_func=print, pr
     progress_func(15)
 
     source_wb = load_workbook(actual_input_file)
-    if "Người dùng" not in source_wb.sheetnames:
-        raise ValueError("File không có sheet 'Người dùng'.")
-    source = source_wb["Người dùng"]
+    target_sheet = None
+    for s_name in source_wb.sheetnames:
+        norm = remove_accents(s_name).lower().strip()
+        if "nguoi dung" in norm or norm in ("user", "users") or "cham cong" in norm:
+            target_sheet = source_wb[s_name]
+            break
+    source = target_sheet if target_sheet else source_wb.active
 
     header_row = find_header_row(source)
     user_col, day_columns = find_columns(source, header_row)
@@ -1937,20 +1944,21 @@ def run_task_giam_dinh(excel_input, day_range_choice="7days", log_func=print, pr
     for row in range(1, result.max_row + 1):
         for col in range(1, result_last_col + 1):
             cell = result.cell(row, col)
-            if cell.font:
-                is_bold = cell.font.bold
-                is_italic = cell.font.italic
-                sz = 16 if row == 1 else (11 if row == 2 else 13)
-                cell.font = Font(name="Times New Roman", size=sz, bold=is_bold, italic=is_italic)
+            is_bold = True if row in (1, 4, 5) or row == result.max_row else (cell.font.bold if cell.font else False)
+            is_italic = True if row == 2 else (cell.font.italic if cell.font else False)
+            cell.font = Font(name="Times New Roman", size=14, bold=is_bold, italic=is_italic)
 
     result.freeze_panes = "C6"
     result.auto_filter.ref = f"A4:{result_last_letter}{result.max_row}"
 
-    output_file = os.path.join(folder, "DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM.xlsx")
+    if not output_file:
+        output_file = os.path.join(folder, "DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM.xlsx")
+    target_dir = os.path.dirname(output_file) or folder
+    target_base = os.path.splitext(os.path.basename(output_file))[0]
     try:
         result_wb.save(output_file)
     except PermissionError:
-        output_file = os.path.join(folder, f"DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
+        output_file = os.path.join(target_dir, f"{target_base}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
         result_wb.save(output_file)
 
     progress_func(100)
@@ -2541,6 +2549,31 @@ Thực hiện các công việc tương tự Tác vụ 6:
                 )
                 return
             
+            save_dest_file = None
+            if task_type == 5:
+                init_dir = os.path.dirname(w_val) if os.path.isfile(w_val) else (w_val if os.path.isdir(w_val) else cwd)
+                save_dest_file = filedialog.asksaveasfilename(
+                    title="Chọn nơi lưu file Giám Định Bảo Hiểm",
+                    initialdir=init_dir,
+                    initialfile="DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM.xlsx",
+                    defaultextension=".xlsx",
+                    filetypes=[("Excel Files", "*.xlsx"), ("All Files", "*.*")]
+                )
+                if not save_dest_file:
+                    return
+
+            elif task_type == 7:
+                init_dir = os.path.dirname(w_val) if os.path.isfile(w_val) else (w_val if os.path.isdir(w_val) else cwd)
+                save_dest_file = filedialog.asksaveasfilename(
+                    title="Chọn nơi lưu file kết quả VGCA",
+                    initialdir=init_dir,
+                    initialfile="Ket_qua.xlsx",
+                    defaultextension=".xlsx",
+                    filetypes=[("Excel Files", "*.xlsx"), ("All Files", "*.*")]
+                )
+                if not save_dest_file:
+                    return
+
             btn_run.config(state=tk.DISABLED)
             log_box.delete("1.0", tk.END)
             progress_var.set(0)
@@ -2557,12 +2590,12 @@ Thực hiện các công việc tương tự Tác vụ 6:
                     elif task_type == 4:
                         out_file = run_task_cntt(w_val, append_log, update_progress)
                     elif task_type == 5:
-                        out_file = run_task_giam_dinh(w_val, d_val, append_log, update_progress)
+                        out_file = run_task_giam_dinh(w_val, d_val, append_log, update_progress, output_file=save_dest_file)
                     elif task_type == 6:
                         out_folder_val = txt_output_folder.get().strip() if txt_output_folder else ""
                         out_file = run_task_cntt_tu_dong(w_val, append_log, update_progress, out_folder_val, task_label="Tác vụ 6")
                     elif task_type == 7:
-                        out_file = run_task_vgca_word(w_val, append_log, update_progress)
+                        out_file = run_task_vgca_word(w_val, append_log, update_progress, output_file=save_dest_file)
                     elif task_type == 8:
                         out_folder_val = txt_output_folder.get().strip() if txt_output_folder else ""
                         out_file = run_task_8(append_log, update_progress, out_folder_val)
