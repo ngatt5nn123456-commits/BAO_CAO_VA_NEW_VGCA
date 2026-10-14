@@ -21,7 +21,7 @@ from docx import Document
 from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-from flask import Flask, request, send_file, jsonify, render_template_string
+from flask import Flask, request, send_file, jsonify, render_template_string, make_response
 
 warnings.filterwarnings("ignore", message="Workbook contains no default style")
 
@@ -1045,6 +1045,9 @@ HTML_PAGE = """<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hệ Thống Tổng Hợp CKS, Email, P.CNTT & Giám Định BHYT - BVĐK Bắc Ninh Số 2</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1098,8 +1101,8 @@ HTML_PAGE = """<!DOCTYPE html>
 
     /* SIDEBAR */
     .sidebar {
-      width: 330px;
-      background: var(--sidebar-bg);
+      width: 340px;
+      background: #090d16;
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
@@ -1107,78 +1110,110 @@ HTML_PAGE = """<!DOCTYPE html>
       overflow-y: auto;
     }
     .sidebar-header {
-      padding: 16px 18px 10px;
+      padding: 14px 16px 10px;
       border-bottom: 1px solid #1e293b;
+      background: #0b1120;
     }
-    .sidebar-title { font-size: 0.75rem; font-weight: 700; color: #93c5fd; text-transform: uppercase; letter-spacing: 0.8px; }
-    .sidebar-subtitle { font-size: 0.75rem; color: #94a3b8; margin-top: 3px; }
+    .sidebar-title { font-size: 0.76rem; font-weight: 800; color: #93c5fd; text-transform: uppercase; letter-spacing: 0.8px; }
+    .sidebar-subtitle { font-size: 0.72rem; color: #94a3b8; margin-top: 3px; }
 
-    .sidebar-menu { list-style: none; padding: 8px; display: flex; flex-direction: column; gap: 5px; flex: 1; }
+    .sidebar-scrollable {
+      padding: 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+
+    /* NHÓM TÁC VỤ CARD BOX */
+    .task-group-card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 8px 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .task-group-card.card-cks {
+      border-top: 3px solid #38bdf8;
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.08) 0%, rgba(15, 23, 42, 0.95) 100%);
+    }
+    .task-group-card.card-bhyt {
+      border-top: 3px solid #c084fc;
+      background: linear-gradient(180deg, rgba(192, 132, 252, 0.08) 0%, rgba(15, 23, 42, 0.95) 100%);
+    }
+
+    .group-header-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 6px 8px 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 6px;
+    }
+    .group-header-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.73rem;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+    .card-cks .group-header-title { color: #38bdf8; }
+    .card-bhyt .group-header-title { color: #c084fc; }
+
+    .group-header-badge {
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 999px;
+    }
+    .card-cks .group-header-badge {
+      background: rgba(56, 189, 248, 0.18);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+    .card-bhyt .group-header-badge {
+      background: rgba(192, 132, 252, 0.18);
+      color: #e9d5ff;
+      border: 1px solid rgba(192, 132, 252, 0.35);
+    }
+
+    .sidebar-menu { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
     .sidebar-menu li {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 14px;
-      border-radius: 8px;
-      background: var(--sidebar-item);
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px;
+      border-radius: 7px;
+      background: rgba(30, 41, 59, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.04);
       cursor: pointer;
       transition: all 0.2s ease;
       position: relative;
     }
-    .sidebar-menu li:hover { background: var(--sidebar-hover); transform: translateX(2px); }
-    .sidebar-menu li.active {
-      background: var(--sidebar-active);
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    .sidebar-menu li:hover {
+      background: rgba(51, 65, 85, 0.7);
+      transform: translateX(2px);
+      border-color: rgba(255, 255, 255, 0.1);
     }
-    .sidebar-menu li .nav-icon { font-size: 1.25rem; flex-shrink: 0; }
+    .sidebar-menu li.active {
+      background: #2563eb;
+      box-shadow: 0 3px 10px rgba(37, 99, 235, 0.4);
+      border-color: #3b82f6;
+    }
+    .sidebar-menu li .nav-icon { font-size: 1.15rem; flex-shrink: 0; }
     .sidebar-menu li .nav-text { display: flex; flex-direction: column; overflow: hidden; }
-    .sidebar-menu li .nav-title { font-size: 0.88rem; font-weight: 700; color: #e2e8f0; }
+    .sidebar-menu li .nav-title { font-size: 0.84rem; font-weight: 700; color: #e2e8f0; }
     .sidebar-menu li.active .nav-title { color: #ffffff; }
-    .sidebar-menu li .nav-desc { font-size: 0.72rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sidebar-menu li .nav-desc { font-size: 0.70rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sidebar-menu li.active .nav-desc { color: #dbeafe; }
 
-    .sidebar-menu li.sidebar-group-header {
-      background: transparent !important;
-      padding: 0 !important;
-      cursor: default !important;
-      transform: none !important;
-      box-shadow: none !important;
-    }
-    .sidebar-group-label {
-      padding: 8px 8px 4px;
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      color: #38bdf8;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-    }
-    .sidebar-group-label.group-secondary {
-      margin-top: 10px;
-      color: #a78bfa;
-      border-top: 1px solid #1e293b;
-      padding-top: 14px;
-    }
-    .sidebar-badge-count {
-      font-size: 0.65rem;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 999px;
-      background: rgba(56, 189, 248, 0.15);
-      color: #38bdf8;
-    }
-    .sidebar-group-label.group-secondary .sidebar-badge-count {
-      background: rgba(167, 139, 250, 0.15);
-      color: #c4b5fd;
-    }
-
     .sidebar-footer {
-      padding: 14px 18px;
+      padding: 12px 16px;
       border-top: 1px solid #1e293b;
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       color: #64748b;
       line-height: 1.4;
+      background: #0b1120;
     }
 
     /* RIGHT CONTENT AREA */
@@ -1367,88 +1402,98 @@ HTML_PAGE = """<!DOCTYPE html>
   <!-- MAIN BODY: SIDEBAR + CONTENT -->
   <div class="app-container">
 
-    <!-- SIDEBAR 8 TÁC VỤ -->
+    <!-- SIDEBAR 8 TÁC VỤ ĐƯỢC CHIA THÀNH 2 NHÓM -->
     <div class="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-title">📑 Danh Mục Tác Vụ (8 Chức Năng)</div>
-        <div class="sidebar-subtitle">Nhấp chọn tác vụ bên dưới để thực thi</div>
+        <div class="sidebar-title">📑 DANH MỤC TÁC VỤ (8 CHỨC NĂNG)</div>
+        <div class="sidebar-subtitle">Hệ thống phân thành 2 nhóm chuyên biệt</div>
       </div>
-      <ul class="sidebar-menu">
-        <!-- NHÓM 1: CHỨNG THƯ SỐ + MAIL CV -->
-        <li class="sidebar-group-header">
-          <div class="sidebar-group-label">
-            <span>🔐 Chứng Thư Số + Mail CV</span>
-            <span class="sidebar-badge-count">4 tác vụ</span>
+
+      <div class="sidebar-scrollable">
+        <!-- NHÓM 1: CHỨNG THƯ SỐ + EMAIL CÔNG VỤ -->
+        <div class="task-group-card card-cks">
+          <div class="group-header-box">
+            <div class="group-header-title">
+              <span>🔐 NHÓM CKS & MAIL CÔNG VỤ</span>
+            </div>
+            <span class="group-header-badge">4 tác vụ</span>
           </div>
-        </li>
-        <li class="active" data-task="1" onclick="switchTask(1)">
-          <div class="nav-icon">🎯</div>
-          <div class="nav-text">
-            <span class="nav-title">1. VGCA (Word + Excel SSO)</span>
-            <span class="nav-desc">Đối chiếu cấp CKS Word & Excel SSO</span>
-          </div>
-        </li>
-        <li data-task="2" onclick="switchTask(2)">
-          <div class="nav-icon">📝</div>
-          <div class="nav-text">
-            <span class="nav-title">2. CKS (Công văn Mẫu 02)</span>
-            <span class="nav-desc">Xuất Công văn Word Mẫu 02 chuẩn</span>
-          </div>
-        </li>
-        <li data-task="3" onclick="switchTask(3)">
-          <div class="nav-icon">📧</div>
-          <div class="nav-text">
-            <span class="nav-title">3. Cấp Email Công Vụ</span>
-            <span class="nav-desc">Tổng hợp danh sách xin cấp Email</span>
-          </div>
-        </li>
-        <li data-task="7" onclick="switchTask(7)">
-          <div class="nav-icon">📄</div>
-          <div class="nav-text">
-            <span class="nav-title">7. VGCA (Từ File Word)</span>
-            <span class="nav-desc">Đọc nhiều file Word không cần SSO</span>
-          </div>
-        </li>
+          <ul class="sidebar-menu">
+            <li class="active" data-task="1" onclick="switchTask(1)">
+              <div class="nav-icon">🎯</div>
+              <div class="nav-text">
+                <span class="nav-title">1. VGCA (Word + Excel SSO)</span>
+                <span class="nav-desc">Đối chiếu cấp CKS Word & Excel SSO</span>
+              </div>
+            </li>
+            <li data-task="2" onclick="switchTask(2)">
+              <div class="nav-icon">📝</div>
+              <div class="nav-text">
+                <span class="nav-title">2. CKS (Công văn Mẫu 02)</span>
+                <span class="nav-desc">Xuất Công văn Word Mẫu 02 chuẩn</span>
+              </div>
+            </li>
+            <li data-task="3" onclick="switchTask(3)">
+              <div class="nav-icon">📧</div>
+              <div class="nav-text">
+                <span class="nav-title">3. Cấp Email Công Vụ</span>
+                <span class="nav-desc">Tổng hợp danh sách xin cấp Email</span>
+              </div>
+            </li>
+            <li data-task="7" onclick="switchTask(7)">
+              <div class="nav-icon">📄</div>
+              <div class="nav-text">
+                <span class="nav-title">7. VGCA (Từ File Word)</span>
+                <span class="nav-desc">Đọc nhiều file Word không cần SSO</span>
+              </div>
+            </li>
+          </ul>
+        </div>
 
         <!-- NHÓM 2: BÁO CÁO VÀ GIÁM ĐỊNH BHYT -->
-        <li class="sidebar-group-header">
-          <div class="sidebar-group-label group-secondary">
-            <span>📊 Báo Cáo & Giám Định BHYT</span>
-            <span class="sidebar-badge-count">4 tác vụ</span>
+        <div class="task-group-card card-bhyt">
+          <div class="group-header-box">
+            <div class="group-header-title">
+              <span>📊 NHÓM BÁO CÁO & GIÁM ĐỊNH BHYT</span>
+            </div>
+            <span class="group-header-badge">4 tác vụ</span>
           </div>
-        </li>
-        <li data-task="4" onclick="switchTask(4)">
-          <div class="nav-icon">📊</div>
-          <div class="nav-text">
-            <span class="nav-title">4. Báo Cáo P.CNTT (File)</span>
-            <span class="nav-desc">Tổng hợp từ file Excel máy tính</span>
-          </div>
-        </li>
-        <li data-task="5" onclick="switchTask(5)">
-          <div class="nav-icon">🏥</div>
-          <div class="nav-text">
-            <span class="nav-title">5. Giám Định BHYT</span>
-            <span class="nav-desc">Lọc người dùng & xuất Excel A4</span>
-          </div>
-        </li>
-        <li data-task="6" onclick="switchTask(6)">
-          <div class="nav-icon">🤖</div>
-          <div class="nav-text">
-            <span class="nav-title">6. P.CNTT Tự Động</span>
-            <span class="nav-desc">Quét từ link Google Sheets bất kỳ</span>
-          </div>
-        </li>
-        <li data-task="8" onclick="switchTask(8)">
-          <div class="nav-icon">⚡</div>
-          <div class="nav-text">
-            <span class="nav-title">8. P.CNTT (Sheet Cố Định)</span>
-            <span class="nav-desc">Tự động tải Google Sheets của viện</span>
-          </div>
-        </li>
-      </ul>
+          <ul class="sidebar-menu">
+            <li data-task="4" onclick="switchTask(4)">
+              <div class="nav-icon">📊</div>
+              <div class="nav-text">
+                <span class="nav-title">4. Báo Cáo P.CNTT (File)</span>
+                <span class="nav-desc">Tổng hợp từ file Excel máy tính</span>
+              </div>
+            </li>
+            <li data-task="5" onclick="switchTask(5)">
+              <div class="nav-icon">🏥</div>
+              <div class="nav-text">
+                <span class="nav-title">5. Giám Định BHYT</span>
+                <span class="nav-desc">Lọc người dùng & xuất Excel A4</span>
+              </div>
+            </li>
+            <li data-task="6" onclick="switchTask(6)">
+              <div class="nav-icon">🤖</div>
+              <div class="nav-text">
+                <span class="nav-title">6. P.CNTT Tự Động</span>
+                <span class="nav-desc">Quét từ link Google Sheets bất kỳ</span>
+              </div>
+            </li>
+            <li data-task="8" onclick="switchTask(8)">
+              <div class="nav-icon">⚡</div>
+              <div class="nav-text">
+                <span class="nav-title">8. P.CNTT (Sheet Cố Định)</span>
+                <span class="nav-desc">Tự động tải Google Sheets của viện</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
       <div class="sidebar-footer">
         <b>Phòng CNTT • BVĐK Bắc Ninh số 2</b><br>
-        Phiên bản tự động hóa Web v2.6 • Sẵn sàng 24/7
+        Phiên bản Web v2.7 • Đã Phân 2 Nhóm Tác Vụ
       </div>
     </div>
 
@@ -2604,7 +2649,11 @@ def dispatch_request(path=""):
         if "url" in request.form and "sheet_name" not in request.form:
             return handle_get_sheets()
 
-    return render_template_string(HTML_PAGE)
+    resp = make_response(render_template_string(HTML_PAGE))
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
 
 @app.route("/", methods=["GET", "POST"])
 @app.route("/api", methods=["GET", "POST"])
