@@ -13,7 +13,7 @@ from datetime import datetime
 
 import openpyxl
 from openpyxl import Workbook, load_workbook
-from openpyxl.styles import Font, Alignment, Border, Side
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from openpyxl.utils import get_column_letter
 
 import docx
@@ -681,170 +681,334 @@ def download_google_sheet(url):
         content = b"".join(chunks)
     return io.BytesIO(content)
 
-def process_cntt_web(file_stream, sheet_name):
-    wb_source = load_workbook(file_stream, data_only=True)
-    ws_source = wb_source[sheet_name]
+# ============================================================
+# LOGIC BÁO CÁO TỔNG HỢP CÔNG VIỆC P.CNTT (CHUẨN 100% app_tong_hop.py)
+# ============================================================
+STANDARD_HEADERS_18 = [
+    "STT",
+    "KHOA, PHÒNG, TRUNG TÂM",
+    "Xoá CLS, PTTT",
+    "Sửa phí",
+    "Huỷ CKS",
+    "Huỷ B/án",
+    "Sửa thông tin BN (NN; Địa chỉ, tuổi, CCCD,.v.v...)\nSửa công khám, sửa kiểu khám",
+    "Sửa ngày giờ cls; pttt; giờ đọc kết quả; người TH\ncập nhật CLS, PTTT",
+    "Sửa mã bệnh kèm theo; bệnh chính",
+    "Hỗ trợ ký số PM, QLVBĐH",
+    "Sửa giấy RV, sửa kết thúc ra viện, chuyển tuyến",
+    "Đăng bài trên website",
+    "Sửa cách dùng thuốc, ngày giờ thuốc",
+    "Phân quyền USER, đổi nick user",
+    "Lỗi không kết thúc được hồ sơ",
+    "Sửa xoá giường; cập nhật giường, thêm giường",
+    "Chuyển thuốc CP- DG",
+    "SỬA LỖI KHÁC"
+]
 
-    software_columns = list(range(5, 26))
-    software_headers = []
-    for col in software_columns:
-        header = ws_source.cell(105, col).value
-        software_headers.append(str(header).strip() if header is not None else "")
+FIXED_COL_WIDTHS_18 = [
+    (1,  5.0),          # A: STT
+    (2,  25.0),         # B: KHOA, PHÒNG, TRUNG TÂM
+    (3,  11.0),         # C: Xoá CLS, PTTT
+    (4,  10.0),         # D: Sửa phí
+    (7,  18.140625),    # G: Sửa thông tin BN...
+    (9,  13.28515625),  # I: Sửa mã bệnh kèm theo...
+    (10, 14.5703125),   # J: Hỗ trợ ký số PM...
+    (11, 12.0),         # K: Sửa giấy RV...
+    (18, 42.7109375),   # R: SỬA LỖI KHÁC
+]
 
-    departments = []
-    for row in range(106, ws_source.max_row + 1):
-        dept = ws_source.cell(row, 4).value
-        if dept is None:
-            continue
-        dept = str(dept).strip()
-        if dept.upper() == "TỔNG CỘNG":
-            break
-        if dept:
-            departments.append(dept)
+def map_software_header_to_index(header_name):
+    norm_h = norm_name(header_name)
+    if not norm_h:
+        return None
+    target_15 = STANDARD_HEADERS_18[2:17]
+    for idx, th in enumerate(target_15):
+        if norm_name(th) == norm_h:
+            return idx
+    if "xoacls" in norm_h: return 0
+    if "suaphi" in norm_h or "epthe" in norm_h: return 1
+    if "huycks" in norm_h: return 2
+    if "huyban" in norm_h: return 3
+    if "suathongtinbn" in norm_h or "suacongkham" in norm_h: return 4
+    if "suangaygiocls" in norm_h or "suamaycls" in norm_h: return 5
+    if "suamabenh" in norm_h: return 6
+    if "kyso" in norm_h or "qlvbdh" in norm_h: return 7
+    if "suagiayrv" in norm_h or "chuyentuyen" in norm_h: return 8
+    if "dangbai" in norm_h or "website" in norm_h: return 9
+    if "suacachdungthuoc" in norm_h or "ngaygiothuoc" in norm_h: return 10
+    if "phanquyenuser" in norm_h or "doinick" in norm_h: return 11
+    if "loikhongketthuc" in norm_h: return 12
+    if "suaxoagiuong" in norm_h or "themgiuong" in norm_h: return 13
+    if "chuyenthuoccp" in norm_h or "cpdg" in norm_h: return 14
+    return None
 
-    data = {dept: [None] * len(software_columns) for dept in departments}
-    for row in range(106, ws_source.max_row + 1):
-        dept = ws_source.cell(row, 4).value
-        if dept is None:
-            continue
-        dept = str(dept).strip()
-        if dept.upper() == "TỔNG CỘNG":
-            break
-        if dept not in data:
-            continue
-        for i, col in enumerate(software_columns):
-            value = ws_source.cell(row, col).value
-            data[dept][i] = None if value in (None, "", 0) else value
+def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, output_file=None, sheet_name=None):
+    result_wb = Workbook()
+    ws = result_wb.active
+    ws.title = "BÁO CÁO TỔNG HỢP"
 
-    other_errors = {dept: [] for dept in departments}
-    for row in range(7, 106):
-        dept = ws_source.cell(row, 2).value
-        error = ws_source.cell(row, 35).value
-        if dept is None or error is None:
-            continue
-        dept = str(dept).strip()
-        error = str(error).strip()
-        if dept in other_errors and error and error != "0":
-            other_errors[dept].append(error)
+    thin = Side(style="thin")
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+    # Dark gray header fill (matches sample: theme 0 with tint -0.35 ≈ #595959)
+    header_fill = PatternFill(fill_type="solid", fgColor="595959")
 
-    for dept in other_errors:
-        unique_errors = []
-        seen = set()
-        for err in other_errors[dept]:
-            if err not in seen:
-                seen.add(err)
-                unique_errors.append(err)
-        other_errors[dept] = unique_errors
+    # 1. Row 1: Title
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=18)
+    title_text = f"TỔNG HỢP CÔNG VIỆC PHÒNG CNTT - NGÀY {sheet_name}" if (sheet_name and not str(sheet_name).lower().startswith("sheet")) else "TỔNG HỢP CÔNG VIỆC P.CNTT"
+    t_cell = ws.cell(1, 1, title_text)
+    t_cell.font = Font(name="Times New Roman", size=18, bold=True)
+    t_cell.alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[1].height = 42.0
 
-    valid_departments = []
-    for dept in departments:
-        has_sw = any(v not in (None, "", 0) for v in data[dept])
-        has_err = any(e not in (None, "", "0") for e in other_errors[dept])
-        if has_sw or has_err:
-            valid_departments.append(dept)
+    # 2. Row 3: Headers (with dark gray background like sample)
+    header_row = 3
+    data_start_row = 4
 
-    active_sw_idx = [i for i in range(len(software_columns)) if any(data[d][i] not in (None, "", 0) for d in valid_departments)]
-    has_other_col = any(other_errors[d] for d in valid_departments)
+    for col_idx, h_text in enumerate(STANDARD_HEADERS_18, 1):
+        cell = ws.cell(header_row, col_idx, h_text)
+        cell.font = Font(name="Times New Roman", size=14, bold=True, color="FFFFFF")
+        cell.fill = header_fill
+        cell.border = border
+        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    ws.row_dimensions[header_row].height = 112.5
 
-    headers = ["STT", "KHOA, PHÒNG, TRUNG TÂM"] + [software_headers[i] for i in active_sw_idx]
-    if has_other_col:
-        headers.append("SỬA LỖI KHÁC")
+    # 3. Data Rows
+    for idx, dept in enumerate(valid_departments, 1):
+        r_idx = data_start_row + idx - 1
 
-    total_columns = len(headers)
-    result = Workbook()
-    ws = result.active
-    ws.title = "TONG_HOP"
+        # Col 1 (A): STT
+        c_stt = ws.cell(r_idx, 1, idx)
+        c_stt.font = Font(name="Times New Roman", size=16)
+        c_stt.border = border
+        c_stt.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
+        # Col 2 (B): Khoa/Phòng
+        c_dept = ws.cell(r_idx, 2, dept)
+        c_dept.font = Font(name="Times New Roman", size=16)
+        c_dept.border = border
+        c_dept.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+
+        # Col 3..17 (C..Q): 15 software error categories
+        counts = data_matrix[dept]
+        for c_offset in range(15):
+            col = 3 + c_offset
+            v = counts[c_offset]
+            c_val = ws.cell(r_idx, col, int(v) if (v not in (None, "", 0)) else None)
+            c_val.font = Font(name="Times New Roman", size=16)
+            c_val.border = border
+            c_val.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+        # Col 18 (R): Sửa lỗi khác
+        err_list = other_errors.get(dept, [])
+        err_lines = []
+        for e in err_list:
+            e_str = str(e).strip()
+            if not e_str:
+                continue
+            for sub_line in e_str.split("\n"):
+                sub_line = sub_line.strip()
+                if not sub_line:
+                    continue
+                if sub_line.startswith("+") or sub_line.startswith("-"):
+                    err_lines.append(sub_line)
+                else:
+                    err_lines.append(f"+ {sub_line}")
+        err_text = "\n".join(err_lines) if err_lines else None
+
+        c_err = ws.cell(r_idx, 18, err_text)
+        c_err.font = Font(name="Times New Roman", size=16)
+        c_err.border = border
+        c_err.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+
+        line_count = 1
+        if err_text:
+            line_count = max(len(err_text.split('\n')), (len(err_text) // 35) + 1)
+        ws.row_dimensions[r_idx].height = max(35.1, line_count * 26)
+
+    # 4. Summary Row (TỔNG CỘNG)
+    total_row = data_start_row + len(valid_departments)
+
+    c_tot_stt = ws.cell(total_row, 1, None)
+    c_tot_stt.border = border
+    c_tot_stt.alignment = Alignment(horizontal="center", vertical="center")
+
+    c_tot_label = ws.cell(total_row, 2, "TỔNG CỘNG")
+    c_tot_label.font = Font(name="Times New Roman", size=14, bold=True)
+    c_tot_label.border = border
+    c_tot_label.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+
+    category_sums = [0] * 15
+    for dept in valid_departments:
+        counts = data_matrix[dept]
+        for i in range(15):
+            val = counts[i]
+            if isinstance(val, (int, float)):
+                category_sums[i] += int(val)
+
+    for c_offset in range(15):
+        col = 3 + c_offset
+        cell = ws.cell(total_row, col)
+        cell.font = Font(name="Times New Roman", size=14, bold=True)
+        cell.border = border
+        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+        if c_offset == 9:  # Column L: Đăng bài trên website (Excluded from summary)
+            cell.value = None
+        else:
+            s_val = category_sums[c_offset]
+            cell.value = s_val if s_val > 0 else None
+
+    # Col 18 (R): Grand Total sum (excl col L)
+    grand_total = sum(category_sums[i] for i in range(15) if i != 9)
+    c_tot_r = ws.cell(total_row, 18, grand_total if grand_total > 0 else None)
+    c_tot_r.font = Font(name="Times New Roman", size=14, bold=True)
+    c_tot_r.border = border
+    c_tot_r.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+
+    ws.row_dimensions[total_row].height = 35.1
+
+    # 5. Set column widths – only set explicitly where sample defines them; others use Excel default
+    for col_idx_or_letter, width in FIXED_COL_WIDTHS_18:
+        col_letter = get_column_letter(col_idx_or_letter)
+        ws.column_dimensions[col_letter].width = width
+
+    # 6. Page Print setup – mirror exact settings from sample file:
+    #    scale=46%, landscape, fitToPage=True (but NOT fitToWidth/fitToHeight = let Excel handle)
     ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
     ws.page_setup.paperSize = ws.PAPERSIZE_A4
     ws.sheet_properties.pageSetUpPr.fitToPage = True
-    ws.page_setup.fitToWidth = 1
-    ws.page_setup.fitToHeight = 0
+    ws.page_setup.fitToWidth = None
+    ws.page_setup.fitToHeight = None
+    ws.page_setup.scale = 46  # 46% zoom – exact value from sample
+    ws.page_margins.left = 0.2
+    ws.page_margins.right = 0.2
+    ws.page_margins.top = 0.3
+    ws.page_margins.bottom = 0.3
+    ws.page_margins.header = 0.3
+    ws.page_margins.footer = 0.3
 
-    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=total_columns)
-    ws.cell(1, 1, f"TỔNG HỢP CÔNG VIỆC PHÒNG CNTT - NGÀY {sheet_name}")
-    ws.cell(1, 1).font = Font(name="Arial", size=14, bold=True)
-    ws.cell(1, 1).alignment = Alignment(horizontal="center", vertical="center")
-    ws.row_dimensions[1].height = 30
-
-    header_row = 3
-    ws.row_dimensions[header_row].height = 42
-    border = Border(left=Side(style="thin"), right=Side(style="thin"), top=Side(style="thin"), bottom=Side(style="thin"))
-
-    for col_idx, text in enumerate(headers, 1):
-        cell = ws.cell(header_row, col_idx, text)
-        cell.font = Font(name="Arial", size=10, bold=True)
-        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-        cell.border = border
-
-    current_row = 4
-    for stt, dept in enumerate(valid_departments, 1):
-        ws.row_dimensions[current_row].height = 28
-        ws.cell(current_row, 1, stt)
-        ws.cell(current_row, 2, dept)
-
-        for col_idx, sw_idx in enumerate(active_sw_idx, 3):
-            val = data[dept][sw_idx]
-            if val is not None:
-                ws.cell(current_row, col_idx, val)
-
-        if has_other_col:
-            errs = other_errors.get(dept, [])
-            if errs:
-                ws.cell(current_row, total_columns, "\n".join(f"+ {e}" for e in errs))
-
-        for col in range(1, total_columns + 1):
-            cell = ws.cell(current_row, col)
-            cell.font = Font(name="Arial", size=10)
-            cell.border = border
-            if col == 2:
-                cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
-            elif col == total_columns and has_other_col:
-                cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
-            else:
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-        current_row += 1
-
-    total_row = current_row
-    ws.row_dimensions[total_row].height = 25
-    ws.cell(total_row, 2, "TỔNG CỘNG")
-
-    for col in range(3, total_columns + (0 if has_other_col else 1)):
-        col_letter = get_column_letter(col)
-        ws.cell(total_row, col, f"=SUM({col_letter}4:{col_letter}{total_row - 1})")
-
-    if has_other_col:
-        other_total = 0
-        for col in range(3, total_columns):
-            if str(ws.cell(header_row, col).value or "").strip() == "Đăng bài trên website":
-                continue
-            val = ws.cell(total_row, col).value
-            if isinstance(val, (int, float)):
-                other_total += val
-        for col in range(3, total_columns):
-            if str(ws.cell(header_row, col).value or "").strip() == "Đăng bài trên website":
-                ws.cell(total_row, col).value = None
-                break
-        if other_total != 0:
-            ws.cell(total_row, total_columns, other_total)
-
-    for col in range(1, total_columns + 1):
-        cell = ws.cell(total_row, col)
-        cell.font = Font(name="Arial", size=10, bold=True)
-        cell.border = border
-        cell.alignment = Alignment(horizontal="left" if col in (2, total_columns) else "center", vertical="top", wrap_text=True)
-
-    ws.column_dimensions["A"].width = 7
-    ws.column_dimensions["B"].width = 28
-    for col in range(3, total_columns + 1):
-        h = ws.cell(header_row, col).value
-        ws.column_dimensions[get_column_letter(col)].width = 55 if h == "SỬA LỖI KHÁC" else 17
     ws.freeze_panes = "C4"
-    ws.auto_filter.ref = f"A3:{get_column_letter(total_columns)}{total_row}"
+
+    if output_file:
+        if isinstance(output_file, str):
+            result_wb.save(output_file)
+            return output_file
+        else:
+            result_wb.save(output_file)
+            output_file.seek(0)
+            return output_file
+    else:
+        out_stream = io.BytesIO()
+        result_wb.save(out_stream)
+        out_stream.seek(0)
+        return out_stream
+
+def process_cntt_web(file_stream, sheet_name):
+    wb_source = load_workbook(file_stream, data_only=True)
+    if sheet_name in wb_source.sheetnames:
+        ws_source = wb_source[sheet_name]
+    else:
+        target_name = None
+        for s in wb_source.sheetnames:
+            if s.strip().lower() == str(sheet_name).strip().lower():
+                target_name = s
+                break
+        ws_source = wb_source[target_name] if target_name else wb_source.active
+
+    software_columns = list(range(5, 26))  # Cột E–Y (index 5–25)
+    sw_col_target_map = {}
+    for col in software_columns:
+        h = ws_source.cell(5, col).value or ws_source.cell(6, col).value or ws_source.cell(4, col).value
+        sw_col_target_map[col] = map_software_header_to_index(clean_text(h))
+
+    # Tìm cột sửa chữa khác (thường là cột AI = 35)
+    other_col = 35
+    for c in range(26, min(ws_source.max_column + 1, 50)):
+        h_val = norm_name(clean_text(ws_source.cell(5, c).value or ws_source.cell(6, c).value or ws_source.cell(4, c).value or ""))
+        if "khac" in h_val or "suachuakhac" in h_val or "sualoikhac" in h_val:
+            other_col = c
+            break
+
+    departments_order = []
+    data_matrix = {}
+    other_errors = {}
+
+    row = 7
+    max_scan_row = min(ws_source.max_row, 250)
+    consecutive_empty = 0
+    while row <= max_scan_row:
+        dept_val = ws_source.cell(row, 2).value  # Cột B = Khoa/Phòng
+        dept_str = clean_text(dept_val)
+
+        # Bỏ qua dòng tiêu đề hoặc tổng cộng
+        if dept_str.upper() in ("KHOA, PHÒNG, TRUNG TÂM", "TỔNG CỘNG", "STT"):
+            row += 1
+            continue
+
+        # Nếu cột B trống, kiểm tra xem dòng này có STT không
+        if not dept_str:
+            stt_val = ws_source.cell(row, 1).value
+            if stt_val is None:
+                consecutive_empty += 1
+                if consecutive_empty >= 5:
+                    break
+            row += 1
+            continue
+
+        consecutive_empty = 0
+
+        if dept_str not in data_matrix:
+            departments_order.append(dept_str)
+            data_matrix[dept_str] = [0] * 15
+            other_errors[dept_str] = []
+
+        # Đếm loại phần mềm từ cột E–Y
+        for col in software_columns:
+            val = ws_source.cell(row, col).value
+            if val in (None, ""):
+                continue
+            if isinstance(val, str):
+                val_str = val.strip()
+                if not val_str or val_str == "0":
+                    continue
+                try:
+                    val_num = int(float(val_str))
+                    if val_num <= 0:
+                        continue
+                except (ValueError, TypeError):
+                    val_num = 1
+            elif isinstance(val, (int, float)):
+                val_num = int(val)
+                if val_num <= 0:
+                    continue
+            else:
+                val_num = 1
+
+            t_idx = sw_col_target_map[col]
+            if t_idx is not None:
+                data_matrix[dept_str][t_idx] += val_num
+            else:
+                col_h = clean_text(ws_source.cell(5, col).value or ws_source.cell(6, col).value or "")
+                if col_h:
+                    other_errors[dept_str].append(f"{col_h}: {val_num}")
+
+        # Cột AI (35) hoặc other_col = Sửa chữa khác
+        err_val = ws_source.cell(row, other_col).value
+        if err_val is not None:
+            err_str = str(err_val).strip()
+            if err_str and err_str not in ("0", "None"):
+                if err_str not in other_errors[dept_str]:
+                    other_errors[dept_str].append(err_str)
+
+        row += 1
+
+    valid_departments = [
+        dept for dept in departments_order
+        if any(v != 0 for v in data_matrix[dept]) or bool(other_errors[dept])
+    ]
 
     out_io = io.BytesIO()
-    result.save(out_io)
-    out_io.seek(0)
+    build_formatted_cntt_report(valid_departments, data_matrix, other_errors, output_file=out_io, sheet_name=sheet_name)
     return out_io
 
 # ============================================================
@@ -2268,7 +2432,10 @@ def handle_task_6():
         if not sheet_name:
             return jsonify({"error": "Vui lòng chọn Sheet ngày cần xử lý."}), 400
 
-        stream = download_google_sheet_single_tab(url.strip(), sheet_name)
+        try:
+            stream = download_google_sheet(url.strip())
+        except Exception:
+            stream = download_google_sheet_single_tab(url.strip(), sheet_name)
         out_io = process_cntt_web(stream, sheet_name)
         return send_file(
             out_io,
@@ -2311,7 +2478,10 @@ def handle_task_8():
             return jsonify({"error": "Vui lòng chọn Sheet ngày cần xử lý."}), 400
 
         url = request.form.get("url") or DEFAULT_FIXED_GSHEET_URL
-        stream = download_google_sheet_single_tab(url.strip(), sheet_name)
+        try:
+            stream = download_google_sheet(url.strip())
+        except Exception:
+            stream = download_google_sheet_single_tab(url.strip(), sheet_name)
         out_io = process_cntt_web(stream, sheet_name)
         return send_file(
             out_io,
