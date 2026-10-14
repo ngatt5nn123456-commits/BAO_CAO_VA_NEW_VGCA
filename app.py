@@ -360,7 +360,7 @@ HTML_PAGE = """<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hệ Thống Tổng Hợp Báo Cáo Online - P.CNTT & BHYT</title>
+  <title>Hệ Thống Tổng Hợp Báo Cáo Online - BVĐK Bắc Ninh Số 2</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -369,16 +369,18 @@ HTML_PAGE = """<!DOCTYPE html>
       --primary: #2563eb;
       --primary-hover: #1d4ed8;
       --primary-light: #eff6ff;
-      --secondary: #0f172a;
-      --accent: #06b6d4;
-      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-      --card-bg: rgba(30, 41, 59, 0.7);
-      --card-border: rgba(255, 255, 255, 0.1);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --bg-dark: #0f172a;
+      --bg-sidebar: #0f172a;
+      --bg-body: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --sidebar-text: #94a3b8;
+      --sidebar-hover: #1e293b;
       --success: #10b981;
       --error: #ef4444;
-      --radius: 16px;
+      --radius: 12px;
     }
 
     * {
@@ -390,106 +392,197 @@ HTML_PAGE = """<!DOCTYPE html>
 
     body {
       min-height: 100vh;
-      background: var(--bg-gradient);
+      background: var(--bg-body);
       color: var(--text-main);
-      padding: 30px 16px;
+      display: flex;
+    }
+
+    /* BỐ CỤC SIDEBAR BÊN TRÁI */
+    .app-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: var(--bg-sidebar);
+      color: #fff;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      flex-shrink: 0;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
     }
 
-    .container {
-      width: 100%;
-      max-width: 900px;
+    .sidebar-header {
+      padding: 20px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .header {
-      text-align: center;
-      margin-bottom: 28px;
-    }
-
-    .header .badge {
-      display: inline-block;
-      background: rgba(37, 99, 235, 0.2);
+    .brand-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
       color: #60a5fa;
-      border: 1px solid rgba(96, 165, 250, 0.3);
-      padding: 6px 16px;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      margin-bottom: 12px;
-      text-transform: uppercase;
       letter-spacing: 0.5px;
+      margin-bottom: 4px;
     }
 
-    .header h1 {
-      font-size: 2.1rem;
+    .sidebar-header h2 {
+      font-size: 1.1rem;
       font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(to right, #ffffff, #cbd5e1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 8px;
+      color: #ffffff;
+      line-height: 1.3;
     }
 
-    .header p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
+    .sidebar-header p {
+      font-size: 0.78rem;
+      color: var(--sidebar-text);
+      margin-top: 3px;
     }
 
-    /* Tabs */
-    .tabs-container {
-      display: flex;
-      background: rgba(15, 23, 42, 0.6);
-      padding: 6px;
-      border-radius: 14px;
-      border: 1px solid var(--card-border);
-      margin-bottom: 24px;
-      gap: 6px;
-    }
-
-    .tab-btn {
+    .nav-menu {
+      padding: 16px 10px;
       flex: 1;
+    }
+
+    .nav-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #64748b;
+      padding: 6px 12px 10px 12px;
+    }
+
+    .nav-item {
+      width: 100%;
       background: transparent;
       border: none;
       outline: none;
-      color: var(--text-muted);
-      padding: 12px 18px;
-      font-size: 0.95rem;
-      font-weight: 600;
+      text-align: left;
+      padding: 12px 14px;
       border-radius: 10px;
       cursor: pointer;
-      transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
+      gap: 12px;
+      margin-bottom: 6px;
+      transition: all 0.2s ease;
+      color: var(--sidebar-text);
     }
 
-    .tab-btn.active {
+    .nav-item:hover {
+      background: var(--sidebar-hover);
+      color: #fff;
+    }
+
+    .nav-item.active {
       background: var(--primary);
-      color: #ffffff;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
     }
 
-    .card {
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      padding: 30px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-      margin-bottom: 24px;
+    .nav-item .icon {
+      font-size: 1.3rem;
+      line-height: 1;
     }
 
-    .tab-content {
+    .nav-item .text .title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: inherit;
+    }
+
+    .nav-item .text .desc {
+      font-size: 0.72rem;
+      opacity: 0.75;
+      margin-top: 2px;
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.75rem;
+      color: #64748b;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #34d399;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .status-indicator .dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    /* BỐ CỤC KHUNG NỘI DUNG CHÍNH (BÊN PHẢI) */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .top-bar {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .top-bar .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .top-bar .badge {
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .top-bar h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .content-body {
+      padding: 28px;
+      max-width: 960px;
+      width: 100%;
+    }
+
+    .page-tab {
       display: none;
+      animation: fadeIn 0.25s ease;
     }
 
-    .tab-content.active {
+    .page-tab.active {
       display: block;
-      animation: fadeIn 0.3s ease;
     }
 
     @keyframes fadeIn {
@@ -497,87 +590,114 @@ HTML_PAGE = """<!DOCTYPE html>
       to { opacity: 1; transform: translateY(0); }
     }
 
+    /* CARDS */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
     .form-group {
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
 
     .form-group label {
       display: block;
-      font-size: 0.9rem;
-      font-weight: 600;
+      font-size: 0.88rem;
+      font-weight: 700;
       margin-bottom: 8px;
-      color: #e2e8f0;
+      color: #1e293b;
     }
 
-    /* Dropzone */
+    /* DROPZONE */
     .dropzone {
-      border: 2px dashed rgba(255, 255, 255, 0.2);
+      border: 2px dashed #cbd5e1;
       border-radius: 12px;
       padding: 32px 20px;
       text-align: center;
       cursor: pointer;
+      background: #f8fafc;
       transition: all 0.2s ease;
-      background: rgba(15, 23, 42, 0.3);
     }
 
-    .dropzone:hover, .dropzone.dragover {
+    .dropzone:hover {
       border-color: var(--primary);
-      background: rgba(37, 99, 235, 0.08);
+      background: #eff6ff;
     }
 
     .dropzone .icon {
-      font-size: 2.4rem;
-      margin-bottom: 10px;
+      font-size: 2.2rem;
+      margin-bottom: 8px;
     }
 
     .dropzone .title {
-      font-weight: 600;
-      font-size: 1rem;
-      margin-bottom: 4px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #1e293b;
     }
 
     .dropzone .desc {
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
+      margin-top: 4px;
     }
 
     .file-chosen {
       display: none;
-      margin-top: 12px;
+      margin-top: 10px;
       padding: 10px 14px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
       border-radius: 8px;
-      font-size: 0.88rem;
-      color: #34d399;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      font-size: 0.85rem;
+      color: #065f46;
+      font-weight: 600;
     }
 
-    /* Radio Group */
+    /* RADIO GRID */
     .radio-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 10px;
     }
 
     .radio-card {
-      border: 1px solid var(--card-border);
-      background: rgba(15, 23, 42, 0.4);
-      padding: 12px 16px;
-      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      padding: 12px 14px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: all 0.2s ease;
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 0.9rem;
-      font-weight: 500;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #334155;
+      transition: all 0.2s ease;
     }
 
     .radio-card:hover {
-      border-color: rgba(255, 255, 255, 0.3);
+      border-color: var(--primary);
+      background: #f8fafc;
     }
 
     .radio-card input {
@@ -586,55 +706,50 @@ HTML_PAGE = """<!DOCTYPE html>
       height: 16px;
     }
 
-    /* Inputs & Select */
+    /* INPUTS */
     .text-input, .select-input {
       width: 100%;
-      background: rgba(15, 23, 42, 0.5);
-      border: 1px solid var(--card-border);
-      color: #fff;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      color: var(--text-main);
       padding: 12px 14px;
-      border-radius: 10px;
-      font-size: 0.92rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
       outline: none;
       transition: border-color 0.2s ease;
     }
 
     .text-input:focus, .select-input:focus {
       border-color: var(--primary);
-    }
-
-    .select-input option {
-      background: #0f172a;
-      color: #fff;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
 
     .btn-quick {
       margin-top: 8px;
-      background: rgba(37, 99, 235, 0.15);
-      color: #60a5fa;
-      border: 1px dashed rgba(96, 165, 250, 0.4);
-      padding: 6px 12px;
+      background: #eff6ff;
+      color: var(--primary);
+      border: 1px dashed #93c5fd;
+      padding: 6px 14px;
       border-radius: 6px;
       font-size: 0.8rem;
       cursor: pointer;
-      font-weight: 600;
+      font-weight: 700;
       transition: all 0.2s;
     }
 
     .btn-quick:hover {
-      background: rgba(37, 99, 235, 0.3);
-      color: #fff;
+      background: #dbeafe;
     }
 
-    /* Submit Button */
+    /* SUBMIT BUTTON */
     .btn-submit {
       width: 100%;
       background: var(--primary);
       color: #fff;
       border: none;
       padding: 14px;
-      border-radius: 12px;
-      font-size: 1rem;
+      border-radius: 10px;
+      font-size: 0.98rem;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -642,7 +757,7 @@ HTML_PAGE = """<!DOCTYPE html>
       align-items: center;
       justify-content: center;
       gap: 10px;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
     }
 
     .btn-submit:hover:not(:disabled) {
@@ -655,31 +770,31 @@ HTML_PAGE = """<!DOCTYPE html>
       cursor: not-allowed;
     }
 
-    /* Alerts */
+    /* ALERTS */
     .alert {
       padding: 14px 16px;
-      border-radius: 10px;
-      font-size: 0.9rem;
-      margin-top: 18px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      margin-top: 16px;
       display: none;
       align-items: center;
       gap: 10px;
     }
 
     .alert.success {
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #34d399;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
     }
 
     .alert.error {
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #f87171;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
     }
 
     .spinner {
-      border: 3px solid rgba(255, 255, 255, 0.2);
+      border: 3px solid rgba(255, 255, 255, 0.3);
       border-top: 3px solid #fff;
       border-radius: 50%;
       width: 18px;
@@ -693,175 +808,279 @@ HTML_PAGE = """<!DOCTYPE html>
       100% { transform: rotate(360deg); }
     }
 
-    .footer {
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.8rem;
-      margin-top: auto;
+    /* GUIDE BOX */
+    .guide-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-size: 0.85rem;
+      color: #334155;
+      line-height: 1.6;
+    }
+
+    .guide-box ol {
+      padding-left: 20px;
+      margin-top: 6px;
+    }
+
+    .guide-box li {
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 768px) {
+      .app-layout { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; position: static; }
+      .content-body { padding: 16px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="badge">🚀 Nền Tảng Trực Tuyến Vercel</div>
-      <h1>HỆ THỐNG TỔNG HỢP BÁO CÁO</h1>
-      <p>Tổng hợp dữ liệu tự động cho Phòng CNTT & Báo cáo Cổng Giám Định BHYT</p>
-    </div>
-
-    <div class="tabs-container">
-      <button class="tab-btn active" onclick="switchTab('giamdinh')">
-        📋 Cổng Giám Định BHYT
-      </button>
-      <button class="tab-btn" onclick="switchTab('cntt')">
-        💻 Báo Cáo Phòng CNTT
-      </button>
-    </div>
-
-    <!-- TAB 1: GIÁM ĐỊNH -->
-    <div id="tab-giamdinh" class="tab-content active">
-      <div class="card">
-        <form id="form-giamdinh" onsubmit="handleGiamDinh(event)">
-          <div class="form-group">
-            <label>1️⃣ Tải lên file Excel Cổng Giám Định (.xlsx, .xlsm):</label>
-            <div class="dropzone" id="dz-gd" onclick="document.getElementById('file-gd').click()">
-              <div class="icon">📊</div>
-              <div class="title">Bấm để chọn file hoặc kéo thả vào đây</div>
-              <div class="desc">Chỉ chấp nhận file Excel (.xlsx, .xlsm) có sheet 'Người dùng'</div>
-              <input type="file" id="file-gd" accept=".xlsx,.xlsm" style="display: none" onchange="onFileSelected(this, 'chosen-gd')">
-            </div>
-            <div id="chosen-gd" class="file-chosen" style="display: none;"></div>
-          </div>
-
-          <div class="form-group">
-            <label>2️⃣ Chọn khoảng ngày báo cáo:</label>
-            <div class="radio-grid">
-              <label class="radio-card">
-                <input type="radio" name="date_range" value="01-14" checked>
-                <span>Ngày 01 đến 14</span>
-              </label>
-              <label class="radio-card">
-                <input type="radio" name="date_range" value="15-31">
-                <span>Ngày 15 đến 31</span>
-              </label>
-              <label class="radio-card">
-                <input type="radio" name="date_range" value="full">
-                <span>Toàn bộ tháng (01 - 31)</span>
-              </label>
-            </div>
-          </div>
-
-          <button type="submit" id="btn-gd" class="btn-submit">
-            <span class="spinner" id="spin-gd"></span>
-            <span id="txt-gd">🚀 Bắt Đầu Xử Lý & Tải File Kết Quả</span>
-          </button>
-
-          <div id="alert-gd" class="alert"></div>
-        </form>
+  <div class="app-layout">
+    <!-- SIDEBAR BÊN TRÁI -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-badge">🏥 BVĐK BẮC NINH SỐ 2</div>
+        <h2>HỆ THỐNG BÁO CÁO</h2>
+        <p>Phiên bản trực tuyến Online</p>
       </div>
-    </div>
 
-    <!-- TAB 2: P.CNTT -->
-    <div id="tab-cntt" class="tab-content">
-      <div class="card">
-        <form id="form-cntt" onsubmit="handleCNTT(event)">
-          <div class="form-group">
-            <label>1️⃣ Chọn nguồn dữ liệu Phòng CNTT:</label>
-            <div class="radio-grid" style="margin-bottom: 12px;">
-              <label class="radio-card">
-                <input type="radio" name="cntt_source" value="gsheet" checked onchange="toggleCNTTSource('gsheet')">
-                <span>🔗 Link Google Sheets (Tác vụ 6 & 8)</span>
-              </label>
-              <label class="radio-card">
-                <input type="radio" name="cntt_source" value="file" onchange="toggleCNTTSource('file')">
-                <span>📁 Tải File Excel Cục Bộ</span>
-              </label>
-            </div>
+      <nav class="nav-menu">
+        <div class="nav-label">DANH MỤC TÁC VỤ</div>
 
-            <!-- GSheet Input -->
-            <div id="cntt-gsheet-box">
-              <input type="text" id="cntt-url" class="text-input" placeholder="https://docs.google.com/spreadsheets/d/..." value="https://docs.google.com/spreadsheets/d/1_I7qmDx7mtIOcCLkEkDz_PCaC8KPd_Po-pqEh7krdPA/edit?gid=800962139#gid=800962139">
-              <button type="button" class="btn-quick" onclick="useFixedLink()">
-                ⚡ Dùng Link Google Sheets Cố Định (P.CNTT)
-              </button>
-              <button type="button" class="btn-quick" style="margin-left: 6px; background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(52, 211, 153, 0.4);" onclick="fetchSheets()">
-                🔄 Tải Danh Sách Sheet Ngày
-              </button>
-            </div>
+        <button class="nav-item active" onclick="switchWebTab('giamdinh', this)">
+          <span class="icon">🏥</span>
+          <div class="text">
+            <div class="title">1. Giám Định BHYT</div>
+            <div class="desc">Lọc người dùng & xuất Excel A4</div>
+          </div>
+        </button>
 
-            <!-- File Input -->
-            <div id="cntt-file-box" style="display: none;">
-              <div class="dropzone" onclick="document.getElementById('file-cntt').click()">
-                <div class="icon">📁</div>
-                <div class="title">Bấm để chọn file báo cáo P.CNTT (.xlsx, .xlsm)</div>
-                <input type="file" id="file-cntt" accept=".xlsx,.xlsm" style="display: none" onchange="onCNTTFileSelected(this)">
+        <button class="nav-item" onclick="switchWebTab('cntt-file', this)">
+          <span class="icon">💻</span>
+          <div class="text">
+            <div class="title">2. P.CNTT (File Excel)</div>
+            <div class="desc">Tổng hợp từ file báo cáo máy tính</div>
+          </div>
+        </button>
+
+        <button class="nav-item" onclick="switchWebTab('cntt-gsheet', this)">
+          <span class="icon">⚡</span>
+          <div class="text">
+            <div class="title">3. P.CNTT (Google Sheets)</div>
+            <div class="desc">Tự động tải Google Sheets cố định</div>
+          </div>
+        </button>
+
+        <button class="nav-item" onclick="switchWebTab('guide', this)">
+          <span class="icon">📖</span>
+          <div class="text">
+            <div class="title">4. Hướng Dẫn Sử Dụng</div>
+            <div class="desc">Thông tin quy trình xử lý</div>
+          </div>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="status-indicator">
+          <span class="dot"></span>
+          <span>Máy chủ Vercel: Hoạt động</span>
+        </div>
+        <p>Phòng CNTT • BVĐK Bắc Ninh số 2</p>
+      </div>
+    </aside>
+
+    <!-- KHUNG NỘI DUNG CHÍNH (BÊN PHẢI) -->
+    <main class="main-content">
+      <div class="top-bar">
+        <div class="breadcrumb">
+          <span class="badge">ĐANG MỞ</span>
+          <h1 id="topbar-title">🏥 1. Báo Cáo Cổng Giám Định BHYT</h1>
+        </div>
+      </div>
+
+      <div class="content-body">
+        <!-- TAB 1: GIÁM ĐỊNH BHYT -->
+        <section id="tab-giamdinh" class="page-tab active">
+          <div class="card">
+            <div class="card-title">📋 Lọc Danh Sách Theo Dõi Giám Định BHYT</div>
+            <div class="card-desc">Tự động lọc danh sách 32 khoa phòng được phép, chọn ngày và xuất file Excel chuẩn khổ A4 dọc.</div>
+
+            <form id="form-giamdinh" onsubmit="handleGiamDinh(event)">
+              <div class="form-group">
+                <label>1️⃣ Tải lên file Excel Cổng Giám Định (.xlsx, .xlsm):</label>
+                <div class="dropzone" onclick="document.getElementById('file-gd').click()">
+                  <div class="icon">📊</div>
+                  <div class="title">Bấm để chọn file hoặc kéo thả vào đây</div>
+                  <div class="desc">File chứa sheet 'Người dùng' xuất từ cổng giám định</div>
+                  <input type="file" id="file-gd" accept=".xlsx,.xlsm" style="display: none" onchange="onFileSelected(this, 'chosen-gd')">
+                </div>
+                <div id="chosen-gd" class="file-chosen"></div>
               </div>
-              <div id="chosen-cntt" class="file-chosen" style="display: none;"></div>
+
+              <div class="form-group">
+                <label>2️⃣ Chọn khoảng ngày báo cáo:</label>
+                <div class="radio-grid">
+                  <label class="radio-card">
+                    <input type="radio" name="date_range" value="01-14" checked>
+                    <span>Ngày 01 đến 14</span>
+                  </label>
+                  <label class="radio-card">
+                    <input type="radio" name="date_range" value="15-31">
+                    <span>Ngày 15 đến 31</span>
+                  </label>
+                  <label class="radio-card">
+                    <input type="radio" name="date_range" value="full">
+                    <span>Full tháng (01 - 31)</span>
+                  </label>
+                </div>
+              </div>
+
+              <button type="submit" id="btn-gd" class="btn-submit">
+                <span class="spinner" id="spin-gd"></span>
+                <span id="txt-gd">🚀 Xử Lý & Tải Xuống File Báo Cáo Giám Định</span>
+              </button>
+
+              <div id="alert-gd" class="alert"></div>
+            </form>
+          </div>
+        </section>
+
+        <!-- TAB 2: P.CNTT TỪ FILE EXCEL -->
+        <section id="tab-cntt-file" class="page-tab">
+          <div class="card">
+            <div class="card-title">💻 Báo Cáo Công Việc Phòng CNTT (Từ File Cục Bộ)</div>
+            <div class="card-desc">Đọc dữ liệu từ file Excel báo cáo công việc trên máy, tự động tổng hợp lỗi phần mềm và sửa lỗi khác theo dòng 7.</div>
+
+            <form id="form-cntt-file" onsubmit="handleCNTTFile(event)">
+              <div class="form-group">
+                <label>1️⃣ Chọn file Excel báo cáo P.CNTT (.xlsx, .xlsm):</label>
+                <div class="dropzone" onclick="document.getElementById('file-cntt').click()">
+                  <div class="icon">📁</div>
+                  <div class="title">Bấm để chọn file báo cáo sửa chữa P.CNTT</div>
+                  <input type="file" id="file-cntt" accept=".xlsx,.xlsm" style="display: none" onchange="onCNTTFileSelected(this)">
+                </div>
+                <div id="chosen-cntt" class="file-chosen"></div>
+              </div>
+
+              <div class="form-group">
+                <label>2️⃣ Chọn Sheet ngày cần tổng hợp:</label>
+                <select id="cntt-file-sheet" class="select-input">
+                  <option value="">-- Vui lòng chọn file Excel trước để nạp danh sách Sheet --</option>
+                </select>
+              </div>
+
+              <button type="submit" id="btn-cntt-file" class="btn-submit">
+                <span class="spinner" id="spin-cntt-file"></span>
+                <span id="txt-cntt-file">🚀 Tổng Hợp Báo Cáo P.CNTT (A4 Ngang)</span>
+              </button>
+
+              <div id="alert-cntt-file" class="alert"></div>
+            </form>
+          </div>
+        </section>
+
+        <!-- TAB 3: P.CNTT TỪ GOOGLE SHEETS -->
+        <section id="tab-cntt-gsheet" class="page-tab">
+          <div class="card">
+            <div class="card-title">⚡ Báo Cáo P.CNTT (Google Sheets Tự Động)</div>
+            <div class="card-desc">Lấy dữ liệu trực tiếp từ Google Sheets của Phòng CNTT, quét tất cả sheet ngày và xuất báo cáo chuẩn A4 ngang.</div>
+
+            <form id="form-cntt-gsheet" onsubmit="handleCNTTGSheet(event)">
+              <div class="form-group">
+                <label>1️⃣ Đường Link Google Sheets (Đã điền sẵn link cố định):</label>
+                <input type="text" id="gsheet-url" class="text-input" value="https://docs.google.com/spreadsheets/d/1_I7qmDx7mtIOcCLkEkDz_PCaC8KPd_Po-pqEh7krdPA/edit?gid=800962139#gid=800962139">
+                <div style="margin-top: 8px; display: flex; gap: 8px;">
+                  <button type="button" class="btn-quick" onclick="useFixedLink()">
+                    ⚡ Dùng Lại Link Cố Định
+                  </button>
+                  <button type="button" class="btn-quick" style="background: #ecfdf5; color: #059669; border-color: #a7f3d0;" onclick="fetchGSheets()">
+                    🔄 Nạp Danh Sách Sheet Ngày
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>2️⃣ Chọn Sheet ngày cần xử lý:</label>
+                <select id="gsheet-sheet-select" class="select-input">
+                  <option value="">-- Bấm nút 'Nạp Danh Sách Sheet Ngày' ở trên --</option>
+                </select>
+              </div>
+
+              <button type="submit" id="btn-cntt-gsheet" class="btn-submit">
+                <span class="spinner" id="spin-cntt-gsheet"></span>
+                <span id="txt-cntt-gsheet">🚀 Tổng Hợp Từ Google Sheets</span>
+              </button>
+
+              <div id="alert-cntt-gsheet" class="alert"></div>
+            </form>
+          </div>
+        </section>
+
+        <!-- TAB 4: HƯỚNG DẪN -->
+        <section id="tab-guide" class="page-tab">
+          <div class="card">
+            <div class="card-title">📖 Hướng Dẫn Sử Dụng Hệ Thống</div>
+            <div class="guide-box">
+              <b>1. Báo cáo Giám Định BHYT:</b>
+              <ol>
+                <li>Chuẩn bị file Excel xuất từ cổng Giám định BHYT (.xlsx, .xlsm).</li>
+                <li>Chọn khoảng ngày: 01-14 (nửa đầu tháng), 15-31 (nửa cuối tháng), hoặc Full tháng.</li>
+                <li>Bấm <b>Xử Lý & Tải Xuống</b>. File kết quả sẽ tự động lưu về máy theo chuẩn A4 dọc.</li>
+              </ol>
+              <br>
+              <b>2. Báo cáo Công việc Phòng CNTT:</b>
+              <ol>
+                <li>Hệ thống hỗ trợ cả file Excel tải lên hoặc Link Google Sheets trực tiếp.</li>
+                <li>Hệ thống tự động đọc danh sách các Sheet ngày từ file/link.</li>
+                <li>Dữ liệu được lọc từ dòng 7 trở đi, tổng hợp số lượt sửa phần mềm và lỗi sửa chữa khác.</li>
+                <li>Kết quả xuất ra file <b>TỔNG HỢP CÔNG VIỆC P.CNTT.xlsx</b> chuẩn khổ A4 nằm ngang fit cột.</li>
+              </ol>
             </div>
           </div>
-
-          <div class="form-group">
-            <label>2️⃣ Chọn Sheet ngày cần tổng hợp:</label>
-            <select id="cntt-sheet" class="select-input">
-              <option value="">-- Bấm "Tải Danh Sách Sheet Ngày" hoặc Chọn File trước --</option>
-            </select>
-          </div>
-
-          <button type="submit" id="btn-cntt" class="btn-submit">
-            <span class="spinner" id="spin-cntt"></span>
-            <span id="txt-cntt">🚀 Tổng Hợp Báo Cáo P.CNTT</span>
-          </button>
-
-          <div id="alert-cntt" class="alert"></div>
-        </form>
+        </section>
       </div>
-    </div>
-
-    <div class="footer">
-      Bệnh Viện Đa Khoa Bắc Ninh Số 2 • Phát triển phục vụ công tác P.CNTT & Giám Định BHYT
-    </div>
+    </main>
   </div>
 
   <script>
     const FIXED_URL = "https://docs.google.com/spreadsheets/d/1_I7qmDx7mtIOcCLkEkDz_PCaC8KPd_Po-pqEh7krdPA/edit?gid=800962139#gid=800962139";
 
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      if (tab === 'giamdinh') {
-        document.querySelectorAll('.tab-btn')[0].classList.add('active');
-        document.getElementById('tab-giamdinh').classList.add('active');
-      } else {
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        document.getElementById('tab-cntt').classList.add('active');
-        // Auto fetch sheets for Google Sheet if empty
-        const sel = document.getElementById('cntt-sheet');
+    const titles = {
+      'giamdinh': '🏥 1. Báo Cáo Cổng Giám Định BHYT',
+      'cntt-file': '💻 2. Báo Cáo P.CNTT (Từ File Cục Bộ)',
+      'cntt-gsheet': '⚡ 3. Báo Cáo P.CNTT (Google Sheets Tự Động)',
+      'guide': '📖 4. Hướng Dẫn & Thông Tin Quy Trình'
+    };
+
+    function switchWebTab(tabKey, btn) {
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      document.querySelectorAll('.page-tab').forEach(p => p.classList.remove('active'));
+      const activePage = document.getElementById('tab-' + tabKey);
+      if (activePage) activePage.classList.add('active');
+
+      document.getElementById('topbar-title').textContent = titles[tabKey] || 'Hệ Thống Báo Cáo';
+
+      if (tabKey === 'cntt-gsheet') {
+        const sel = document.getElementById('gsheet-sheet-select');
         if (sel.options.length <= 1) {
-          fetchSheets();
+          fetchGSheets();
         }
       }
     }
 
-    function toggleCNTTSource(type) {
-      if (type === 'gsheet') {
-        document.getElementById('cntt-gsheet-box').style.display = 'block';
-        document.getElementById('cntt-file-box').style.display = 'none';
-      } else {
-        document.getElementById('cntt-gsheet-box').style.display = 'none';
-        document.getElementById('cntt-file-box').style.display = 'block';
-      }
-    }
-
     function useFixedLink() {
-      document.getElementById('cntt-url').value = FIXED_URL;
-      fetchSheets();
+      document.getElementById('gsheet-url').value = FIXED_URL;
+      fetchGSheets();
     }
 
     function onFileSelected(input, targetId) {
       const target = document.getElementById(targetId);
       if (input.files && input.files[0]) {
         target.innerHTML = `<span>📄 <b>${input.files[0].name}</b> (${Math.round(input.files[0].size/1024)} KB)</span>`;
-        target.style.display = 'flex';
+        target.style.display = 'block';
       }
     }
 
@@ -870,33 +1089,32 @@ HTML_PAGE = """<!DOCTYPE html>
       if (input.files && input.files[0]) {
         const formData = new FormData();
         formData.append('file', input.files[0]);
-        await loadSheetsFromFormData(formData);
+        await loadSheetsIntoSelect(formData, 'cntt-file-sheet', 'alert-cntt-file');
       }
     }
 
-    async function fetchSheets() {
-      const url = document.getElementById('cntt-url').value.trim();
+    async function fetchGSheets() {
+      const url = document.getElementById('gsheet-url').value.trim();
       if (!url) {
-        alert('Vui lòng nhập đường link Google Sheets!');
+        alert('Vui lòng nhập link Google Sheets!');
         return;
       }
       const formData = new FormData();
       formData.append('url', url);
-      await loadSheetsFromFormData(formData);
+      await loadSheetsIntoSelect(formData, 'gsheet-sheet-select', 'alert-cntt-gsheet');
     }
 
-    async function loadSheetsFromFormData(formData) {
-      const sel = document.getElementById('cntt-sheet');
-      sel.innerHTML = '<option value="">⏳ Đang tải danh sách các Sheet ngày...</option>';
+    async function loadSheetsIntoSelect(formData, selectId, alertId) {
+      const sel = document.getElementById(selectId);
+      sel.innerHTML = '<option value="">⏳ Đang nạp danh sách các sheet ngày...</option>';
       try {
         const res = await fetch('/api/get-sheets', {
           method: 'POST',
           body: formData
         });
         const data = await res.json();
-        if (data.error) {
-          throw new Error(data.error);
-        }
+        if (data.error) throw new Error(data.error);
+
         sel.innerHTML = '';
         data.sheets.forEach((s, idx) => {
           const opt = document.createElement('option');
@@ -908,8 +1126,8 @@ HTML_PAGE = """<!DOCTYPE html>
           sel.appendChild(opt);
         });
       } catch (err) {
-        sel.innerHTML = '<option value="">❌ Không lấy được sheet. Vui lòng kiểm tra lại file/link!</option>';
-        showAlert('alert-cntt', 'error', 'Lỗi tải Sheet: ' + err.message);
+        sel.innerHTML = '<option value="">❌ Không đọc được sheet. Vui lòng kiểm tra lại!</option>';
+        showAlert(alertId, 'error', 'Lỗi: ' + err.message);
       }
     }
 
@@ -921,7 +1139,8 @@ HTML_PAGE = """<!DOCTYPE html>
     }
 
     function hideAlert(id) {
-      document.getElementById(id).style.display = 'none';
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
     }
 
     // Xử lý Giám Định
@@ -931,7 +1150,7 @@ HTML_PAGE = """<!DOCTYPE html>
 
       const fileInput = document.getElementById('file-gd');
       if (!fileInput.files || !fileInput.files[0]) {
-        showAlert('alert-gd', 'error', '⚠️ Vui lòng chọn file Excel Cổng Giám Định trước khi thực hiện!');
+        showAlert('alert-gd', 'error', '⚠️ Vui lòng chọn file Excel Cổng Giám Định!');
         return;
       }
 
@@ -949,13 +1168,13 @@ HTML_PAGE = """<!DOCTYPE html>
         });
 
         if (!res.ok) {
-          const errData = await res.json().catch(() => ({ error: 'Lỗi máy chủ khi xử lý dữ liệu.' }));
+          const errData = await res.json().catch(() => ({ error: 'Lỗi máy chủ.' }));
           throw new Error(errData.error || 'Xử lý thất bại.');
         }
 
         const blob = await res.blob();
         downloadBlob(blob, 'DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM.xlsx');
-        showAlert('alert-gd', 'success', '✅ Đã tổng hợp và tải xuống file Excel báo cáo Giám Định thành công!');
+        showAlert('alert-gd', 'success', '✅ Đã xuất và tải xuống file Giám Định thành công!');
       } catch (err) {
         showAlert('alert-gd', 'error', '❌ Lỗi: ' + err.message);
       } finally {
@@ -963,39 +1182,28 @@ HTML_PAGE = """<!DOCTYPE html>
       }
     }
 
-    // Xử lý CNTT
-    async function handleCNTT(e) {
+    // Xử lý P.CNTT từ File
+    async function handleCNTTFile(e) {
       e.preventDefault();
-      hideAlert('alert-cntt');
+      hideAlert('alert-cntt-file');
 
-      const source = document.querySelector('input[name="cntt_source"]:checked').value;
-      const sheetName = document.getElementById('cntt-sheet').value;
+      const fileInput = document.getElementById('file-cntt');
+      const sheetName = document.getElementById('cntt-file-sheet').value;
 
+      if (!fileInput.files || !fileInput.files[0]) {
+        showAlert('alert-cntt-file', 'error', '⚠️ Vui lòng chọn file Excel báo cáo!');
+        return;
+      }
       if (!sheetName) {
-        showAlert('alert-cntt', 'error', '⚠️ Vui lòng chọn Sheet cần xử lý!');
+        showAlert('alert-cntt-file', 'error', '⚠️ Vui lòng chọn Sheet cần xử lý!');
         return;
       }
 
       const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
       formData.append('sheet_name', sheetName);
 
-      if (source === 'gsheet') {
-        const url = document.getElementById('cntt-url').value.trim();
-        if (!url) {
-          showAlert('alert-cntt', 'error', '⚠️ Vui lòng nhập link Google Sheets!');
-          return;
-        }
-        formData.append('url', url);
-      } else {
-        const fileInput = document.getElementById('file-cntt');
-        if (!fileInput.files || !fileInput.files[0]) {
-          showAlert('alert-cntt', 'error', '⚠️ Vui lòng chọn file Excel báo cáo công việc!');
-          return;
-        }
-        formData.append('file', fileInput.files[0]);
-      }
-
-      setLoading('cntt', true);
+      setLoading('cntt-file', true);
 
       try {
         const res = await fetch('/api/process-cntt', {
@@ -1004,24 +1212,77 @@ HTML_PAGE = """<!DOCTYPE html>
         });
 
         if (!res.ok) {
-          const errData = await res.json().catch(() => ({ error: 'Lỗi máy chủ khi xử lý dữ liệu.' }));
+          const errData = await res.json().catch(() => ({ error: 'Lỗi máy chủ.' }));
           throw new Error(errData.error || 'Xử lý thất bại.');
         }
 
         const blob = await res.blob();
         downloadBlob(blob, 'TỔNG HỢP CÔNG VIỆC P.CNTT.xlsx');
-        showAlert('alert-cntt', 'success', '✅ Đã tổng hợp và tải xuống file Báo cáo P.CNTT thành công!');
+        showAlert('alert-cntt-file', 'success', '✅ Đã tổng hợp thành công và tải file xuống!');
       } catch (err) {
-        showAlert('alert-cntt', 'error', '❌ Lỗi: ' + err.message);
+        showAlert('alert-cntt-file', 'error', '❌ Lỗi: ' + err.message);
       } finally {
-        setLoading('cntt', false);
+        setLoading('cntt-file', false);
+      }
+    }
+
+    // Xử lý P.CNTT từ Google Sheets
+    async function handleCNTTGSheet(e) {
+      e.preventDefault();
+      hideAlert('alert-cntt-gsheet');
+
+      const url = document.getElementById('gsheet-url').value.trim();
+      const sheetName = document.getElementById('gsheet-sheet-select').value;
+
+      if (!url) {
+        showAlert('alert-cntt-gsheet', 'error', '⚠️ Vui lòng nhập link Google Sheets!');
+        return;
+      }
+      if (!sheetName) {
+        showAlert('alert-cntt-gsheet', 'error', '⚠️ Vui lòng chọn Sheet ngày cần xử lý!');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('url', url);
+      formData.append('sheet_name', sheetName);
+
+      setLoading('cntt-gsheet', true);
+
+      try {
+        const res = await fetch('/api/process-cntt', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({ error: 'Lỗi máy chủ.' }));
+          throw new Error(errData.error || 'Xử lý thất bại.');
+        }
+
+        const blob = await res.blob();
+        downloadBlob(blob, 'TỔNG HỢP CÔNG VIỆC P.CNTT.xlsx');
+        showAlert('alert-cntt-gsheet', 'success', '✅ Đã tổng hợp từ Google Sheets và tải xuống file thành công!');
+      } catch (err) {
+        showAlert('alert-cntt-gsheet', 'error', '❌ Lỗi: ' + err.message);
+      } finally {
+        setLoading('cntt-gsheet', false);
       }
     }
 
     function setLoading(prefix, isLoading) {
-      document.getElementById('btn-' + prefix).disabled = isLoading;
-      document.getElementById('spin-' + prefix).style.display = isLoading ? 'inline-block' : 'none';
-      document.getElementById('txt-' + prefix).textContent = isLoading ? 'Đang Xử Lý Dữ Liệu...' : (prefix === 'gd' ? '🚀 Bắt Đầu Xử Lý & Tải File Kết Quả' : '🚀 Tổng Hợp Báo Cáo P.CNTT');
+      const btn = document.getElementById('btn-' + prefix);
+      const spin = document.getElementById('spin-' + prefix);
+      const txt = document.getElementById('txt-' + prefix);
+      if (btn) btn.disabled = isLoading;
+      if (spin) spin.style.display = isLoading ? 'inline-block' : 'none';
+      if (txt) {
+        if (isLoading) {
+          txt.textContent = 'Đang Xử Lý Dữ Liệu...';
+        } else {
+          txt.textContent = prefix === 'gd' ? '🚀 Xử Lý & Tải Xuống File Báo Cáo Giám Định' : '🚀 Tổng Hợp Báo Cáo P.CNTT (A4 Ngang)';
+        }
+      }
     }
 
     function downloadBlob(blob, filename) {

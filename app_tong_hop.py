@@ -1968,52 +1968,218 @@ class MainApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("PHẦN MỀM TỔNG HỢP CẤP CKS, EMAIL, P.CNTT & CỔNG GIÁM ĐỊNH BẢO HIỂM")
-        self.geometry("1180x820")
-        self.minsize(1000, 720)
+        self.geometry("1240x840")
+        self.minsize(1080, 720)
         
         style = ttk.Style(self)
         style.theme_use('clam')
         
-        header_frame = tk.Frame(self, bg="#1a365d", pady=12)
+        # 1. TOP HEADER BANNER
+        header_frame = tk.Frame(self, bg="#0f172a", pady=10, padx=16)
         header_frame.pack(fill=tk.X)
+        
+        top_row = tk.Frame(header_frame, bg="#0f172a")
+        top_row.pack(fill=tk.X)
+        
+        lbl_brand = tk.Label(
+            top_row,
+            text="🏥 BỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2",
+            font=("Segoe UI", 9, "bold"),
+            fg="#60a5fa", bg="#0f172a"
+        )
+        lbl_brand.pack(side=tk.LEFT)
+        
+        lbl_status = tk.Label(
+            top_row,
+            text="🟢 Hệ thống sẵn sàng",
+            font=("Segoe UI", 8),
+            fg="#34d399", bg="#0f172a"
+        )
+        lbl_status.pack(side=tk.RIGHT)
+        
         lbl_title = tk.Label(
             header_frame, 
             text="HỆ THỐNG TỔNG HỢP CẤP CKS, EMAIL, P.CNTT & GIÁM ĐỊNH BẢO HIỂM", 
-            font=("Arial", 15, "bold"), 
-            fg="white", bg="#1a365d"
+            font=("Segoe UI", 13, "bold"), 
+            fg="white", bg="#0f172a"
         )
-        lbl_title.pack()
+        lbl_title.pack(anchor="w", pady=(3, 0))
 
-        self.notebook = ttk.Notebook(self)
-        self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        # 2. MAIN BODY (SIDEBAR BÊN TRÁI + KHUNG NỘI DUNG BÊN PHẢI)
+        body_frame = tk.Frame(self, bg="#f1f5f9")
+        body_frame.pack(fill=tk.BOTH, expand=True)
 
-        # 8 Tabs
-        self.tab1 = ttk.Frame(self.notebook)
-        self.tab2 = ttk.Frame(self.notebook)
-        self.tab3 = ttk.Frame(self.notebook)
-        self.tab4 = ttk.Frame(self.notebook)
-        self.tab5 = ttk.Frame(self.notebook)
-        self.tab6 = ttk.Frame(self.notebook)
-        self.tab7 = ttk.Frame(self.notebook)
-        self.tab8 = ttk.Frame(self.notebook)
+        # --- SIDEBAR (BÊN TRÁI) ---
+        sidebar = tk.Frame(body_frame, bg="#0f172a", width=310)
+        sidebar.pack(side=tk.LEFT, fill=tk.Y)
+        sidebar.pack_propagate(False)
 
-        self.notebook.add(self.tab1, text="  1. VGCA (Lấy dữ liệu word và excel)  ")
-        self.notebook.add(self.tab2, text="  2. CKS (Mẫu 02)  ")
-        self.notebook.add(self.tab3, text="  3. Cấp Email  ")
-        self.notebook.add(self.tab4, text="  4. Báo cáo P.CNTT  ")
-        self.notebook.add(self.tab5, text="  5. Giám Định BHYT  ")
-        self.notebook.add(self.tab6, text="  6. P.CNTT Tự Động (Dòng 7)  ")
-        self.notebook.add(self.tab7, text="  7. VGCA (Chỉ lấy dữ liệu từ word)  ")
-        self.notebook.add(self.tab8, text="  8. P.CNTT (Google Sheets Cố Định)  ")
+        # Tiêu đề sidebar
+        sb_title_box = tk.Frame(sidebar, bg="#1e293b", padx=14, pady=10)
+        sb_title_box.pack(fill=tk.X, pady=(0, 6))
+        tk.Label(
+            sb_title_box,
+            text="📑 DANH MỤC TÁC VỤ (8 CHỨC NĂNG)",
+            font=("Segoe UI", 9, "bold"),
+            fg="#93c5fd", bg="#1e293b"
+        ).pack(anchor="w")
+        tk.Label(
+            sb_title_box,
+            text="Nhấp chọn tác vụ bên dưới để thực thi",
+            font=("Segoe UI", 8),
+            fg="#94a3b8", bg="#1e293b"
+        ).pack(anchor="w")
 
-        self.build_tab(self.tab1, task_type=1)
-        self.build_tab(self.tab2, task_type=2)
-        self.build_tab(self.tab3, task_type=3)
-        self.build_tab(self.tab4, task_type=4)
-        self.build_tab(self.tab5, task_type=5)
-        self.build_tab(self.tab6, task_type=6)
-        self.build_tab(self.tab7, task_type=7)
-        self.build_tab(self.tab8, task_type=8)
+        # Container chứa các nút tác vụ
+        sb_items_frame = tk.Frame(sidebar, bg="#0f172a")
+        sb_items_frame.pack(fill=tk.BOTH, expand=True, padx=6, pady=4)
+
+        # Footer sidebar
+        sb_footer = tk.Frame(sidebar, bg="#0f172a", padx=12, pady=10)
+        sb_footer.pack(fill=tk.X, side=tk.BOTTOM)
+        tk.Label(
+            sb_footer,
+            text="Phòng CNTT • BVĐK Bắc Ninh số 2\nPhiên bản tự động hóa v2.6",
+            font=("Segoe UI", 8),
+            fg="#64748b", bg="#0f172a", justify=tk.LEFT
+        ).pack(anchor="w")
+
+        # --- KHUNG NỘI DUNG BÊN PHẢI ---
+        content_area = tk.Frame(body_frame, bg="#f8fafc")
+        content_area.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # Header thanh breadcrumb tác vụ đang chọn
+        content_header = tk.Frame(content_area, bg="#ffffff", padx=16, pady=8, highlightthickness=1, highlightbackground="#e2e8f0")
+        content_header.pack(fill=tk.X)
+        self.lbl_task_badge = tk.Label(
+            content_header,
+            text="TÁC VỤ ĐANG CHỌN",
+            font=("Segoe UI", 8, "bold"),
+            bg="#dbeafe", fg="#1d4ed8",
+            padx=8, pady=3
+        )
+        self.lbl_task_badge.pack(side=tk.LEFT, padx=(0, 10))
+        self.lbl_task_title = tk.Label(
+            content_header,
+            text="",
+            font=("Segoe UI", 11, "bold"),
+            fg="#0f172a", bg="#ffffff"
+        )
+        self.lbl_task_title.pack(side=tk.LEFT)
+
+        # Khung chứa các trang nội dung
+        self.page_container = tk.Frame(content_area, bg="#f8fafc")
+        self.page_container.pack(fill=tk.BOTH, expand=True, padx=6, pady=6)
+
+        self.pages = {}
+        self.sidebar_buttons = {}
+        self.current_task = 1
+
+        self.tasks_meta = [
+            (1, "📌", "1. VGCA (Word + Excel SSO)", "Đối chiếu cấp CKS Word & Excel SSO"),
+            (2, "📝", "2. CKS (Mẫu 02)", "Xuất Công văn Word Mẫu 02 chuẩn"),
+            (3, "📧", "3. Cấp Email Công Vụ", "Tổng hợp danh sách xin cấp Email"),
+            (4, "📊", "4. Báo Cáo P.CNTT", "Tổng hợp sửa chữa A4 ngang dòng 7"),
+            (5, "🏥", "5. Giám Định BHYT", "Báo cáo cổng giám định A4 dọc"),
+            (6, "🤖", "6. P.CNTT Tự Động", "Quét từ link Google Sheets bất kỳ"),
+            (7, "📄", "7. VGCA (Từ File Word)", "Đọc nhiều file Word không cần SSO"),
+            (8, "⚡", "8. P.CNTT (Sheet Cố Định)", "Tự động tải Google Sheets cố định"),
+        ]
+
+        # Khởi tạo 8 trang nội dung và 8 mục chọn ở Sidebar
+        for task_id, icon, title, desc in self.tasks_meta:
+            page = tk.Frame(self.page_container, bg="#f8fafc")
+            self.pages[task_id] = page
+            self.build_tab(page, task_type=task_id)
+            self.create_sidebar_item(sb_items_frame, task_id, icon, title, desc)
+
+        # Mặc định kích hoạt Tác vụ 1
+        self.switch_task(1)
+
+    def create_sidebar_item(self, parent, task_id, icon, title, desc):
+        item_frame = tk.Frame(parent, bg="#1e293b", cursor="hand2", padx=6, pady=6)
+        item_frame.pack(fill=tk.X, pady=3)
+
+        # Vạch chỉ thị màu xanh khi active
+        ind_bar = tk.Frame(item_frame, bg="#1e293b", width=4)
+        ind_bar.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 6))
+
+        # Icon tác vụ
+        lbl_icon = tk.Label(item_frame, text=icon, font=("Segoe UI Emoji", 12), bg="#1e293b", fg="#ffffff")
+        lbl_icon.pack(side=tk.LEFT, padx=(0, 6))
+
+        # Tiêu đề & mô tả
+        text_box = tk.Frame(item_frame, bg="#1e293b")
+        text_box.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        lbl_t = tk.Label(text_box, text=title, font=("Segoe UI", 9, "bold"), fg="#e2e8f0", bg="#1e293b", anchor="w")
+        lbl_t.pack(fill=tk.X)
+
+        lbl_d = tk.Label(text_box, text=desc, font=("Segoe UI", 7), fg="#94a3b8", bg="#1e293b", anchor="w")
+        lbl_d.pack(fill=tk.X)
+
+        widgets = (item_frame, ind_bar, lbl_icon, text_box, lbl_t, lbl_d)
+
+        def on_click(e=None):
+            self.switch_task(task_id)
+
+        for w in widgets:
+            w.bind("<Button-1>", on_click)
+
+        def on_enter(e=None):
+            if self.current_task != task_id:
+                for w in (item_frame, lbl_icon, text_box, lbl_t, lbl_d):
+                    w.config(bg="#334155")
+
+        def on_leave(e=None):
+            if self.current_task != task_id:
+                for w in (item_frame, lbl_icon, text_box, lbl_t, lbl_d):
+                    w.config(bg="#1e293b")
+
+        item_frame.bind("<Enter>", on_enter)
+        item_frame.bind("<Leave>", on_leave)
+
+        self.sidebar_buttons[task_id] = {
+            "frame": item_frame,
+            "bar": ind_bar,
+            "icon": lbl_icon,
+            "box": text_box,
+            "title": lbl_t,
+            "desc": lbl_d
+        }
+
+    def switch_task(self, task_id):
+        self.current_task = task_id
+
+        # Cập nhật giao diện Sidebar
+        for tid, widgets in self.sidebar_buttons.items():
+            if tid == task_id:
+                widgets["frame"].config(bg="#2563eb")
+                widgets["bar"].config(bg="#93c5fd")
+                widgets["icon"].config(bg="#2563eb", fg="#ffffff")
+                widgets["box"].config(bg="#2563eb")
+                widgets["title"].config(bg="#2563eb", fg="#ffffff")
+                widgets["desc"].config(bg="#2563eb", fg="#dbeafe")
+            else:
+                widgets["frame"].config(bg="#1e293b")
+                widgets["bar"].config(bg="#1e293b")
+                widgets["icon"].config(bg="#1e293b", fg="#ffffff")
+                widgets["box"].config(bg="#1e293b")
+                widgets["title"].config(bg="#1e293b", fg="#cbd5e1")
+                widgets["desc"].config(bg="#1e293b", fg="#94a3b8")
+
+        # Cập nhật tiêu đề Breadcrumb
+        for tid, icon, title, desc in self.tasks_meta:
+            if tid == task_id:
+                self.lbl_task_title.config(text=f"{icon} {title}  ─  {desc}")
+                break
+
+        # Ẩn các trang khác, chỉ hiển thị trang được chọn
+        for tid, page in self.pages.items():
+            if tid == task_id:
+                page.pack(fill=tk.BOTH, expand=True)
+            else:
+                page.pack_forget()
 
     def build_tab(self, tab, task_type):
         main_paned = ttk.PanedWindow(tab, orient=tk.HORIZONTAL)
