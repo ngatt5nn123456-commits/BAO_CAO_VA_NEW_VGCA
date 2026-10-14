@@ -725,20 +725,20 @@ def map_software_header_to_index(header_name):
     for idx, th in enumerate(target_15):
         if norm_name(th) == norm_h:
             return idx
-    if "xoacls" in norm_h: return 0
+    if "xoacls" in norm_h or "xoapttt" in norm_h: return 0
     if "suaphi" in norm_h or "epthe" in norm_h: return 1
     if "huycks" in norm_h: return 2
     if "huyban" in norm_h: return 3
-    if "suathongtinbn" in norm_h or "suacongkham" in norm_h: return 4
-    if "suangaygiocls" in norm_h or "suamaycls" in norm_h: return 5
-    if "suamabenh" in norm_h: return 6
+    if "suathongtinbn" in norm_h or "suacongkham" in norm_h or "suakieukham" in norm_h: return 4
+    if "suangaygiocls" in norm_h or "suamaycls" in norm_h or "capnhatcls" in norm_h or "giodocketqua" in norm_h: return 5
+    if "suamabenh" in norm_h or "benhkemtheo" in norm_h: return 6
     if "kyso" in norm_h or "qlvbdh" in norm_h: return 7
-    if "suagiayrv" in norm_h or "chuyentuyen" in norm_h: return 8
+    if "suagiayrv" in norm_h or "chuyentuyen" in norm_h or "ketthucravien" in norm_h: return 8
     if "dangbai" in norm_h or "website" in norm_h: return 9
     if "suacachdungthuoc" in norm_h or "ngaygiothuoc" in norm_h: return 10
     if "phanquyenuser" in norm_h or "doinick" in norm_h: return 11
     if "loikhongketthuc" in norm_h: return 12
-    if "suaxoagiuong" in norm_h or "themgiuong" in norm_h: return 13
+    if "suaxoagiuong" in norm_h or "themgiuong" in norm_h or "capnhatgiuong" in norm_h: return 13
     if "chuyenthuoccp" in norm_h or "cpdg" in norm_h: return 14
     return None
 
@@ -749,18 +749,20 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
 
     thin = Side(style="thin")
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
-    # Dark gray header fill (matches sample: theme 0 with tint -0.35 ≈ #595959)
+    # Dark gray header fill (#595959)
     header_fill = PatternFill(fill_type="solid", fgColor="595959")
 
-    # 1. Row 1: Title
+    # 1. Row 1: Title (Times New Roman cỡ 16 in đậm)
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=18)
     title_text = f"TỔNG HỢP CÔNG VIỆC PHÒNG CNTT - NGÀY {sheet_name}" if (sheet_name and not str(sheet_name).lower().startswith("sheet")) else "TỔNG HỢP CÔNG VIỆC P.CNTT"
-    t_cell = ws.cell(1, 1, title_text)
-    t_cell.font = Font(name="Times New Roman", size=18, bold=True)
-    t_cell.alignment = Alignment(horizontal="center", vertical="center")
+    for c in range(1, 19):
+        cell_t = ws.cell(1, c)
+        cell_t.font = Font(name="Times New Roman", size=16, bold=True)
+        cell_t.alignment = Alignment(horizontal="center", vertical="center")
+    ws.cell(1, 1, title_text)
     ws.row_dimensions[1].height = 42.0
 
-    # 2. Row 3: Headers (with dark gray background like sample)
+    # 2. Row 3: Headers (Times New Roman cỡ 14 in đậm, chữ trắng, nền xám đậm)
     header_row = 3
     data_start_row = 4
 
@@ -772,29 +774,29 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
     ws.row_dimensions[header_row].height = 112.5
 
-    # 3. Data Rows
+    # 3. Data Rows: Font Times New Roman, cỡ 14
     for idx, dept in enumerate(valid_departments, 1):
         r_idx = data_start_row + idx - 1
 
         # Col 1 (A): STT
         c_stt = ws.cell(r_idx, 1, idx)
-        c_stt.font = Font(name="Times New Roman", size=16)
+        c_stt.font = Font(name="Times New Roman", size=14)
         c_stt.border = border
         c_stt.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
         # Col 2 (B): Khoa/Phòng
         c_dept = ws.cell(r_idx, 2, dept)
-        c_dept.font = Font(name="Times New Roman", size=16)
+        c_dept.font = Font(name="Times New Roman", size=14)
         c_dept.border = border
         c_dept.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
 
-        # Col 3..17 (C..Q): 15 software error categories
+        # Col 3..17 (C..Q): 15 danh mục phần mềm
         counts = data_matrix[dept]
         for c_offset in range(15):
             col = 3 + c_offset
             v = counts[c_offset]
             c_val = ws.cell(r_idx, col, int(v) if (v not in (None, "", 0)) else None)
-            c_val.font = Font(name="Times New Roman", size=16)
+            c_val.font = Font(name="Times New Roman", size=14)
             c_val.border = border
             c_val.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
@@ -816,7 +818,7 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
         err_text = "\n".join(err_lines) if err_lines else None
 
         c_err = ws.cell(r_idx, 18, err_text)
-        c_err.font = Font(name="Times New Roman", size=16)
+        c_err.font = Font(name="Times New Roman", size=14)
         c_err.border = border
         c_err.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
 
@@ -867,19 +869,18 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
 
     ws.row_dimensions[total_row].height = 35.1
 
-    # 5. Set column widths – only set explicitly where sample defines them; others use Excel default
+    # 5. Set column widths
     for col_idx_or_letter, width in FIXED_COL_WIDTHS_18:
         col_letter = get_column_letter(col_idx_or_letter)
         ws.column_dimensions[col_letter].width = width
 
-    # 6. Page Print setup – mirror exact settings from sample file:
-    #    scale=46%, landscape, fitToPage=True (but NOT fitToWidth/fitToHeight = let Excel handle)
+    # 6. Page Print setup: Khổ ngang A4, scale = 46%
     ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
     ws.page_setup.paperSize = ws.PAPERSIZE_A4
     ws.sheet_properties.pageSetUpPr.fitToPage = True
     ws.page_setup.fitToWidth = None
     ws.page_setup.fitToHeight = None
-    ws.page_setup.scale = 46  # 46% zoom – exact value from sample
+    ws.page_setup.scale = 46
     ws.page_margins.left = 0.2
     ws.page_margins.right = 0.2
     ws.page_margins.top = 0.3
@@ -915,44 +916,63 @@ def process_cntt_web(file_stream, sheet_name):
                 break
         ws_source = wb_source[target_name] if target_name else wb_source.active
 
-    software_columns = list(range(5, 26))  # Cột E–Y (index 5–25)
-    sw_col_target_map = {}
-    for col in software_columns:
-        h = ws_source.cell(5, col).value or ws_source.cell(6, col).value or ws_source.cell(4, col).value
-        sw_col_target_map[col] = map_software_header_to_index(clean_text(h))
+    # 1. Tự động phát hiện dòng tiêu đề cột (tìm dòng chứa 'KHOA, PHÒNG, TRUNG TÂM' hoặc 'STT')
+    header_row_source = None
+    for r in range(1, 15):
+        c2_val = clean_text(ws_source.cell(r, 2).value).upper()
+        c1_val = clean_text(ws_source.cell(r, 1).value).upper()
+        if "KHOA" in c2_val or "PHÒNG" in c2_val or "TRUNG TÂM" in c2_val or c1_val == "STT":
+            header_row_source = r
+            break
+    if not header_row_source:
+        header_row_source = 4
 
-    # Tìm cột sửa chữa khác (thường là cột AI = 35)
-    other_col = 35
-    for c in range(26, min(ws_source.max_column + 1, 50)):
-        h_val = norm_name(clean_text(ws_source.cell(5, c).value or ws_source.cell(6, c).value or ws_source.cell(4, c).value or ""))
-        if "khac" in h_val or "suachuakhac" in h_val or "sualoikhac" in h_val:
+    # 2. Tìm cột 'Sửa chữa khác' và xây dựng map cột phần mềm
+    other_col = None
+    for c in range(3, ws_source.max_column + 1):
+        h = clean_text(ws_source.cell(header_row_source, c).value)
+        if not h and header_row_source > 1:
+            h = clean_text(ws_source.cell(header_row_source - 1, c).value)
+        nh = norm_name(h)
+        if "suachuakhac" in nh or "sualoikhac" in nh or (nh.endswith("khac") and "xuat" not in nh):
             other_col = c
             break
 
+    if not other_col:
+        other_col = 25 if ws_source.max_column <= 30 else 35
+
+    sw_col_target_map = {}
+    for col in range(3, ws_source.max_column + 1):
+        if col in (1, 2, other_col):
+            continue
+        h = clean_text(ws_source.cell(header_row_source, col).value)
+        if not h and header_row_source > 1:
+            h = clean_text(ws_source.cell(header_row_source - 1, col).value)
+        nh = norm_name(h)
+        if any(skip_kw in nh for skip_kw in ("sohoso", "sophieu", "canboyeucau", "canbothuchien", "ghichu", "thuchien")):
+            continue
+        t_idx = map_software_header_to_index(h)
+        sw_col_target_map[col] = (t_idx, h)
+
+    # 3. Quét các dòng dữ liệu (bắt đầu ngay sau header_row_source)
     departments_order = []
     data_matrix = {}
     other_errors = {}
 
-    row = 7
-    max_scan_row = min(ws_source.max_row, 250)
+    data_start_row = header_row_source + 1
+    max_scan_row = min(ws_source.max_row, 300)
     consecutive_empty = 0
-    while row <= max_scan_row:
-        dept_val = ws_source.cell(row, 2).value  # Cột B = Khoa/Phòng
+
+    for row in range(data_start_row, max_scan_row + 1):
+        dept_val = ws_source.cell(row, 2).value
         dept_str = clean_text(dept_val)
 
-        # Bỏ qua dòng tiêu đề hoặc tổng cộng
-        if dept_str.upper() in ("KHOA, PHÒNG, TRUNG TÂM", "TỔNG CỘNG", "STT"):
-            row += 1
-            continue
-
-        # Nếu cột B trống, kiểm tra xem dòng này có STT không
-        if not dept_str:
+        if not dept_str or dept_str.upper() in ("KHOA, PHÒNG, TRUNG TÂM", "TỔNG CỘNG", "STT"):
             stt_val = ws_source.cell(row, 1).value
             if stt_val is None:
                 consecutive_empty += 1
-                if consecutive_empty >= 5:
+                if consecutive_empty >= 8:
                     break
-            row += 1
             continue
 
         consecutive_empty = 0
@@ -962,8 +982,7 @@ def process_cntt_web(file_stream, sheet_name):
             data_matrix[dept_str] = [0] * 15
             other_errors[dept_str] = []
 
-        # Đếm loại phần mềm từ cột E–Y
-        for col in software_columns:
+        for col, (t_idx, col_name) in sw_col_target_map.items():
             val = ws_source.cell(row, col).value
             if val in (None, ""):
                 continue
@@ -984,23 +1003,19 @@ def process_cntt_web(file_stream, sheet_name):
             else:
                 val_num = 1
 
-            t_idx = sw_col_target_map[col]
             if t_idx is not None:
                 data_matrix[dept_str][t_idx] += val_num
             else:
-                col_h = clean_text(ws_source.cell(5, col).value or ws_source.cell(6, col).value or "")
-                if col_h:
-                    other_errors[dept_str].append(f"{col_h}: {val_num}")
+                if col_name:
+                    other_errors[dept_str].append(f"{col_name}: {val_num}")
 
-        # Cột AI (35) hoặc other_col = Sửa chữa khác
+        # Đọc cột Sửa chữa khác
         err_val = ws_source.cell(row, other_col).value
         if err_val is not None:
             err_str = str(err_val).strip()
             if err_str and err_str not in ("0", "None"):
                 if err_str not in other_errors[dept_str]:
                     other_errors[dept_str].append(err_str)
-
-        row += 1
 
     valid_departments = [
         dept for dept in departments_order
