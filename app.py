@@ -1300,12 +1300,7 @@ HTML_PAGE = """<!DOCTYPE html>
 </html>
 """
 
-@app.route("/")
-def index():
-    return render_template_string(HTML_PAGE)
-
-@app.route("/api/get-sheets", methods=["POST"])
-def get_sheets():
+def handle_get_sheets():
     try:
         if "file" in request.files and request.files["file"].filename:
             f = request.files["file"]
@@ -1323,8 +1318,7 @@ def get_sheets():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/process-giam-dinh", methods=["POST"])
-def api_process_giam_dinh():
+def handle_process_giam_dinh():
     try:
         if "file" not in request.files or not request.files["file"].filename:
             return jsonify({"error": "Vui lòng tải lên file Excel."}), 400
@@ -1349,8 +1343,7 @@ def api_process_giam_dinh():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/process-cntt", methods=["POST"])
-def api_process_cntt():
+def handle_process_cntt():
     try:
         sheet_name = request.form.get("sheet_name")
         if not sheet_name:
@@ -1373,6 +1366,39 @@ def api_process_cntt():
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/", methods=["GET", "POST"])
+@app.route("/api", methods=["GET", "POST"])
+@app.route("/api/index", methods=["GET", "POST"])
+@app.route("/api/index.py", methods=["GET", "POST"])
+def index_view():
+    return render_template_string(HTML_PAGE)
+
+@app.route("/api/get-sheets", methods=["POST"])
+def get_sheets_route():
+    return handle_get_sheets()
+
+@app.route("/api/process-giam-dinh", methods=["POST"])
+def process_giam_dinh_route():
+    return handle_process_giam_dinh()
+
+@app.route("/api/process-cntt", methods=["POST"])
+def process_cntt_route():
+    return handle_process_cntt()
+
+@app.route("/<path:path>", methods=["GET", "POST"])
+def catch_all(path):
+    if "get-sheets" in path and request.method == "POST":
+        return handle_get_sheets()
+    if "process-giam-dinh" in path and request.method == "POST":
+        return handle_process_giam_dinh()
+    if "process-cntt" in path and request.method == "POST":
+        return handle_process_cntt()
+    return render_template_string(HTML_PAGE)
+
+@app.errorhandler(404)
+def error_404(e):
+    return render_template_string(HTML_PAGE), 200
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
