@@ -468,38 +468,141 @@ def build_email_excel(people_list):
 # ============================================================
 # LOGIC XỬ LÝ BÁO CÁO GIÁM ĐỊNH BHYT (A4 DỌC)
 # ============================================================
-def find_header_row(ws):
-    for row in range(1, min(ws.max_row, 20) + 1):
-        values = [clean_text(ws.cell(row, col).value).upper() for col in range(1, ws.max_column + 1)]
-        if "STT" in values and "NGƯỜI DÙNG" in values:
-            return row
-    raise Exception("Không tìm thấy dòng tiêu đề STT / NGƯỜI DÙNG.")
+def select_giam_dinh_sheet(wb):
+    # 1. Ưu tiên sheet có tên chứa "người dùng" / "nguoi dung" / "chấm công" / "cham cong"
+    for name in wb.sheetnames:
+        norm = remove_accents(name).lower().strip()
+        if "nguoi dung" in norm or norm in ("user", "users") or "cham cong" in norm:
+            return wb[name]
 
-def find_columns(ws, header_row):
-    user_col = None
-    day_columns = {}
-    for col in range(1, ws.max_column + 1):
-        val = clean_text(ws.cell(header_row, col).value).upper()
-        if val == "NGƯỜI DÙNG":
-            user_col = col
-        elif val.isdigit() and 1 <= int(val) <= 31:
-            day_columns[int(val)] = col
-    if user_col is None:
-        raise Exception("Không tìm thấy cột 'NGƯỜI DÙNG'.")
-    return user_col, day_columns
+    # 2. Thử tìm sheet nào chứa tiêu đề STT và NGƯỜI DÙNG
+    for name in wb.sheetnames:
+        ws = wb[name]
+        try:
+            r, s_c, u_c, days = find_giam_dinh_header_and_cols(ws)
+            if u_c is not None and days:
+                return ws
+        except Exception:
+            pass
+
+    # 3. Sheet active hoặc sheet đầu tiên
+    return wb.active or wb[wb.sheetnames[0]]
+
+def find_giam_dinh_header_and_cols(ws):
+    best_candidate = None
+    max_days_found = 0
+
+    max_rows = min(ws.max_row, 35)
+    max_cols = min(ws.max_column, 65)
+
+    for r in range(1, max_rows + 1):
+        stt_col = None
+        user_col = None
+        day_cols = {}
+
+        # Quét hàng r và hàng r+1 (hỗ trợ tiêu đề 2 tầng/merged headers)
+        rows_to_check = [r]
+        if r + 1 <= ws.max_row:
+            rows_to_check.append(r + 1)
+
+        for c in range(1, max_cols + 1):
+            for row_idx in rows_to_check:
+                raw_val = ws.cell(row_idx, c).value
+                if raw_val is None:
+                    continue
+                txt = remove_accents(clean_text(raw_val)).upper()
+                txt_flat = txt.replace(" ", "").replace("_", "")
+
+                # Kiểm tra cột STT
+                if stt_col is None and (txt in ("STT", "SO TT", "SOTT", "TT") or txt == "#"):
+                    stt_col = c
+
+                # Kiểm tra cột Người dùng
+                if user_col is None and (
+                    "NGUOIDUNG" in txt_flat or 
+                    "TAIKHOAN" in txt_flat or 
+                    txt in ("USER", "USERNAME", "HO VA TEN", "HO TEN", "NHAN VIEN", "CAN BO", "TEN NGUOI DUNG")
+                ):
+                    user_col = c
+
+                # Kiểm tra cột Ngày (1..31)
+                day = None
+                if isinstance(raw_val, (int, float)):
+                    int_v = int(raw_val)
+                    if int_v == raw_val and 1 <= int_v <= 31:
+                        day = int_v
+                elif str(raw_val).strip().isdigit():
+                    int_v = int(str(raw_val).strip())
+                    if 1 <= int_v <= 31:
+                        day = int_v
+                elif re.match(r'^ngày\s*(\d+)$', remove_accents(str(raw_val)).lower().strip()):
+                    day = int(re.match(r'^ngày\s*(\d+)$', remove_accents(str(raw_val)).lower().strip()).group(1))
+                elif re.match(r'^(\d{1,2})/\d+', str(raw_val).strip()):
+                    day = int(re.match(r'^(\d{1,2})/\d+', str(raw_val).strip()).group(1))
+
+                if day is not None and 1 <= day <= 31 and day not in day_cols:
+                    day_cols[day] = c
+
+        # Đánh giá ứng viên
+        if len(day_cols) >= 3 and len(day_cols) > max_days_found:
+            max_days_found = len(day_cols)
+            final_stt = stt_col if stt_col else 1
+            final_user = user_col if user_col else (final_stt + 1)
+            best_candidate = (r, final_stt, final_user, day_cols)
+
+    if best_candidate:
+        return best_candidate
+
+    # Fallback: Quét bất kỳ dòng nào có STT hoặc NGUOI DUNG
+    for r in range(1, max_rows + 1):
+        vals = [remove_accents(clean_text(ws.cell(r, c).value)).upper() for c in range(1, max_cols + 1)]
+        has_stt = any(v in ("STT", "SO TT", "SOTT", "TT") for v in vals)
+        has_user = any("NGUOI DUNG" in v or "USER" in v for v in vals)
+        if has_stt or has_user:
+            u_c = None
+            s_c = None
+            d_cols = {}
+            for c in range(1, max_cols + 1):
+                raw = ws.cell(r, c).value
+                txt = remove_accents(clean_text(raw)).upper()
+                if txt in ("STT", "SO TT", "SOTT"):
+                    s_c = c
+                if "NGUOI DUNG" in txt or "USER" in txt:
+                    u_c = c
+                if raw is not None and str(raw).strip().isdigit():
+                    v_int = int(str(raw).strip())
+                    if 1 <= v_int <= 31:
+                        d_cols[v_int] = c
+                if r + 1 <= ws.max_row:
+                    raw2 = ws.cell(r + 1, c).value
+                    if raw2 is not None and str(raw2).strip().isdigit():
+                        v_int2 = int(str(raw2).strip())
+                        if 1 <= v_int2 <= 31 and v_int2 not in d_cols:
+                            d_cols[v_int2] = c
+            return r, (s_c or 1), (u_c or 2), d_cols
+
+    sheet_names = ", ".join(ws.parent.sheetnames)
+    raise Exception(f"Không tìm thấy dòng tiêu đề STT / NGƯỜI DÙNG trong sheet '{ws.title}'. Các sheet trong file gồm: {sheet_names}")
 
 def process_giam_dinh_web(file_stream, start_day, end_day):
     wb_source = load_workbook(file_stream, data_only=True)
-    source = wb_source.active
+    source = select_giam_dinh_sheet(wb_source)
 
-    header_row = find_header_row(source)
-    user_col, day_columns = find_columns(source, header_row)
+    header_row, stt_col, user_col, day_columns = find_giam_dinh_header_and_cols(source)
+
+    available_days = sorted(day_columns.keys())
+    if not available_days:
+        raise Exception("Không tìm thấy các cột ngày (1-31) trong bảng dữ liệu.")
+
+    last_available_day = max(available_days)
+    if end_day > last_available_day:
+        end_day = last_available_day
 
     selected_days = [d for d in range(start_day, end_day + 1) if d in day_columns]
     if not selected_days:
-        raise Exception(f"Không tìm thấy cột ngày nào từ ngày {start_day} đến ngày {end_day}.")
+        selected_days = available_days
 
-    source_columns = [1, 2] + [day_columns[d] for d in selected_days]
+    source_columns = [stt_col, user_col] + [day_columns[d] for d in selected_days]
     result_last_col = len(source_columns)
     result_last_letter = get_column_letter(result_last_col)
 
@@ -538,16 +641,19 @@ def process_giam_dinh_web(file_stream, start_day, end_day):
 
     output_row = 6
     stt = 1
+    ALLOWED_USERS_NORM = {remove_accents(u).upper(): u for u in ALLOWED_USERS}
+
     for source_row in range(6, source.max_row + 1):
-        user_name = clean_text(source.cell(source_row, user_col).value).upper()
-        if user_name not in ALLOWED_USERS:
+        raw_user = source.cell(source_row, user_col).value
+        user_name = clean_text(raw_user).upper()
+        user_norm = remove_accents(user_name)
+        if user_name not in ALLOWED_USERS and user_norm not in ALLOWED_USERS_NORM:
             continue
         for new_col, old_col in enumerate(source_columns, start=1):
             source_cell = source.cell(source_row, old_col)
             target_cell = result.cell(output_row, new_col)
-            target_cell.value = source_cell.value
+            target_cell.value = stt if new_col == 1 else source_cell.value
             copy_style(source_cell, target_cell)
-        result.cell(output_row, 1, stt)
         stt += 1
         output_row += 1
 
@@ -576,10 +682,15 @@ def process_giam_dinh_web(file_stream, start_day, end_day):
     result.print_title_rows = "4:5"
     result.page_setup.orientation = result.ORIENTATION_PORTRAIT
     result.page_setup.paperSize = result.PAPERSIZE_A4
-    result.page_setup.fitToPage = True
+    result.sheet_properties.pageSetUpPr.fitToPage = True
     result.page_setup.fitToWidth = 1
     result.page_setup.fitToHeight = 0
-    result.sheet_properties.pageSetUpPr.fitToPage = True
+    result.page_margins.left = 0.25
+    result.page_margins.right = 0.25
+    result.page_margins.top = 0.4
+    result.page_margins.bottom = 0.4
+    result.page_margins.header = 0.2
+    result.page_margins.footer = 0.2
 
     out_io = io.BytesIO()
     result_wb.save(out_io)
