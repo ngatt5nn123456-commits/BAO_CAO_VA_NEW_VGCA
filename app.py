@@ -607,6 +607,9 @@ def process_giam_dinh_web(file_stream, start_day, end_day):
     result_last_letter = get_column_letter(result_last_col)
 
     result_wb = Workbook()
+    for s in result_wb._named_styles:
+        if s.name == "Normal":
+            s.font = Font(name="Times New Roman", size=14)
     result = result_wb.active
     result.title = "Người dùng"
 
@@ -620,19 +623,23 @@ def process_giam_dinh_web(file_stream, start_day, end_day):
                 target_cell.font = Font(name="Times New Roman", size=14, bold=True)
 
     title = source["A1"].value
-    for col in range(2, result_last_col + 1):
-        result.cell(1, col).value = None
+    for col in range(1, result_last_col + 1):
+        c_cell = result.cell(1, col)
+        if col > 1:
+            c_cell.value = None
+        c_cell.font = Font(name="Times New Roman", size=14, bold=True)
     result["A1"] = title
-    result["A1"].font = Font(name="Times New Roman", size=16, bold=True)
     result.merge_cells(start_row=1, start_column=1, end_row=1, end_column=result_last_col)
     center_cell(result["A1"], wrap=False)
-    result.row_dimensions[1].height = 36
+    result.row_dimensions[1].height = 30
 
     note = source["A2"].value
-    for col in range(2, result_last_col + 1):
-        result.cell(2, col).value = None
+    for col in range(1, result_last_col + 1):
+        c_cell = result.cell(2, col)
+        if col > 1:
+            c_cell.value = None
+        c_cell.font = Font(name="Times New Roman", size=14, italic=True)
     result["A2"] = note
-    result["A2"].font = Font(name="Times New Roman", size=13, italic=True)
     result.merge_cells(start_row=2, start_column=1, end_row=2, end_column=result_last_col)
     result.row_dimensions[2].height = 24
 
@@ -693,6 +700,14 @@ def process_giam_dinh_web(file_stream, start_day, end_day):
         cell.value = f"=SUM({col_letter}6:{col_letter}{total_row - 1})"
         cell.font = Font(name="Times New Roman", size=14, bold=True)
         center_cell(cell, wrap=False)
+
+    # ĐẢM BẢO TUYỆT ĐỐI TOÀN BỘ CÁC Ô ĐỀU LÀ FONT TIMES NEW ROMAN VÀ CỠ 14
+    for r in range(1, total_row + 1):
+        for c in range(1, result_last_col + 1):
+            cell = result.cell(r, c)
+            b = True if r in (1, 4, 5, total_row) else (cell.font.bold if cell.font else False)
+            it = True if r == 2 else (cell.font.italic if cell.font else False)
+            cell.font = Font(name="Times New Roman", size=14, bold=b, italic=it)
 
     result.column_dimensions["A"].width = 8
     result.column_dimensions["B"].width = 28
