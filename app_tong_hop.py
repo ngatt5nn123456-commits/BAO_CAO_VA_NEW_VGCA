@@ -201,24 +201,25 @@ def read_sso_excel(excel_input, log_func=print):
     return sso_map
 
 def generate_mau_02_doc(output_dir, records, log_func=print):
-    template_name_base = "Mẫu 02_CV cap CKS cho BVDK BN số 2_T08 2026_3_6"
+    template_name_base = "Mẫu 02_CV cap CKS cho BVDK BN số 2_T10 2026_3_6"
     meipass = getattr(sys, '_MEIPASS', None)
     exe_dir = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
     candidate_paths = [
         os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates", f"{template_name_base}.docx"),
         os.path.join(os.getcwd(), "templates", f"{template_name_base}.docx"),
         os.path.join(exe_dir, "templates", f"{template_name_base}.docx"),
+        os.path.join(r"C:\Users\Admin\Desktop\Công việc\ĐƠN ĐỀ NGHỊ CẤP CTS CỤC CTS 2023-2025\ĐƠN ĐỀ NGHỊ CẤP CTS CỤC CTS 2023-2025\2026 T10", f"{template_name_base}.docx"),
+        os.path.join(output_dir, f"{template_name_base}.docx"),
+        os.path.join(os.getcwd(), f"{template_name_base}.docx"),
+        os.path.join(exe_dir, f"{template_name_base}.docx"),
     ]
     if meipass:
         candidate_paths.append(os.path.join(meipass, "templates", f"{template_name_base}.docx"))
         candidate_paths.append(os.path.join(meipass, f"{template_name_base}.docx"))
     candidate_paths.extend([
-        os.path.join(r"C:\Users\Admin\Desktop\Công việc\ĐƠN ĐỀ NGHỊ CẤP CTS CỤC CTS 2023-2025\ĐƠN ĐỀ NGHỊ CẤP CTS CỤC CTS 2023-2025\2026 T8\Cấp CKS_04.09.2026", f"{template_name_base}.docx"),
-        os.path.join(output_dir, f"{template_name_base}.docx"),
-        os.path.join(os.getcwd(), f"{template_name_base}.docx"),
-        os.path.join(exe_dir, f"{template_name_base}.docx"),
-        os.path.join(os.path.dirname(os.getcwd()), f"{template_name_base}.docx"),
-        os.path.join(r"C:\Users\Admin\Desktop\Công việc\ĐƠN ĐỀ NGHỊ CẤP CTS CỤC CTS 2023-2025\ĐƠN ĐỀ NGHỊ CẤP CTS CỤC CTS 2023-2025\2026 T9", f"{template_name_base}.doc"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates", "Mẫu 02_CV cap CKS cho BVDK BN số 2_T08 2026_3_6.docx"),
+        os.path.join(os.getcwd(), "templates", "Mẫu 02_CV cap CKS cho BVDK BN số 2_T08 2026_3_6.docx"),
+        os.path.join(r"C:\Users\Admin\Desktop\Công việc\ĐƠN ĐỀ NGHỊ CẤP CTS CỤC CTS 2023-2025\ĐƠN ĐỀ NGHỊ CẤP CTS CỤC CTS 2023-2025\2026 T8\Cấp CKS_04.09.2026", "Mẫu 02_CV cap CKS cho BVDK BN số 2_T08 2026_3_6.docx"),
     ])
 
     template_docx = None
@@ -353,7 +354,7 @@ def generate_mau_02_doc(output_dir, records, log_func=print):
                             p.runs[0].font.size = Pt(10)
 
     else:
-        log_func("  [THÔNG BÁO] Hệ thống tự khởi tạo văn bản Mẫu 02 (11 cột) chuẩn BVĐK Bắc Ninh số 2...")
+        log_func("  [THÔNG BÁO] Hệ thống tự khởi tạo văn bản Mẫu 02 (11 cột) chuẩn BVĐK Bắc Ninh số 2 (Mẫu T10)...")
         doc = docx.Document()
         for style_name in ['Normal', 'Default Paragraph Font', 'Body Text']:
             if style_name in doc.styles:
@@ -369,7 +370,7 @@ def generate_mau_02_doc(output_dir, records, log_func=print):
         c00 = t0.cell(0, 0)
         p00 = c00.paragraphs[0]
         p00.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r = p00.add_run("SỞ Y TẾ BẮC NINH\nBỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2\n")
+        r = p00.add_run("SỞ Y TẾ TP BẮC NINH\nBỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2\n")
         r.bold = True
         r.font.name = "Times New Roman"
         r.font.size = Pt(11)
@@ -385,7 +386,7 @@ def generate_mau_02_doc(output_dir, records, log_func=print):
         c10 = t0.cell(1, 0)
         p10 = c10.paragraphs[0]
         p10.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r = p10.add_run("Số: 8542/BVT-CNTT\nV/v đề nghị cấp chứng thư số cho cá nhân  (giải pháp ký số tập trung)")
+        r = p10.add_run("Số: 10070/BVT-CNTT\nV/v đề nghị cấp chứng thư số cho cá nhân  (giải pháp ký số tập trung)")
         r.font.name = "Times New Roman"
         r.font.size = Pt(10)
 
@@ -410,9 +411,10 @@ def generate_mau_02_doc(output_dir, records, log_func=print):
         r.bold = True
         r.font.name = "Times New Roman"
         r.font.size = Pt(11)
-        r2 = p1.add_run("- Họ và tên: Nguyễn Lê Huyền Ly      Số CMND/CCCD/Hộ chiếu: 001191001662.     Ngày cấp: 17/05/2021       Nơi cấp: Cục cảnh sát quản lý hành chính về TTXH.\n- Chức vụ: Nhân viên phòng CNTT. Số điện thoại di động: 0394022258. Địa chỉ thư điện tử công vụ: lynlh662@bacninh.gov.vn\n- Địa chỉ tiếp nhận: đường Nguyễn Quyền, phường Võ Cường, Tp. Bắc Ninh")
+        r2 = p1.add_run("- Họ và tên: Nguyễn Lê Huyền Ly      Số CMND/CCCD/Hộ chiếu: 001191001662.     Ngày cấp: 17/05/2021       Nơi cấp: C06\n- Chức vụ: Nhân viên phòng CNTT. Số điện thoại di động: 0394022258. Địa chỉ thư điện tử công vụ: lynlh662@bacninh.gov.vn\n- Địa chỉ tiếp nhận: đường Nguyễn Quyền, phường Võ Cường, Tp. Bắc Ninh")
         r2.font.name = "Times New Roman"
         r2.font.size = Pt(11)
+
 
         p2 = doc.add_paragraph()
         r = p2.add_run(f"2. Số lượng và danh sách đăng ký: {len(records):02d}, gồm:")
@@ -2573,7 +2575,7 @@ Tự động đọc thông tin từ các đơn đăng ký Word (.docx), ghép đ
             guide_content = """🎯 TÁC VỤ 2: TỔNG HỢP XIN CẤP CKS (XUẤT CÔNG VÂN MẪU 02)
 
 📌 Mục đích:
-Đọc các file Word (.docx) đề nghị cấp CKS, ghép với file Excel SSO để xuất ra file Công văn 'Mẫu 02_CV cap CKS cho BVDK BN số 2_T08 2026_3_6' giữ nguyên 100% thể thức văn bản & cỡ chữ.
+Đọc các file Word (.docx) đề nghị cấp CKS, ghép với file Excel SSO để xuất ra file Công văn 'Mẫu 02_CV cap CKS cho BVDK BN số 2_T10 2026_3_6' giữ nguyên 100% thể thức văn bản & cỡ chữ.
 
 📝 Các bước thực hiện:
 1️⃣ Bước 1: Chọn các file Word (.docx) mẫu đơn CKS.

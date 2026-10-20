@@ -408,14 +408,16 @@ def build_vgca_19_col_excel(people_list):
     return out_io
 
 def build_mau_02_docx(people_list):
-    """Xuất file Công văn Mẫu 02 đề nghị cấp chứng thư số chuyên dùng Chính phủ theo đúng mẫu chính thức của BVĐK Bắc Ninh số 2."""
-    template_name_base = "Mẫu 02_CV cap CKS cho BVDK BN số 2_T08 2026_3_6"
+    """Xuất file Công văn Mẫu 02 đề nghị cấp chứng thư số chuyên dùng Chính phủ theo đúng mẫu chính thức của BVĐK Bắc Ninh số 2 (Mẫu T10)."""
+    template_name_base = "Mẫu 02_CV cap CKS cho BVDK BN số 2_T10 2026_3_6"
     base_dir = os.path.dirname(os.path.abspath(__file__))
     candidate_paths = [
         os.path.join(base_dir, "templates", f"{template_name_base}.docx"),
         os.path.join(os.getcwd(), "templates", f"{template_name_base}.docx"),
         os.path.join(base_dir, f"{template_name_base}.docx"),
         os.path.join(os.getcwd(), f"{template_name_base}.docx"),
+        os.path.join(base_dir, "templates", "Mẫu 02_CV cap CKS cho BVDK BN số 2_T08 2026_3_6.docx"),
+        os.path.join(os.getcwd(), "templates", "Mẫu 02_CV cap CKS cho BVDK BN số 2_T08 2026_3_6.docx"),
     ]
 
     template_path = None
@@ -545,7 +547,7 @@ def build_mau_02_docx(people_list):
                             p.runs[0].font.name = "Times New Roman"
                             p.runs[0].font.size = Pt(10)
     else:
-        # Fallback tạo tài liệu chuẩn Mẫu 02 11 cột nếu không có file template
+        # Fallback tạo tài liệu chuẩn Mẫu 02 11 cột (chuẩn mẫu T10 mới nhất) nếu không có file template
         doc = Document()
         for style_name in ['Normal', 'Default Paragraph Font', 'Body Text']:
             if style_name in doc.styles:
@@ -561,7 +563,7 @@ def build_mau_02_docx(people_list):
         c00 = t0.cell(0, 0)
         p00 = c00.paragraphs[0]
         p00.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r = p00.add_run("SỞ Y TẾ BẮC NINH\nBỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2\n")
+        r = p00.add_run("SỞ Y TẾ TP BẮC NINH\nBỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2\n")
         r.bold = True
         r.font.name = "Times New Roman"
         r.font.size = Pt(11)
@@ -577,7 +579,7 @@ def build_mau_02_docx(people_list):
         c10 = t0.cell(1, 0)
         p10 = c10.paragraphs[0]
         p10.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r = p10.add_run("Số: 8542/BVT-CNTT\nV/v đề nghị cấp chứng thư số cho cá nhân  (giải pháp ký số tập trung)")
+        r = p10.add_run("Số: 10070/BVT-CNTT\nV/v đề nghị cấp chứng thư số cho cá nhân  (giải pháp ký số tập trung)")
         r.font.name = "Times New Roman"
         r.font.size = Pt(10)
 
@@ -602,7 +604,7 @@ def build_mau_02_docx(people_list):
         r.bold = True
         r.font.name = "Times New Roman"
         r.font.size = Pt(11)
-        r2 = p1.add_run("- Họ và tên: Nguyễn Lê Huyền Ly      Số CMND/CCCD/Hộ chiếu: 001191001662.     Ngày cấp: 17/05/2021       Nơi cấp: Cục cảnh sát quản lý hành chính về TTXH.\n- Chức vụ: Nhân viên phòng CNTT. Số điện thoại di động: 0394022258. Địa chỉ thư điện tử công vụ: lynlh662@bacninh.gov.vn\n- Địa chỉ tiếp nhận: đường Nguyễn Quyền, phường Võ Cường, Tp. Bắc Ninh")
+        r2 = p1.add_run("- Họ và tên: Nguyễn Lê Huyền Ly      Số CMND/CCCD/Hộ chiếu: 001191001662.     Ngày cấp: 17/05/2021       Nơi cấp: C06\n- Chức vụ: Nhân viên phòng CNTT. Số điện thoại di động: 0394022258. Địa chỉ thư điện tử công vụ: lynlh662@bacninh.gov.vn\n- Địa chỉ tiếp nhận: đường Nguyễn Quyền, phường Võ Cường, Tp. Bắc Ninh")
         r2.font.name = "Times New Roman"
         r2.font.size = Pt(11)
 
@@ -679,6 +681,7 @@ def build_mau_02_docx(people_list):
         r.bold = True
         r.font.name = "Times New Roman"
         r.font.size = Pt(11)
+
 
     out_io = io.BytesIO()
     doc.save(out_io)
@@ -2687,7 +2690,7 @@ HTML_PAGE = """<!DOCTYPE html>
         return;
       }
 
-      const defaultMau02Name = 'Mẫu 02_CV cap CKS cho BVDK BN số 2_T08 2026_3_6.docx';
+      const defaultMau02Name = 'Mẫu 02_CV cap CKS cho BVDK BN số 2_T10 2026_3_6.docx';
       const picker = await promptSaveFile(defaultMau02Name);
       if (picker.canceled) return;
 
@@ -2730,7 +2733,7 @@ HTML_PAGE = """<!DOCTYPE html>
         return;
       }
 
-      const defaultName = 'Mẫu 02_CV cap CKS cho BVDK BN số 2_T08 2026_3_6.docx';
+      const defaultName = 'Mẫu 02_CV cap CKS cho BVDK BN số 2_T10 2026_3_6.docx';
       const picker = await promptSaveFile(defaultName);
       if (picker.canceled) return;
 
@@ -3085,7 +3088,7 @@ def handle_task_2():
         return send_file(
             out_io,
             as_attachment=True,
-            download_name="Mẫu 02_CV cap CKS cho BVDK BN số 2_T08 2026_3_6.docx",
+            download_name="Mẫu 02_CV cap CKS cho BVDK BN số 2_T10 2026_3_6.docx",
             mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
     except Exception as e:
@@ -3110,7 +3113,7 @@ def handle_task_3():
         return send_file(
             out_io,
             as_attachment=True,
-            download_name="Mẫu 02_CV cap CKS cho BVDK BN số 2_T08 2026_3_6.docx",
+            download_name="Mẫu 02_CV cap CKS cho BVDK BN số 2_T10 2026_3_6.docx",
             mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
     except Exception as e:
