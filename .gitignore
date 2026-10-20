@@ -11,3 +11,4 @@ dist/
 *.docx
 *.doc
 *.db
+!templates/**

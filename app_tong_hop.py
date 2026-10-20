@@ -205,20 +205,22 @@ def generate_mau_02_doc(output_dir, records, log_func=print):
     meipass = getattr(sys, '_MEIPASS', None)
     exe_dir = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
     candidate_paths = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates", f"{template_name_base}.docx"),
+        os.path.join(os.getcwd(), "templates", f"{template_name_base}.docx"),
+        os.path.join(exe_dir, "templates", f"{template_name_base}.docx"),
+    ]
+    if meipass:
+        candidate_paths.append(os.path.join(meipass, "templates", f"{template_name_base}.docx"))
+        candidate_paths.append(os.path.join(meipass, f"{template_name_base}.docx"))
+    candidate_paths.extend([
+        os.path.join(r"C:\Users\Admin\Desktop\Công việc\ĐƠN ĐỀ NGHỊ CẤP CTS CỤC CTS 2023-2025\ĐƠN ĐỀ NGHỊ CẤP CTS CỤC CTS 2023-2025\2026 T8\Cấp CKS_04.09.2026", f"{template_name_base}.docx"),
         os.path.join(output_dir, f"{template_name_base}.docx"),
         os.path.join(os.getcwd(), f"{template_name_base}.docx"),
         os.path.join(exe_dir, f"{template_name_base}.docx"),
-    ]
-    if meipass:
-        candidate_paths.append(os.path.join(meipass, f"{template_name_base}.docx"))
-    candidate_paths.extend([
         os.path.join(os.path.dirname(os.getcwd()), f"{template_name_base}.docx"),
         os.path.join(r"C:\Users\Admin\Desktop\Công việc\ĐƠN ĐỀ NGHỊ CẤP CTS CỤC CTS 2023-2025\ĐƠN ĐỀ NGHỊ CẤP CTS CỤC CTS 2023-2025\2026 T9", f"{template_name_base}.doc"),
-        os.path.join(output_dir, f"{template_name_base}.doc"),
-        os.path.join(os.getcwd(), f"{template_name_base}.doc"),
-        os.path.join(exe_dir, f"{template_name_base}.doc")
     ])
-    
+
     template_docx = None
     for cp in candidate_paths:
         if os.path.exists(cp):
@@ -226,7 +228,7 @@ def generate_mau_02_doc(output_dir, records, log_func=print):
                 template_docx = cp
                 break
             elif cp.lower().endswith(".doc"):
-                target_docx = os.path.join(output_dir, f"{template_name_base}.docx")
+                target_docx = os.path.join(output_dir, f"{template_name_base}_converted.docx")
                 if not os.path.exists(target_docx):
                     try:
                         import win32com.client
@@ -242,221 +244,260 @@ def generate_mau_02_doc(output_dir, records, log_func=print):
                     template_docx = target_docx
                     break
 
-    if not template_docx or not os.path.exists(template_docx):
-        log_func("  [THÔNG BÁO] Không tìm thấy file mẫu Mẫu 02 (.docx). Hệ thống đang tự động khởi tạo văn bản Mẫu 02 chuẩn Nghị định 130...")
+    now = datetime.now()
+    date_str = f"Bắc Ninh, ngày {now.day:02d} tháng {now.month:02d} năm {now.year}"
+
+    doc = None
+    if template_docx and os.path.exists(template_docx):
         try:
-            doc = docx.Document()
-            now = datetime.now()
-            for style_name in ['Normal', 'Default Paragraph Font', 'Body Text']:
-                if style_name in doc.styles:
-                    doc.styles[style_name].font.name = 'Times New Roman'
-            for section in doc.sections:
-                section.top_margin = docx.shared.Inches(0.8)
-                section.bottom_margin = docx.shared.Inches(0.8)
-                section.left_margin = docx.shared.Inches(0.9)
-                section.right_margin = docx.shared.Inches(0.6)
+            doc = docx.Document(template_docx)
+            log_func(f"  -> Đang nạp mẫu chuẩn Mẫu 02: {os.path.basename(template_docx)}")
+        except Exception as read_err:
+            log_func(f"  [CẢNH BÁO] Không thể đọc file mẫu {template_docx}: {read_err}")
+            doc = None
 
-            table_top = doc.add_table(rows=1, cols=2)
-            table_top.autofit = True
-            c_left = table_top.cell(0, 0)
-            c_right = table_top.cell(0, 1)
+    if doc is not None:
+        # 1. Cập nhật ngày tháng tạo văn bản (Table 0, R1C1)
+        if len(doc.tables) > 0 and len(doc.tables[0].rows) > 1:
+            cell_date = doc.tables[0].rows[1].cells[1]
+            for p in cell_date.paragraphs:
+                if "Bắc Ninh" in p.text:
+                    if p.runs:
+                        p.runs[0].text = date_str
+                        for r in p.runs[1:]:
+                            r.text = ""
+                    else:
+                        p.text = date_str
 
-            p_left = c_left.paragraphs[0]
-            p_left.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            r_l1 = p_left.add_run("ỦY BAN NHÂN DÂN TỈNH BẮC NINH\n")
-            r_l1.bold = True
-            r_l1.font.size = Pt(11)
-            r_l1.font.name = "Times New Roman"
-            r_l2 = p_left.add_run("BỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2\n")
-            r_l2.bold = True
-            r_l2.font.size = Pt(11)
-            r_l2.font.name = "Times New Roman"
-            r_l3 = p_left.add_run("Số:       /CV-BVĐK2")
-            r_l3.font.size = Pt(11)
-            r_l3.font.name = "Times New Roman"
-
-            p_right = c_right.paragraphs[0]
-            p_right.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            r_r1 = p_right.add_run("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\n")
-            r_r1.bold = True
-            r_r1.font.size = Pt(11)
-            r_r1.font.name = "Times New Roman"
-            r_r2 = p_right.add_run("Độc lập - Tự do - Hạnh phúc\n")
-            r_r2.bold = True
-            r_r2.font.size = Pt(11)
-            r_r2.font.name = "Times New Roman"
-            r_r3 = p_right.add_run(f"Bắc Ninh, ngày {now.day:02d} tháng {now.month:02d} năm {now.year}")
-            r_r3.italic = True
-            r_r3.font.size = Pt(11)
-            r_r3.font.name = "Times New Roman"
-
-            doc.add_paragraph()
-            p_title = doc.add_paragraph()
-            p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            r_title = p_title.add_run("CÔNG VĂN ĐỀ NGHỊ CẤP CHỨNG THƯ SỐ CHUYÊN DÙNG CHÍNH PHỦ\n")
-            r_title.bold = True
-            r_title.font.size = Pt(13)
-            r_title.font.name = "Times New Roman"
-            r_sub = p_title.add_run("(Mẫu 02 quy định ban hành kèm theo Nghị định số 130/2018/NĐ-CP)")
-            r_sub.italic = True
-            r_sub.font.size = Pt(10)
-            r_sub.font.name = "Times New Roman"
-
-            p_body = doc.add_paragraph()
-            r_b1 = p_body.add_run("Kính gửi: Cục Chứng thực số và Bảo mật thông tin – Ban Cơ yếu Chính phủ.\n\n")
-            r_b1.font.name = "Times New Roman"
-            r_b1.font.size = Pt(11)
-            r_b2 = p_body.add_run(f"Căn cứ nhu cầu sử dụng chứng thư số phục vụ ký số và xác thực điện tử trong công tác khám chữa bệnh và quản lý bệnh viện, Bệnh viện Đa khoa Bắc Ninh số 2 kính đề nghị cấp mới chứng thư số cho các cá nhân (tổng số: {len(records):02d} người) có danh sách chi tiết dưới đây:")
-            r_b2.font.name = "Times New Roman"
-            r_b2.font.size = Pt(11)
-
-            table = doc.add_table(rows=1, cols=9)
-            table.style = 'Table Grid'
-            headers = ["STT", "Họ và tên", "Ngày sinh", "Số CCCD; Ngày cấp; Nơi cấp", "Thư điện tử công vụ", "Đơn vị công tác", "Tỉnh/TP", "Chức vụ", "Số ĐT"]
-            for i, h in enumerate(headers):
-                cell = table.cell(0, i)
-                cell.text = h
-                p = cell.paragraphs[0]
-                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                if p.runs:
-                    p.runs[0].bold = True
-                    p.runs[0].font.size = Pt(10)
-                    p.runs[0].font.name = "Times New Roman"
-
-            alignments = [
-                WD_ALIGN_PARAGRAPH.CENTER,
-                WD_ALIGN_PARAGRAPH.LEFT,
-                WD_ALIGN_PARAGRAPH.CENTER,
-                WD_ALIGN_PARAGRAPH.LEFT,
-                WD_ALIGN_PARAGRAPH.LEFT,
-                WD_ALIGN_PARAGRAPH.LEFT,
-                WD_ALIGN_PARAGRAPH.CENTER,
-                WD_ALIGN_PARAGRAPH.CENTER,
-                WD_ALIGN_PARAGRAPH.CENTER
-            ]
-
-            for idx, r_data in enumerate(records, 1):
-                row = table.add_row()
-                vals = [
-                    str(idx), r_data[0], r_data[1], r_data[2],
-                    r_data[3], r_data[4], r_data[5], r_data[6], r_data[7]
-                ]
-                for col_idx, text_val in enumerate(vals):
-                    c = row.cells[col_idx]
-                    c.text = str(text_val) if text_val is not None else ""
-                    if c.paragraphs:
-                        p = c.paragraphs[0]
-                        p.alignment = alignments[col_idx]
-                        if p.runs:
-                            p.runs[0].font.size = Pt(10)
-                            p.runs[0].font.name = "Times New Roman"
-
-            doc.add_paragraph()
-            p_sign = doc.add_paragraph()
-            p_sign.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-            r_sign1 = p_sign.add_run("GIÁM ĐỐC / THỦ TRƯỞNG ĐƠN VỊ\n")
-            r_sign1.bold = True
-            r_sign1.font.size = Pt(11)
-            r_sign1.font.name = "Times New Roman"
-            r_sign2 = p_sign.add_run("(Ký, ghi rõ họ tên và đóng dấu)")
-            r_sign2.italic = True
-            r_sign2.font.size = Pt(10)
-            r_sign2.font.name = "Times New Roman"
-
-            out_docx_name = f"{template_name_base}.docx"
-            out_docx_path = os.path.join(output_dir, out_docx_name)
-            doc.save(out_docx_path)
-            log_func(f"  -> ĐÃ TẠO THÀNH CÔNG FILE CÔNG VÂN MẪU 02: {out_docx_name}")
-            return out_docx_path
-        except Exception as build_err:
-            log_func(f"  ❌ Lỗi khi tự khởi tạo văn bản Mẫu 02: {build_err}")
-            return None
-
-    try:
-        doc = docx.Document(template_docx)
-        now = datetime.now()
-        date_str = f"Bắc Ninh, ngày {now.day:02d} tháng {now.month:02d} năm {now.year}"
-
-        # 1. Cập nhật ngày tháng tạo văn bản (Table 0, R1C1) - Giữ nguyên 100% định dạng nghiêng, cỡ chữ, khoảng cách
-        cell_date = doc.tables[0].rows[1].cells[1]
-        for p in cell_date.paragraphs:
-            if "Bắc Ninh" in p.text:
-                if p.runs:
-                    p.runs[0].text = date_str
-                    for r in p.runs[1:]:
-                        r.text = ""
-
-        # 2. Cập nhật số lượng bản ghi ở Mục 2 - Giữ nguyên 100% định dạng in đậm / chữ thường của mẫu
+        # 2. Cập nhật số lượng bản ghi ở Mục 2
         records_count = len(records)
         for p in doc.paragraphs:
-            if "Số lượng và danh" in p.text:
-                found_colon = False
-                count_runs = []
-                for r in p.runs:
-                    if ":" in r.text:
-                        found_colon = True
-                        continue
-                    if found_colon:
-                        if "," in r.text:
-                            break
-                        count_runs.append(r)
-                if count_runs:
-                    count_runs[0].text = f" {records_count:02d}"
-                    for r in count_runs[1:]:
-                        r.text = ""
+            if "Số lượng và danh" in p.text or "danh sách đăng ký" in p.text:
+                p.text = f"2. Số lượng và danh sách đăng ký: {records_count:02d}, gồm:"
+                if p.runs:
+                    p.runs[0].font.name = "Times New Roman"
+                    p.runs[0].font.size = Pt(11)
 
-        # 3. Điền bảng danh sách đăng ký (Table 1 - 11 cột) bằng cách nhân bản XML mẫu (giữ nguyên cỡ chữ, khoảng cách, viền, font)
+        # 3. Điền bảng danh sách đăng ký (Table 1 - 11 cột)
         t_target = None
         for t in doc.tables:
             if len(t.columns) == 11:
                 t_target = t
                 break
+        if not t_target and len(doc.tables) >= 2:
+            t_target = doc.tables[1]
 
-        if t_target and len(t_target.rows) > 1:
-            template_tr = t_target.rows[1]._tr
+        if t_target:
+            template_tr = None
+            if len(t_target.rows) > 1:
+                template_tr = copy.deepcopy(t_target.rows[1]._tr)
+
             parent = t_target._tbl
-
             # Xóa các dòng dữ liệu mẫu cũ từ dòng 1 trở đi
             for r in list(t_target.rows)[1:]:
                 parent.remove(r._tr)
 
-            for idx, r_data in enumerate(records, start=1):
-                new_tr = copy.deepcopy(template_tr)
-                new_row = docx.table._Row(new_tr, t_target)
-                vals = [
-                    idx,
-                    r_data[0], # Họ tên
-                    r_data[1], # Ngày sinh
-                    r_data[2], # CCCD;Ngày cấp;Nơi cấp
-                    r_data[3], # Email
-                    r_data[4], # Đơn vị
-                    r_data[5], # Tỉnh/TP
-                    r_data[6], # Chức vụ
-                    r_data[7], # SĐT
-                    r_data[8], # Serial cũ
-                    r_data[9]  # SIM PKI
-                ]
-                for c_idx, val in enumerate(vals):
-                    cell = new_row.cells[c_idx]
-                    val_str = str(val) if val is not None else ""
-                    p = cell.paragraphs[0]
-                    if p.runs:
-                        p.runs[0].text = val_str
-                        for r in p.runs[1:]:
-                            r.text = ""
-                    else:
-                        p.text = val_str
-                parent.append(new_tr)
+            alignments = [
+                WD_ALIGN_PARAGRAPH.CENTER, # STT
+                WD_ALIGN_PARAGRAPH.LEFT,   # Họ tên
+                WD_ALIGN_PARAGRAPH.CENTER, # Ngày sinh
+                WD_ALIGN_PARAGRAPH.LEFT,   # CCCD;Ngày cấp;Nơi cấp
+                WD_ALIGN_PARAGRAPH.LEFT,   # Email
+                WD_ALIGN_PARAGRAPH.LEFT,   # Đơn vị công tác
+                WD_ALIGN_PARAGRAPH.CENTER, # Tỉnh/TP
+                WD_ALIGN_PARAGRAPH.CENTER, # Chức vụ
+                WD_ALIGN_PARAGRAPH.CENTER, # SĐT
+                WD_ALIGN_PARAGRAPH.CENTER, # Serial cũ
+                WD_ALIGN_PARAGRAPH.CENTER  # SIM PKI
+            ]
 
-        out_docx_name = f"{template_name_base}.docx"
+            for idx, r_data in enumerate(records, start=1):
+                vals = [
+                    str(idx),
+                    r_data[0] if len(r_data) > 0 else "", # Họ tên
+                    r_data[1] if len(r_data) > 1 else "", # Ngày sinh
+                    r_data[2] if len(r_data) > 2 else "", # CCCD;Ngày cấp;Nơi cấp
+                    r_data[3] if len(r_data) > 3 else "", # Email
+                    r_data[4] if len(r_data) > 4 else "", # Đơn vị
+                    r_data[5] if len(r_data) > 5 else "Bắc Ninh", # Tỉnh/TP
+                    r_data[6] if len(r_data) > 6 else "", # Chức vụ
+                    r_data[7] if len(r_data) > 7 else "", # SĐT
+                    r_data[8] if len(r_data) > 8 else "", # Serial cũ
+                    r_data[9] if len(r_data) > 9 else ""  # SIM PKI
+                ]
+
+                if template_tr is not None:
+                    new_tr = copy.deepcopy(template_tr)
+                    new_row = docx.table._Row(new_tr, t_target)
+                    for c_idx, val in enumerate(vals):
+                        cell = new_row.cells[c_idx]
+                        val_str = str(val) if val is not None else ""
+                        p = cell.paragraphs[0]
+                        if p.runs:
+                            p.runs[0].text = val_str
+                            for r in p.runs[1:]:
+                                r.text = ""
+                        else:
+                            p.text = val_str
+                        p.alignment = alignments[c_idx]
+                    parent.append(new_tr)
+                else:
+                    new_row = t_target.add_row()
+                    for c_idx, val in enumerate(vals):
+                        cell = new_row.cells[c_idx]
+                        cell.text = str(val) if val is not None else ""
+                        p = cell.paragraphs[0]
+                        p.alignment = alignments[c_idx]
+                        if p.runs:
+                            p.runs[0].font.name = "Times New Roman"
+                            p.runs[0].font.size = Pt(10)
+
+    else:
+        log_func("  [THÔNG BÁO] Hệ thống tự khởi tạo văn bản Mẫu 02 (11 cột) chuẩn BVĐK Bắc Ninh số 2...")
+        doc = docx.Document()
+        for style_name in ['Normal', 'Default Paragraph Font', 'Body Text']:
+            if style_name in doc.styles:
+                doc.styles[style_name].font.name = 'Times New Roman'
+        for section in doc.sections:
+            section.top_margin = docx.shared.Inches(0.8)
+            section.bottom_margin = docx.shared.Inches(0.8)
+            section.left_margin = docx.shared.Inches(0.9)
+            section.right_margin = docx.shared.Inches(0.6)
+
+        t0 = doc.add_table(rows=2, cols=2)
+        t0.autofit = True
+        c00 = t0.cell(0, 0)
+        p00 = c00.paragraphs[0]
+        p00.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p00.add_run("SỞ Y TẾ BẮC NINH\nBỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2\n")
+        r.bold = True
+        r.font.name = "Times New Roman"
+        r.font.size = Pt(11)
+
+        c01 = t0.cell(0, 1)
+        p01 = c01.paragraphs[0]
+        p01.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p01.add_run("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\nĐộc lập - Tự do - Hạnh phúc\n")
+        r.bold = True
+        r.font.name = "Times New Roman"
+        r.font.size = Pt(11)
+
+        c10 = t0.cell(1, 0)
+        p10 = c10.paragraphs[0]
+        p10.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p10.add_run("Số: 8542/BVT-CNTT\nV/v đề nghị cấp chứng thư số cho cá nhân  (giải pháp ký số tập trung)")
+        r.font.name = "Times New Roman"
+        r.font.size = Pt(10)
+
+        c11 = t0.cell(1, 1)
+        p11 = c11.paragraphs[0]
+        p11.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p11.add_run(date_str)
+        r.italic = True
+        r.font.name = "Times New Roman"
+        r.font.size = Pt(11)
+
+        doc.add_paragraph()
+        p_kg = doc.add_paragraph()
+        r = p_kg.add_run("Kính gửi: Cục Chứng thực số và Bảo mật thông tin, Ban Cơ yếu Chính phủ.")
+        r.bold = True
+        r.font.name = "Times New Roman"
+        r.font.size = Pt(11)
+
+        doc.add_paragraph()
+        p1 = doc.add_paragraph()
+        r = p1.add_run("1. Thông tin người tiếp nhận chứng thư số (thiết bị lưu khóa bí mật): \n")
+        r.bold = True
+        r.font.name = "Times New Roman"
+        r.font.size = Pt(11)
+        r2 = p1.add_run("- Họ và tên: Nguyễn Lê Huyền Ly      Số CMND/CCCD/Hộ chiếu: 001191001662.     Ngày cấp: 17/05/2021       Nơi cấp: Cục cảnh sát quản lý hành chính về TTXH.\n- Chức vụ: Nhân viên phòng CNTT. Số điện thoại di động: 0394022258. Địa chỉ thư điện tử công vụ: lynlh662@bacninh.gov.vn\n- Địa chỉ tiếp nhận: đường Nguyễn Quyền, phường Võ Cường, Tp. Bắc Ninh")
+        r2.font.name = "Times New Roman"
+        r2.font.size = Pt(11)
+
+        p2 = doc.add_paragraph()
+        r = p2.add_run(f"2. Số lượng và danh sách đăng ký: {len(records):02d}, gồm:")
+        r.bold = True
+        r.font.name = "Times New Roman"
+        r.font.size = Pt(11)
+
+        t1 = doc.add_table(rows=1, cols=11)
+        t1.style = 'Table Grid'
+        headers = [
+            "STT", "Họ và tên", "Ngày sinh", "Số CMND/ CCCD/Hộ chiếu;Ngày cấp; nơi cấp",
+            "Địa chỉ thư điện tử công vụ", "Tên cơ quan-tổ chức công tác", "Tỉnh/Thành phố",
+            "Chức vụ", "Số điện thoại di động", "Số hiệu chứng thư cũ (nếu có)", "SIM PKI"
+        ]
+        for col_i, h_text in enumerate(headers):
+            cell = t1.cell(0, col_i)
+            cell.text = h_text
+            p = cell.paragraphs[0]
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            if p.runs:
+                p.runs[0].bold = True
+                p.runs[0].font.name = "Times New Roman"
+                p.runs[0].font.size = Pt(10)
+
+        alignments = [
+            WD_ALIGN_PARAGRAPH.CENTER, WD_ALIGN_PARAGRAPH.LEFT, WD_ALIGN_PARAGRAPH.CENTER,
+            WD_ALIGN_PARAGRAPH.LEFT, WD_ALIGN_PARAGRAPH.LEFT, WD_ALIGN_PARAGRAPH.LEFT,
+            WD_ALIGN_PARAGRAPH.CENTER, WD_ALIGN_PARAGRAPH.CENTER, WD_ALIGN_PARAGRAPH.CENTER,
+            WD_ALIGN_PARAGRAPH.CENTER, WD_ALIGN_PARAGRAPH.CENTER
+        ]
+
+        for idx, r_data in enumerate(records, start=1):
+            vals = [
+                str(idx),
+                r_data[0] if len(r_data) > 0 else "",
+                r_data[1] if len(r_data) > 1 else "",
+                r_data[2] if len(r_data) > 2 else "",
+                r_data[3] if len(r_data) > 3 else "",
+                r_data[4] if len(r_data) > 4 else "",
+                r_data[5] if len(r_data) > 5 else "Bắc Ninh",
+                r_data[6] if len(r_data) > 6 else "",
+                r_data[7] if len(r_data) > 7 else "",
+                r_data[8] if len(r_data) > 8 else "",
+                r_data[9] if len(r_data) > 9 else ""
+            ]
+            row = t1.add_row()
+            for col_i, text_v in enumerate(vals):
+                c = row.cells[col_i]
+                c.text = str(text_v)
+                p = c.paragraphs[0]
+                p.alignment = alignments[col_i]
+                if p.runs:
+                    p.runs[0].font.name = "Times New Roman"
+                    p.runs[0].font.size = Pt(10)
+
+        doc.add_paragraph()
+        t2 = doc.add_table(rows=1, cols=2)
+        t2.autofit = True
+        c20 = t2.cell(0, 0)
+        p20 = c20.paragraphs[0]
+        r = p20.add_run("Nơi nhận:\n- Như trên;\n- Lưu: VT, CNTT.")
+        r.italic = True
+        r.font.name = "Times New Roman"
+        r.font.size = Pt(10)
+
+        c21 = t2.cell(0, 1)
+        p21 = c21.paragraphs[0]
+        p21.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p21.add_run("KT. GIÁM ĐỐC BỆNH VIỆN\nPHÓ GIÁM ĐỐC\n(Ký, đóng dấu và ghi rõ họ tên)\n\n\n\nNguyễn Xuân Thủy")
+        r.bold = True
+        r.font.name = "Times New Roman"
+        r.font.size = Pt(11)
+
+    out_docx_name = f"{template_name_base}.docx"
+    out_docx_path = os.path.join(output_dir, out_docx_name)
+    try:
+        doc.save(out_docx_path)
+    except PermissionError:
+        out_docx_name = f"{template_name_base}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
         out_docx_path = os.path.join(output_dir, out_docx_name)
         doc.save(out_docx_path)
 
-        log_func(f"  -> ĐÃ TẠO THÀNH CÔNG FILE CÔNG VÂN MẪU 02: {out_docx_name}")
-        return out_docx_path
-    except Exception as e:
-        log_func(f"Lỗi khi tạo file Mẫu 02: {e}")
-        return None
+    log_func(f"  -> ĐÃ TẠO THÀNH CÔNG FILE CÔNG VÂN MẪU 02: {out_docx_name}")
+    return out_docx_path
+
 
 def generate_email_doc(output_dir, records, log_func=print):
     template_name_base = "Đề nghị cấp mới địa chỉ email công vụ"
@@ -2883,7 +2924,7 @@ Thực hiện các công việc tương tự Tác vụ 6:
                 save_dest_file = filedialog.asksaveasfilename(
                     title="Chọn nơi lưu file Công văn Mẫu 02",
                     initialdir=init_dir,
-                    initialfile="Mẫu 02_CV cap CKS cho BVDK BN số 2.docx",
+                    initialfile="Mẫu 02_CV cap CKS cho BVDK BN số 2_T08 2026_3_6.docx",
                     defaultextension=".docx",
                     filetypes=[("Word Documents", "*.docx"), ("All Files", "*.*")]
                 )
