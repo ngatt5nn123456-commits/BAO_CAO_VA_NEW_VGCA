@@ -16,9 +16,9 @@
 - **Mục đích**: Đọc dữ liệu đơn đề nghị từ file Word và tài khoản SSO từ Excel, sau đó điền tự động vào file Công văn mẫu (`Mẫu 02_CV cap CKS...docx`).
 - **Đặc điểm**: Giữ nguyên **100% thể thức văn bản, phông chữ, cỡ chữ, viền bảng và định dạng Word gốc** bằng kĩ thuật nhân bản cấu trúc XML bảng (`_tr`).
 
-### 3. Tổng hợp danh sách xin cấp Email công vụ (`.docx`)
-- **Mục đích**: Quét các file Word đề nghị để tổng hợp danh sách cán bộ xin cấp mới địa chỉ email công vụ.
-- **Kết quả**: Xuất tự động file Công văn Word `Đề nghị cấp mới địa chỉ email công vụ.docx`.
+### 3. CKS (Mẫu CV02 chỉ đọc file Word) (`.docx`)
+- **Mục đích**: Đọc toàn bộ dữ liệu từ các file Word (.docx, .doc), độc lập hoàn toàn **KHÔNG CẦN file Excel SSO**, sau đó tự động điền thông tin để xuất ra file Công văn Mẫu 02 tương tự Tác vụ 2.
+- **Đặc điểm**: Tự động nhận diện cột gộp CCCD; Ngày cấp; Nơi cấp hoặc cột rời, trích xuất email có sẵn trong file hoặc tự động tạo email theo tên, hỗ trợ cả bảng biểu và văn bản đơn cá nhân.
 
 ### 4. Báo cáo tổng hợp công việc P.CNTT (`.xlsx`)
 - **Mục đích**: Tổng hợp tình hình xử lý sự cố phần mềm và lỗi kỹ thuật khác theo từng Khoa/Phòng/Trung tâm từ file nhật ký sửa chữa hàng ngày.
@@ -80,12 +80,14 @@ python app_tong_hop.py
 | Tác vụ | File đầu vào chính | Mẫu công văn / File hỗ trợ | File kết quả đầu ra |
 | :--- | :--- | :--- | :--- |
 | **Tab 1: Đối chiếu VGCA** | Các file Word `.docx` đề nghị | File Excel SSO chứa Email | `Ket_qua.xlsx` (19 cột VGCA) |
-| **Tab 2: Cấp CKS (Mẫu 02)** | Các file Word `.docx` đề nghị | `Mẫu 02_CV cap CKS...docx` | `Mẫu 02_CV cap CKS...docx` (Đã điền bảng) |
-| **Tab 3: Cấp Email công vụ** | Các file Word `.docx` đề nghị | `Đề nghị cấp mới địa chỉ email công vụ.docx` | `Đề nghị cấp mới địa chỉ email công vụ.docx` |
+| **Tab 2: Cấp CKS (Mẫu 02)** | Các file Word `.docx` đề nghị | File Excel SSO chứa Email | `Mẫu 02_CV cap CKS...docx` (Đã điền bảng) |
+| **Tab 3: CKS (Mẫu CV02 chỉ đọc file Word)** | Một hoặc nhiều file Word (.docx, .doc) | — (Không cần SSO) | `Cong_van_de_nghi_Mau_02.docx` (Chuẩn Mẫu 02) |
 | **Tab 4: Báo cáo P.CNTT** | File Excel Báo cáo sửa chữa | — | `TỔNG HỢP CÔNG VIỆC P.CNTT.xlsx` (A4 ngang) |
 | **Tab 5: Cổng Giám Định BHYT** | File Excel Giám định BHYT | — | `DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM.xlsx` (A4 dọc) |
 | **Tab 6: P.CNTT Tự động (Dòng 7)** | File Excel Báo cáo sửa chữa | — | `TỔNG HỢP CÔNG VIỆC P.CNTT (TỰ ĐỘNG).xlsx` (A4 ngang) |
 | **Tab 7: VGCA (Tổng hợp Word)** | Nhiều file Word / Thư mục chứa file Word (.docx, .doc) đầy đủ thông tin | — | `Ket_qua.xlsx` (19 cột VGCA) |
+| **Tab 8: P.CNTT (Google Sheets cố định)** | Tự động quét từ Google Sheets của viện | — | `TỔNG HỢP CÔNG VIỆC P.CNTT (CỐ ĐỊNH).xlsx` |
+| **Tab 9: Cấp Email công vụ** | Các file Word `.docx` đề nghị | `Đề nghị cấp mới địa chỉ email công vụ.docx` | `Đề nghị cấp mới địa chỉ email công vụ.docx` |
 
 ---
 

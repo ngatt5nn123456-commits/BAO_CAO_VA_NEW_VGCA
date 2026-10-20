@@ -243,8 +243,134 @@ def generate_mau_02_doc(output_dir, records, log_func=print):
                     break
 
     if not template_docx or not os.path.exists(template_docx):
-        log_func("  [CẢNH BÁO] Không tìm thấy file mẫu Mẫu 02 (.docx)! Sẽ bỏ qua xuất Công văn Mẫu 02.")
-        return None
+        log_func("  [THÔNG BÁO] Không tìm thấy file mẫu Mẫu 02 (.docx). Hệ thống đang tự động khởi tạo văn bản Mẫu 02 chuẩn Nghị định 130...")
+        try:
+            doc = docx.Document()
+            now = datetime.now()
+            for style_name in ['Normal', 'Default Paragraph Font', 'Body Text']:
+                if style_name in doc.styles:
+                    doc.styles[style_name].font.name = 'Times New Roman'
+            for section in doc.sections:
+                section.top_margin = docx.shared.Inches(0.8)
+                section.bottom_margin = docx.shared.Inches(0.8)
+                section.left_margin = docx.shared.Inches(0.9)
+                section.right_margin = docx.shared.Inches(0.6)
+
+            table_top = doc.add_table(rows=1, cols=2)
+            table_top.autofit = True
+            c_left = table_top.cell(0, 0)
+            c_right = table_top.cell(0, 1)
+
+            p_left = c_left.paragraphs[0]
+            p_left.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            r_l1 = p_left.add_run("ỦY BAN NHÂN DÂN TỈNH BẮC NINH\n")
+            r_l1.bold = True
+            r_l1.font.size = Pt(11)
+            r_l1.font.name = "Times New Roman"
+            r_l2 = p_left.add_run("BỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2\n")
+            r_l2.bold = True
+            r_l2.font.size = Pt(11)
+            r_l2.font.name = "Times New Roman"
+            r_l3 = p_left.add_run("Số:       /CV-BVĐK2")
+            r_l3.font.size = Pt(11)
+            r_l3.font.name = "Times New Roman"
+
+            p_right = c_right.paragraphs[0]
+            p_right.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            r_r1 = p_right.add_run("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\n")
+            r_r1.bold = True
+            r_r1.font.size = Pt(11)
+            r_r1.font.name = "Times New Roman"
+            r_r2 = p_right.add_run("Độc lập - Tự do - Hạnh phúc\n")
+            r_r2.bold = True
+            r_r2.font.size = Pt(11)
+            r_r2.font.name = "Times New Roman"
+            r_r3 = p_right.add_run(f"Bắc Ninh, ngày {now.day:02d} tháng {now.month:02d} năm {now.year}")
+            r_r3.italic = True
+            r_r3.font.size = Pt(11)
+            r_r3.font.name = "Times New Roman"
+
+            doc.add_paragraph()
+            p_title = doc.add_paragraph()
+            p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            r_title = p_title.add_run("CÔNG VĂN ĐỀ NGHỊ CẤP CHỨNG THƯ SỐ CHUYÊN DÙNG CHÍNH PHỦ\n")
+            r_title.bold = True
+            r_title.font.size = Pt(13)
+            r_title.font.name = "Times New Roman"
+            r_sub = p_title.add_run("(Mẫu 02 quy định ban hành kèm theo Nghị định số 130/2018/NĐ-CP)")
+            r_sub.italic = True
+            r_sub.font.size = Pt(10)
+            r_sub.font.name = "Times New Roman"
+
+            p_body = doc.add_paragraph()
+            r_b1 = p_body.add_run("Kính gửi: Cục Chứng thực số và Bảo mật thông tin – Ban Cơ yếu Chính phủ.\n\n")
+            r_b1.font.name = "Times New Roman"
+            r_b1.font.size = Pt(11)
+            r_b2 = p_body.add_run(f"Căn cứ nhu cầu sử dụng chứng thư số phục vụ ký số và xác thực điện tử trong công tác khám chữa bệnh và quản lý bệnh viện, Bệnh viện Đa khoa Bắc Ninh số 2 kính đề nghị cấp mới chứng thư số cho các cá nhân (tổng số: {len(records):02d} người) có danh sách chi tiết dưới đây:")
+            r_b2.font.name = "Times New Roman"
+            r_b2.font.size = Pt(11)
+
+            table = doc.add_table(rows=1, cols=9)
+            table.style = 'Table Grid'
+            headers = ["STT", "Họ và tên", "Ngày sinh", "Số CCCD; Ngày cấp; Nơi cấp", "Thư điện tử công vụ", "Đơn vị công tác", "Tỉnh/TP", "Chức vụ", "Số ĐT"]
+            for i, h in enumerate(headers):
+                cell = table.cell(0, i)
+                cell.text = h
+                p = cell.paragraphs[0]
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                if p.runs:
+                    p.runs[0].bold = True
+                    p.runs[0].font.size = Pt(10)
+                    p.runs[0].font.name = "Times New Roman"
+
+            alignments = [
+                WD_ALIGN_PARAGRAPH.CENTER,
+                WD_ALIGN_PARAGRAPH.LEFT,
+                WD_ALIGN_PARAGRAPH.CENTER,
+                WD_ALIGN_PARAGRAPH.LEFT,
+                WD_ALIGN_PARAGRAPH.LEFT,
+                WD_ALIGN_PARAGRAPH.LEFT,
+                WD_ALIGN_PARAGRAPH.CENTER,
+                WD_ALIGN_PARAGRAPH.CENTER,
+                WD_ALIGN_PARAGRAPH.CENTER
+            ]
+
+            for idx, r_data in enumerate(records, 1):
+                row = table.add_row()
+                vals = [
+                    str(idx), r_data[0], r_data[1], r_data[2],
+                    r_data[3], r_data[4], r_data[5], r_data[6], r_data[7]
+                ]
+                for col_idx, text_val in enumerate(vals):
+                    c = row.cells[col_idx]
+                    c.text = str(text_val) if text_val is not None else ""
+                    if c.paragraphs:
+                        p = c.paragraphs[0]
+                        p.alignment = alignments[col_idx]
+                        if p.runs:
+                            p.runs[0].font.size = Pt(10)
+                            p.runs[0].font.name = "Times New Roman"
+
+            doc.add_paragraph()
+            p_sign = doc.add_paragraph()
+            p_sign.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            r_sign1 = p_sign.add_run("GIÁM ĐỐC / THỦ TRƯỞNG ĐƠN VỊ\n")
+            r_sign1.bold = True
+            r_sign1.font.size = Pt(11)
+            r_sign1.font.name = "Times New Roman"
+            r_sign2 = p_sign.add_run("(Ký, ghi rõ họ tên và đóng dấu)")
+            r_sign2.italic = True
+            r_sign2.font.size = Pt(10)
+            r_sign2.font.name = "Times New Roman"
+
+            out_docx_name = f"{template_name_base}.docx"
+            out_docx_path = os.path.join(output_dir, out_docx_name)
+            doc.save(out_docx_path)
+            log_func(f"  -> ĐÃ TẠO THÀNH CÔNG FILE CÔNG VÂN MẪU 02: {out_docx_name}")
+            return out_docx_path
+        except Exception as build_err:
+            log_func(f"  ❌ Lỗi khi tự khởi tạo văn bản Mẫu 02: {build_err}")
+            return None
 
     try:
         doc = docx.Document(template_docx)
@@ -1026,10 +1152,200 @@ def run_task_cks(word_input, excel_input, log_func=print, progress_func=lambda v
     return doc_result
 
 # ============================================================
-# LOGIC TÁC VỤ 3: TỔNG HỢP XIN CẤP EMAIL CÔNG VỤ (Xuất Công văn Đề nghị)
+# LOGIC TÁC VỤ 3: CKS (MẪU CV02 CHỈ ĐỌC FILE WORD)
+# ============================================================
+def run_task_cks_word_only(word_input, log_func=print, progress_func=lambda v: None, output_file=None):
+    log_func("=== BẮT ĐẦU TÁC VỤ 3: CKS (MẪU CV02 CHỈ ĐỌC FILE WORD) ===")
+
+    word_files = get_file_list(word_input, extensions=(".docx", ".doc"))
+    if not word_files:
+        raise ValueError("Không tìm thấy file Word (.docx, .doc) nào để xử lý! Vui lòng chọn file Word.")
+
+    total_files = len(word_files)
+    records = []
+
+    for i, target_file in enumerate(word_files, start=1):
+        filename = os.path.basename(target_file)
+        log_func(f"\nĐang đọc file Word ({i}/{total_files}): {filename}")
+        progress_func(int((i / max(1, total_files)) * 80))
+
+        actual_file = target_file
+        if target_file.lower().endswith(".doc"):
+            converted_docx = os.path.splitext(target_file)[0] + "_converted.docx"
+            if not os.path.exists(converted_docx):
+                try:
+                    import win32com.client
+                    word = win32com.client.Dispatch("Word.Application")
+                    word.Visible = False
+                    w_doc = word.Documents.Open(os.path.abspath(target_file))
+                    w_doc.SaveAs2(os.path.abspath(converted_docx), FileFormat=16)
+                    w_doc.Close()
+                    word.Quit()
+                    actual_file = converted_docx
+                    log_func(f"  -> Đã chuyển đổi file .doc sang .docx: {os.path.basename(actual_file)}")
+                except Exception as e:
+                    log_func(f"  [CẢNH BÁO] Không thể chuyển đổi tự động file .doc bằng win32com: {e}")
+            else:
+                actual_file = converted_docx
+
+        try:
+            doc = docx.Document(actual_file)
+        except Exception as e:
+            log_func(f"  ❌ Không thể mở file {filename}: {e}")
+            continue
+
+        file_records = []
+        for t_idx, table in enumerate(doc.tables):
+            if not table.rows: continue
+            header_row_idx = -1
+            name_idx, dob_idx, phone_idx, cccd_idx, issue_date_idx, issue_place_idx, unit_idx, pos_idx = [-1]*8
+            serial_idx, dev_idx = -1, -1
+
+            for r_idx, row in enumerate(table.rows[:min(4, len(table.rows))]):
+                header_texts = [clean_text(cell.text) for cell in row.cells]
+                t_name, t_dob, t_phone, t_cccd, t_idate, t_iplace, t_unit, t_pos = [-1]*8
+                t_ser, t_dev = -1, -1
+
+                for idx, col in enumerate(header_texts):
+                    c_norm = remove_accents(col)
+                    is_combo = (';' in col or ';' in c_norm) and any(k in c_norm for k in ['cccd', 'cmnd', 'cmt', 'can cuoc'])
+                    if ("ho va ten" in c_norm or "ho ten" in c_norm) and "nguoi lap" not in c_norm and "truong" not in c_norm and "ky va" not in c_norm:
+                        if t_name == -1: t_name = idx
+                    elif is_combo:
+                        if t_cccd == -1: t_cccd = idx
+                    elif "ngay cap" in c_norm and "noi" not in c_norm:
+                        if t_idate == -1: t_idate = idx
+                    elif "noi cap" in c_norm:
+                        if t_iplace == -1: t_iplace = idx
+                    elif any(k in c_norm for k in ['cccd', 'cmt', 'cmnd', 'can cuoc']) and "chup anh" not in c_norm and "anh" not in c_norm and "ngay cap" not in c_norm and "noi cap" not in c_norm:
+                        if t_cccd == -1: t_cccd = idx
+                    elif "ngay sinh" in c_norm or "nam sinh" in c_norm or "dob" in c_norm:
+                        if t_dob == -1: t_dob = idx
+                    elif any(k in c_norm for k in ['sdt', 'dien thoai', 'di dong', 'phone']):
+                        if t_phone == -1: t_phone = idx
+                    elif any(k in c_norm for k in ['don vi', 'co quan', 'to chuc', 'khoa', 'phong']) and "tinh" not in c_norm:
+                        if t_unit == -1: t_unit = idx
+                    elif "chuc vu" in c_norm or "vi tri" in c_norm:
+                        if t_pos == -1: t_pos = idx
+                    elif "serial" in c_norm or "so hieu" in c_norm:
+                        if t_ser == -1: t_ser = idx
+                    elif "thiet bi" in c_norm or "sim" in c_norm:
+                        if t_dev == -1: t_dev = idx
+
+                if t_name != -1 and t_cccd != -1:
+                    header_row_idx = r_idx
+                    name_idx, dob_idx, phone_idx, cccd_idx = t_name, t_dob, t_phone, t_cccd
+                    issue_date_idx, issue_place_idx, unit_idx, pos_idx = t_idate, t_iplace, t_unit, t_pos
+                    serial_idx, dev_idx = t_ser, t_dev
+                    break
+
+            if header_row_idx == -1:
+                continue
+
+            for r in table.rows[header_row_idx + 1:]:
+                vals = [clean_text(cell.text) for cell in r.cells]
+                if len(vals) <= max(name_idx, cccd_idx): continue
+                name_val = vals[name_idx]
+                cccd_raw = vals[cccd_idx]
+                if not name_val or not cccd_raw or "ho va ten" in remove_accents(name_val): continue
+
+                dob_val = normalize_date(vals[dob_idx]) if dob_idx != -1 and dob_idx < len(vals) else ""
+                phone_val = clean_text(vals[phone_idx]) if phone_idx != -1 and phone_idx < len(vals) else ""
+                issue_date = normalize_date(vals[issue_date_idx]) if issue_date_idx != -1 and issue_date_idx < len(vals) else ""
+                issue_place = normalize_issue_place(vals[issue_place_idx]) if issue_place_idx != -1 and issue_place_idx < len(vals) else ""
+
+                cccd_clean = cccd_raw
+                if ";" in cccd_raw:
+                    parts = [clean_text(p) for p in cccd_raw.split(";")]
+                    cccd_clean = parts[0]
+                    if not issue_date and len(parts) > 1 and parts[1]:
+                        issue_date = normalize_date(parts[1])
+                    if (not issue_place or issue_place == "CCSQLHCVTTXH") and len(parts) > 2 and parts[2]:
+                        issue_place = normalize_issue_place(parts[2])
+
+                if not issue_place:
+                    issue_place = "CCSQLHCVTTXH"
+
+                cccd_fmt = format_cccd_output(cccd_clean)
+                cccd_str = f"{cccd_fmt};{issue_date};{issue_place}".rstrip(";")
+
+                unit_val = clean_text(vals[unit_idx]) if unit_idx != -1 and unit_idx < len(vals) else DEFAULT_ORG3
+                pos_val = clean_text(vals[pos_idx]) if pos_idx != -1 and pos_idx < len(vals) else "Nhân viên"
+                ser_val = clean_text(vals[serial_idx]) if serial_idx != -1 and serial_idx < len(vals) else ""
+                dev_val = clean_text(vals[dev_idx]) if dev_idx != -1 and dev_idx < len(vals) else ""
+
+                email_val = ""
+                for c_val in vals:
+                    if "@" in c_val and "." in c_val:
+                        m_mail = re.search(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", c_val)
+                        if m_mail:
+                            email_val = clean_email(m_mail.group(0))
+                            break
+                if not email_val:
+                    kn = norm_name(name_val)
+                    if kn:
+                        email_val = f"{kn}@bacninh.gov.vn"
+
+                file_records.append([name_val, dob_val, cccd_str, email_val, unit_val, DEFAULT_PROVINCE, pos_val, phone_val, ser_val, dev_val])
+                log_func(f"  + Lấy được: {name_val} - CCCD: {cccd_fmt} -> Email: {email_val}")
+
+        if not file_records:
+            full_text = "\n".join(p.text for p in doc.paragraphs)
+            m_name = re.search(r"(?:Họ và tên|Họ tên|Tên tôi là)\s*[:：]\s*([^\n\r,]+)", full_text, re.IGNORECASE)
+            m_cccd = re.search(r"(?:CCCD|Số CCCD|CMND|Số CMND)\s*[:：]\s*([0-9]{9,12})", full_text, re.IGNORECASE)
+            m_dob = re.search(r"(?:Ngày sinh|Sinh ngày)\s*[:：]\s*([0-9\/\-\.]+)", full_text, re.IGNORECASE)
+            m_mail = re.search(r"(?:Email|Thư điện tử|Hòm thư)\s*[:：]?\s*([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)", full_text, re.IGNORECASE)
+            m_phone = re.search(r"(?:Điện thoại|SĐT|Số điện thoại|Di động)\s*[:：]\s*([0-9\.\s]+)", full_text, re.IGNORECASE)
+            m_pos = re.search(r"(?:Chức vụ)\s*[:：]\s*([^\n\r,]+)", full_text, re.IGNORECASE)
+            m_unit = re.search(r"(?:Đơn vị|Khoa\/Phòng|Cơ quan)\s*[:：]\s*([^\n\r,]+)", full_text, re.IGNORECASE)
+            m_idate = re.search(r"(?:Ngày cấp)\s*[:：]\s*([0-9\/\-\.]+)", full_text, re.IGNORECASE)
+            m_iplace = re.search(r"(?:Nơi cấp)\s*[:：]\s*([^\n\r,]+)", full_text, re.IGNORECASE)
+
+            if m_name and m_cccd:
+                name_v = clean_text(m_name.group(1))
+                cccd_v = clean_text(m_cccd.group(1))
+                dob_v = normalize_date(m_dob.group(1)) if m_dob else ""
+                email_v = clean_email(m_mail.group(1)) if m_mail else ""
+                phone_v = clean_text(m_phone.group(1)) if m_phone else ""
+                pos_v = clean_text(m_pos.group(1)) if m_pos else "Nhân viên"
+                unit_v = clean_text(m_unit.group(1)) if m_unit else DEFAULT_ORG3
+                idate_v = normalize_date(m_idate.group(1)) if m_idate else ""
+                iplace_v = normalize_issue_place(m_iplace.group(1)) if m_iplace else "CCSQLHCVTTXH"
+                if not email_v:
+                    kn = norm_name(name_v)
+                    if kn:
+                        email_v = f"{kn}@bacninh.gov.vn"
+
+                cccd_fmt = format_cccd_output(cccd_v)
+                cccd_str = f"{cccd_fmt};{idate_v};{iplace_v}".rstrip(";")
+                file_records.append([name_v, dob_v, cccd_str, email_v, unit_v, DEFAULT_PROVINCE, pos_v, phone_v, "", ""])
+                log_func(f"  + Lấy được (từ văn bản): {name_v} - CCCD: {cccd_fmt} -> Email: {email_v}")
+
+        records.extend(file_records)
+
+    output_dir = os.path.dirname(word_files[0]) if word_files else os.getcwd()
+    doc_result = generate_mau_02_doc(output_dir, records, log_func)
+
+    if doc_result and output_file and os.path.abspath(doc_result) != os.path.abspath(output_file):
+        try:
+            shutil.copy2(doc_result, output_file)
+            doc_result = output_file
+        except Exception as copy_err:
+            log_func(f"  [CẢNH BÁO] Không thể copy sang {output_file}: {copy_err}")
+
+    progress_func(100)
+    log_func(f"\n==========================================")
+    log_func(f"ĐÃ XUẤT THÀNH CÔNG FILE CÔNG VÂN MẪU 02: {os.path.basename(doc_result) if doc_result else 'None'}")
+    log_func(f"Đường dẫn lưu file: {doc_result}")
+    log_func(f"Tổng số bản ghi: {len(records)}")
+    log_func(f"==========================================")
+    return doc_result
+
+# ============================================================
+# LOGIC TÁC VỤ 9: TỔNG HỢP XIN CẤP EMAIL CÔNG VỤ (Xuất Công văn Đề nghị)
 # ============================================================
 def run_task_email(word_input, log_func=print, progress_func=lambda v: None):
-    log_func("=== BẮT ĐẦU TÁC VỤ 3: TỔNG HỢP XIN CẤP EMAIL CÔNG VỤ (XUẤT CÔNG VÂN ĐỀ NGHỊ) ===")
+    log_func("=== BẮT ĐẦU TÁC VỤ 9: TỔNG HỢP XIN CẤP EMAIL CÔNG VỤ (XUẤT CÔNG VÂN ĐỀ NGHỊ) ===")
     word_files = get_file_list(word_input, extensions=(".docx", ".doc"))
     if not word_files:
         raise ValueError("Không tìm thấy file Word (.docx, .doc) nào để xử lý! Vui lòng chọn file Word.")
@@ -2085,13 +2401,14 @@ class MainApp(tk.Tk):
 
         self.tasks_meta = [
             (1, "📌", "1. VGCA (Word + Excel SSO)", "Đối chiếu cấp CKS Word & Excel SSO"),
-            (2, "📝", "2. CKS (Mẫu 02)", "Xuất Công văn Word Mẫu 02 chuẩn"),
-            (3, "📧", "3. Cấp Email Công Vụ", "Tổng hợp danh sách xin cấp Email"),
+            (2, "📝", "2. CKS (Mẫu 02)", "Xuất Công văn Word Mẫu 02 (Có SSO)"),
+            (3, "📝", "3. CKS (Mẫu CV02 chỉ đọc file Word)", "Đọc toàn bộ file Word xuất Mẫu 02"),
             (4, "📊", "4. Báo Cáo P.CNTT", "Tổng hợp sửa chữa A4 ngang dòng 7"),
             (5, "🏥", "5. Giám Định BHYT", "Báo cáo cổng giám định A4 dọc"),
             (6, "🤖", "6. P.CNTT Tự Động", "Quét từ link Google Sheets bất kỳ"),
             (7, "📄", "7. VGCA (Từ File Word)", "Đọc nhiều file Word không cần SSO"),
             (8, "⚡", "8. P.CNTT (Sheet Cố Định)", "Tự động tải Google Sheets cố định"),
+            (9, "📧", "9. Cấp Email Công Vụ", "Tổng hợp danh sách xin cấp Email"),
         ]
 
         # Khởi tạo 8 trang nội dung và 8 mục chọn ở Sidebar
@@ -2224,7 +2541,18 @@ Tự động đọc thông tin từ các đơn đăng ký Word (.docx), ghép đ
 4️⃣ Bước 4: Kiểm tra file Công văn Word 'Mẫu 02' được tự động tạo.
 """
         elif task_type == 3:
-            guide_content = """🎯 TÁC VỤ 3: TỔNG HỢP DANH SÁCH XIN CẤP EMAIL CÔNG VỤ
+            guide_content = """🎯 TÁC VỤ 3: CKS (MẪU CV02 CHỈ ĐỌC FILE WORD)
+
+📌 Mục đích:
+Tổng hợp danh sách xin cấp Chữ ký số (CKS) xuất file Công văn Mẫu 02 (.docx) chỉ từ file Word đề nghị, độc lập hoàn toàn, KHÔNG CẦN file Excel SSO. Đọc toàn bộ dữ liệu ở file Word rồi điền thông tin để ra kết quả như Tác vụ 2.
+
+📝 Các bước thực hiện:
+1️⃣ Bước 1: Chọn các file Word (.docx, .doc) mẫu đơn CKS hoặc thư mục chứa file Word.
+2️⃣ Bước 2: Bấm nút '🚀 BẮT ĐẦU TỔNG HỢP CKS (MẪU CV02 CHỈ ĐỌC FILE WORD)'.
+3️⃣ Bước 3: Chọn vị trí lưu và nhận file Công văn Word 'Mẫu 02' hoàn chỉnh.
+"""
+        elif task_type == 9:
+            guide_content = """🎯 TÁC VỤ 9: TỔNG HỢP DANH SÁCH XIN CẤP EMAIL CÔNG VỤ
 
 📌 Mục đích:
 Quét các file Word (.docx) để tổng hợp danh sách đề nghị cấp mới tài khoản Thư điện tử công vụ ra file Công văn 'Đề nghị cấp mới địa chỉ email công vụ'.
@@ -2550,7 +2878,19 @@ Thực hiện các công việc tương tự Tác vụ 6:
                 return
             
             save_dest_file = None
-            if task_type == 5:
+            if task_type in (2, 3):
+                init_dir = os.path.dirname(w_val) if os.path.isfile(w_val) else (w_val if os.path.isdir(w_val) else cwd)
+                save_dest_file = filedialog.asksaveasfilename(
+                    title="Chọn nơi lưu file Công văn Mẫu 02",
+                    initialdir=init_dir,
+                    initialfile="Mẫu 02_CV cap CKS cho BVDK BN số 2.docx",
+                    defaultextension=".docx",
+                    filetypes=[("Word Documents", "*.docx"), ("All Files", "*.*")]
+                )
+                if not save_dest_file:
+                    return
+
+            elif task_type == 5:
                 init_dir = os.path.dirname(w_val) if os.path.isfile(w_val) else (w_val if os.path.isdir(w_val) else cwd)
                 save_dest_file = filedialog.asksaveasfilename(
                     title="Chọn nơi lưu file Giám Định Bảo Hiểm",
@@ -2586,7 +2926,7 @@ Thực hiện các công việc tương tự Tác vụ 6:
                     elif task_type == 2:
                         out_file = run_task_cks(w_val, e_val, append_log, update_progress)
                     elif task_type == 3:
-                        out_file = run_task_email(w_val, append_log, update_progress)
+                        out_file = run_task_cks_word_only(w_val, append_log, update_progress, output_file=save_dest_file)
                     elif task_type == 4:
                         out_file = run_task_cntt(w_val, append_log, update_progress)
                     elif task_type == 5:
@@ -2599,6 +2939,8 @@ Thực hiện các công việc tương tự Tác vụ 6:
                     elif task_type == 8:
                         out_folder_val = txt_output_folder.get().strip() if txt_output_folder else ""
                         out_file = run_task_8(append_log, update_progress, out_folder_val)
+                    elif task_type == 9:
+                        out_file = run_task_email(w_val, append_log, update_progress)
                     
                     msg = "Tác vụ đã hoàn thành thành công!"
                     if out_file:
@@ -2613,13 +2955,14 @@ Thực hiện các công việc tương tự Tác vụ 6:
             threading.Thread(target=thread_target, daemon=True).start()
 
         if task_type == 1: btn_text = "🚀 BẮT ĐẦU XỬ LÝ ĐỐI CHIẾU (VGCA)"
-        elif task_type == 2: btn_text = "🚀 BẮT ĐẦU TỔNG HỢP CKS (MẪU 02)"
-        elif task_type == 3: btn_text = "🚀 BẮT ĐẦU TỔNG HỢP EMAIL"
+        elif task_type == 2: btn_text = "🚀 BẮT ĐẦU TỔNG HỢP CKS (MẪU 02 - CÓ SSO)"
+        elif task_type == 3: btn_text = "🚀 BẮT ĐẦU TỔNG HỢP CKS (MẪU CV02 CHỈ ĐỌC FILE WORD)"
         elif task_type == 4: btn_text = "🚀 BẮT ĐẦU TỔNG HỢP P.CNTT (EXCEL A4 NGANG)"
         elif task_type == 5: btn_text = "🚀 BẮT ĐẦU TỔNG HỢP GIÁM ĐỊNH BẢO HIỂM (EXCEL A4 DỌC)"
         elif task_type == 6: btn_text = "🚀 BẮT ĐẦU TỔNG HỢP P.CNTT TỰ ĐỘNG (DÒNG 7)"
         elif task_type == 7: btn_text = "🚀 BẮT ĐẦU TỔNG HỢP VGCA TỪ CÁC FILE WORD (XUẤT Ket_qua.xlsx)"
-        else: btn_text = "🚀 BẮT ĐẦU TỔNG HỢP P.CNTT (GOOGLE SHEETS CỐ ĐỊNH)"
+        elif task_type == 8: btn_text = "🚀 BẮT ĐẦU TỔNG HỢP P.CNTT (GOOGLE SHEETS CỐ ĐỊNH)"
+        else: btn_text = "🚀 BẮT ĐẦU TỔNG HỢP EMAIL"
 
         btn_run = tk.Button(
             action_frame, text=btn_text, font=("Segoe UI", 11, "bold"), 

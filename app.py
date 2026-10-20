@@ -141,7 +141,7 @@ def extract_word_documents_from_files(file_storage_list):
     return docs
 
 def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
-    """Trích xuất dữ liệu người dùng từ bảng biểu trong file Word."""
+    """Trích xuất dữ liệu người dùng từ bảng biểu và văn bản trong file Word."""
     people = []
     if sso_map is None:
         sso_map = {}
@@ -162,16 +162,19 @@ def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
 
                 for idx, col in enumerate(header_texts):
                     c_norm = remove_accents(col)
+                    is_combo = (';' in col or ';' in c_norm) and any(k in c_norm for k in ['cccd', 'cmnd', 'cmt', 'can cuoc'])
                     if ("ho va ten" in c_norm or "ho ten" in c_norm) and "nguoi lap" not in c_norm and "truong" not in c_norm and "ky va" not in c_norm:
                         if t_name == -1: t_name = idx
-                    elif any(k in c_norm for k in ['cccd', 'cmt', 'cmnd', 'can cuoc']) and "chup anh" not in c_norm and "anh" not in c_norm and "ngay cap" not in c_norm and "noi cap" not in c_norm:
+                    elif is_combo:
                         if t_cccd == -1: t_cccd = idx
-                    elif "ngay sinh" in c_norm or "nam sinh" in c_norm or "dob" in c_norm:
-                        if t_dob == -1: t_dob = idx
                     elif "ngay cap" in c_norm and "noi" not in c_norm:
                         if t_idate == -1: t_idate = idx
                     elif "noi cap" in c_norm:
                         if t_iplace == -1: t_iplace = idx
+                    elif any(k in c_norm for k in ['cccd', 'cmt', 'cmnd', 'can cuoc']) and "chup anh" not in c_norm and "anh" not in c_norm and "ngay cap" not in c_norm and "noi cap" not in c_norm:
+                        if t_cccd == -1: t_cccd = idx
+                    elif "ngay sinh" in c_norm or "nam sinh" in c_norm or "dob" in c_norm:
+                        if t_dob == -1: t_dob = idx
                     elif any(k in c_norm for k in ['email', 'thu dien tu', 'mail', 'hop thu']):
                         if t_email == -1: t_email = idx
                     elif any(k in c_norm for k in ['don vi', 'co quan', 'to chuc', 'khoa', 'phong']) and "tinh" not in c_norm:
@@ -196,33 +199,103 @@ def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
                 if len(vals) <= max(name_idx, cccd_idx):
                     continue
                 name_val = vals[name_idx]
-                cccd_val = vals[cccd_idx]
-                if not name_val or not cccd_val or "ho va ten" in remove_accents(name_val):
+                cccd_raw = vals[cccd_idx]
+                if not name_val or not cccd_raw or "ho va ten" in remove_accents(name_val):
                     continue
-
-                kn = norm_name(name_val)
-                kc = norm_cccd(cccd_val)
-                sso_info = sso_map.get((kn, kc)) or sso_map.get(kc) or sso_map.get(kn) or {}
 
                 dob = normalize_date(vals[dob_idx]) if dob_idx != -1 and dob_idx < len(vals) else ""
                 issue_date = normalize_date(vals[issue_date_idx]) if issue_date_idx != -1 and issue_date_idx < len(vals) else ""
-                issue_place = normalize_issue_place(vals[issue_place_idx]) if issue_place_idx != -1 and issue_place_idx < len(vals) else "CCSQLHCVTTXH"
+                issue_place = normalize_issue_place(vals[issue_place_idx]) if issue_place_idx != -1 and issue_place_idx < len(vals) else ""
+
+                # Tách nếu cột gộp Số CCCD; Ngày cấp; Nơi cấp (chuẩn Mẫu 02)
+                cccd_clean = cccd_raw
+                if ";" in cccd_raw:
+                    parts = [clean_text(p) for p in cccd_raw.split(";")]
+                    cccd_clean = parts[0]
+                    if not issue_date and len(parts) > 1 and parts[1]:
+                        issue_date = normalize_date(parts[1])
+                    if (not issue_place or issue_place == "CCSQLHCVTTXH") and len(parts) > 2 and parts[2]:
+                        issue_place = normalize_issue_place(parts[2])
+
+                if not issue_place:
+                    issue_place = "CCSQLHCVTTXH"
+
                 phone = vals[phone_idx] if phone_idx != -1 and phone_idx < len(vals) else ""
-                unit = vals[unit_idx] if unit_idx != -1 and unit_idx < len(vals) else sso_info.get("unit", DEFAULT_ORG3)
-                pos = vals[pos_idx] if pos_idx != -1 and pos_idx < len(vals) else sso_info.get("position", "Nhân viên")
+                unit = vals[unit_idx] if unit_idx != -1 and unit_idx < len(vals) else ""
+                pos = vals[pos_idx] if pos_idx != -1 and pos_idx < len(vals) else ""
+
+                kn = norm_name(name_val)
+                kc = norm_cccd(cccd_clean)
+                sso_info = sso_map.get((kn, kc)) or sso_map.get(kc) or sso_map.get(kn) or {}
+
+                if not unit:
+                    unit = sso_info.get("unit", DEFAULT_ORG3)
+                if not pos:
+                    pos = sso_info.get("position", "Nhân viên")
 
                 email = sso_info.get("email", "")
                 if not email and email_idx != -1 and email_idx < len(vals):
                     email = clean_email(vals[email_idx])
+                if not email:
+                    for c_val in vals:
+                        if "@" in c_val and "." in c_val:
+                            m_mail = re.search(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", c_val)
+                            if m_mail:
+                                email = clean_email(m_mail.group(0))
+                                break
                 if not email and kn:
                     # Gợi ý email công vụ nếu chưa có
                     email = f"{kn}@bacninh.gov.vn"
 
                 people.append({
-                    "name": name_val, "dob": dob, "cccd": format_cccd_output(cccd_val),
+                    "name": name_val, "dob": dob, "cccd": format_cccd_output(cccd_clean),
                     "issue_place": issue_place, "issue_date": issue_date, "email": email,
                     "org1": DEFAULT_ORG1, "org2": DEFAULT_ORG2, "org3": unit if unit else DEFAULT_ORG3,
-                    "org4": "", "province": DEFAULT_PROVINCE, "position": pos, "phone": phone,
+                    "org4": "", "province": DEFAULT_PROVINCE, "position": pos if pos else "Nhân viên", "phone": phone,
+                    "serial_old": "", "network": "", "is_transfer": "", "device_type": ""
+                })
+
+        # Nếu không có bảng dữ liệu, quét các đoạn văn bản (đơn đề nghị cá nhân)
+        if not people:
+            full_text = "\n".join(p.text for p in doc.paragraphs)
+            m_name = re.search(r"(?:Họ và tên|Họ tên|Tên tôi là)\s*[:：]\s*([^\n\r,]+)", full_text, re.IGNORECASE)
+            m_cccd = re.search(r"(?:CCCD|Số CCCD|CMND|Số CMND)\s*[:：]\s*([0-9]{9,12})", full_text, re.IGNORECASE)
+            m_dob = re.search(r"(?:Ngày sinh|Sinh ngày)\s*[:：]\s*([0-9\/\-\.]+)", full_text, re.IGNORECASE)
+            m_mail = re.search(r"(?:Email|Thư điện tử|Hòm thư)\s*[:：]?\s*([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)", full_text, re.IGNORECASE)
+            m_phone = re.search(r"(?:Điện thoại|SĐT|Số điện thoại|Di động)\s*[:：]\s*([0-9\.\s]+)", full_text, re.IGNORECASE)
+            m_pos = re.search(r"(?:Chức vụ)\s*[:：]\s*([^\n\r,]+)", full_text, re.IGNORECASE)
+            m_unit = re.search(r"(?:Đơn vị|Khoa\/Phòng|Cơ quan)\s*[:：]\s*([^\n\r,]+)", full_text, re.IGNORECASE)
+            m_idate = re.search(r"(?:Ngày cấp)\s*[:：]\s*([0-9\/\-\.]+)", full_text, re.IGNORECASE)
+            m_iplace = re.search(r"(?:Nơi cấp)\s*[:：]\s*([^\n\r,]+)", full_text, re.IGNORECASE)
+
+            if m_name and m_cccd:
+                name_v = clean_text(m_name.group(1))
+                cccd_v = clean_text(m_cccd.group(1))
+                dob_v = normalize_date(m_dob.group(1)) if m_dob else ""
+                email_v = clean_email(m_mail.group(1)) if m_mail else ""
+                phone_v = clean_text(m_phone.group(1)) if m_phone else ""
+                pos_v = clean_text(m_pos.group(1)) if m_pos else "Nhân viên"
+                unit_v = clean_text(m_unit.group(1)) if m_unit else DEFAULT_ORG3
+                idate_v = normalize_date(m_idate.group(1)) if m_idate else ""
+                iplace_v = normalize_issue_place(m_iplace.group(1)) if m_iplace else "CCSQLHCVTTXH"
+
+                kn = norm_name(name_v)
+                kc = norm_cccd(cccd_v)
+                sso_info = sso_map.get((kn, kc)) or sso_map.get(kc) or sso_map.get(kn) or {}
+                if not email_v:
+                    email_v = sso_info.get("email", "")
+                if not email_v and kn:
+                    email_v = f"{kn}@bacninh.gov.vn"
+                if unit_v == DEFAULT_ORG3 and sso_info.get("unit"):
+                    unit_v = sso_info.get("unit")
+                if pos_v == "Nhân viên" and sso_info.get("position"):
+                    pos_v = sso_info.get("position")
+
+                people.append({
+                    "name": name_v, "dob": dob_v, "cccd": format_cccd_output(cccd_v),
+                    "issue_place": iplace_v, "issue_date": idate_v, "email": email_v,
+                    "org1": DEFAULT_ORG1, "org2": DEFAULT_ORG2, "org3": unit_v if unit_v else DEFAULT_ORG3,
+                    "org4": "", "province": DEFAULT_PROVINCE, "position": pos_v, "phone": phone_v,
                     "serial_old": "", "network": "", "is_transfer": "", "device_type": ""
                 })
     except Exception as e:
@@ -339,6 +412,18 @@ def build_mau_02_docx(people_list):
     doc = Document()
     now = datetime.now()
 
+    # Cài đặt font Times New Roman chuẩn hành chính cho toàn văn bản
+    for style_name in ['Normal', 'Default Paragraph Font', 'Body Text']:
+        if style_name in doc.styles:
+            doc.styles[style_name].font.name = 'Times New Roman'
+
+    # Thiết lập căn lề chuẩn hành chính A4
+    for section in doc.sections:
+        section.top_margin = Inches(0.8)
+        section.bottom_margin = Inches(0.8)
+        section.left_margin = Inches(0.9)
+        section.right_margin = Inches(0.6)
+
     # Quốc hiệu - Tiêu ngữ
     table_top = doc.add_table(rows=1, cols=2)
     table_top.autofit = True
@@ -350,23 +435,29 @@ def build_mau_02_docx(people_list):
     r_l1 = p_left.add_run("ỦY BAN NHÂN DÂN TỈNH BẮC NINH\n")
     r_l1.bold = True
     r_l1.font.size = Pt(11)
+    r_l1.font.name = "Times New Roman"
     r_l2 = p_left.add_run("BỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2\n")
     r_l2.bold = True
     r_l2.font.size = Pt(11)
+    r_l2.font.name = "Times New Roman"
     r_l3 = p_left.add_run("Số:       /CV-BVĐK2")
     r_l3.font.size = Pt(11)
+    r_l3.font.name = "Times New Roman"
 
     p_right = c_right.paragraphs[0]
     p_right.alignment = WD_ALIGN_PARAGRAPH.CENTER
     r_r1 = p_right.add_run("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\n")
     r_r1.bold = True
     r_r1.font.size = Pt(11)
+    r_r1.font.name = "Times New Roman"
     r_r2 = p_right.add_run("Độc lập - Tự do - Hạnh phúc\n")
     r_r2.bold = True
     r_r2.font.size = Pt(11)
+    r_r2.font.name = "Times New Roman"
     r_r3 = p_right.add_run(f"Bắc Ninh, ngày {now.day:02d} tháng {now.month:02d} năm {now.year}")
     r_r3.italic = True
     r_r3.font.size = Pt(11)
+    r_r3.font.name = "Times New Roman"
 
     doc.add_paragraph()
 
@@ -375,13 +466,19 @@ def build_mau_02_docx(people_list):
     r_title = p_title.add_run("CÔNG VĂN ĐỀ NGHỊ CẤP CHỨNG THƯ SỐ CHUYÊN DÙNG CHÍNH PHỦ\n")
     r_title.bold = True
     r_title.font.size = Pt(13)
+    r_title.font.name = "Times New Roman"
     r_sub = p_title.add_run("(Mẫu 02 quy định ban hành kèm theo Nghị định số 130/2018/NĐ-CP)")
     r_sub.italic = True
     r_sub.font.size = Pt(10)
+    r_sub.font.name = "Times New Roman"
 
     p_body = doc.add_paragraph()
-    p_body.add_run("Kính gửi: Cục Chứng thực số và Bảo mật thông tin – Ban Cơ yếu Chính phủ.\n\n")
-    p_body.add_run(f"Căn cứ nhu cầu sử dụng chứng thư số phục vụ ký số và xác thực điện tử trong công tác khám chữa bệnh và quản lý bệnh viện, Bệnh viện Đa khoa Bắc Ninh số 2 kính đề nghị cấp mới chứng thư số cho các cá nhân (tổng số: {len(people_list):02d} người) có danh sách chi tiết dưới đây:")
+    r_b1 = p_body.add_run("Kính gửi: Cục Chứng thực số và Bảo mật thông tin – Ban Cơ yếu Chính phủ.\n\n")
+    r_b1.font.name = "Times New Roman"
+    r_b1.font.size = Pt(11)
+    r_b2 = p_body.add_run(f"Căn cứ nhu cầu sử dụng chứng thư số phục vụ ký số và xác thực điện tử trong công tác khám chữa bệnh và quản lý bệnh viện, Bệnh viện Đa khoa Bắc Ninh số 2 kính đề nghị cấp mới chứng thư số cho các cá nhân (tổng số: {len(people_list):02d} người) có danh sách chi tiết dưới đây:")
+    r_b2.font.name = "Times New Roman"
+    r_b2.font.size = Pt(11)
 
     table = doc.add_table(rows=1, cols=9)
     table.style = 'Table Grid'
@@ -393,7 +490,20 @@ def build_mau_02_docx(people_list):
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         if p.runs:
             p.runs[0].bold = True
-            p.runs[0].font.size = Pt(9)
+            p.runs[0].font.size = Pt(10)
+            p.runs[0].font.name = "Times New Roman"
+
+    alignments = [
+        WD_ALIGN_PARAGRAPH.CENTER,
+        WD_ALIGN_PARAGRAPH.LEFT,
+        WD_ALIGN_PARAGRAPH.CENTER,
+        WD_ALIGN_PARAGRAPH.LEFT,
+        WD_ALIGN_PARAGRAPH.LEFT,
+        WD_ALIGN_PARAGRAPH.LEFT,
+        WD_ALIGN_PARAGRAPH.CENTER,
+        WD_ALIGN_PARAGRAPH.CENTER,
+        WD_ALIGN_PARAGRAPH.CENTER
+    ]
 
     for idx, p_info in enumerate(people_list, 1):
         row = table.add_row()
@@ -406,15 +516,24 @@ def build_mau_02_docx(people_list):
         for col_idx, text_val in enumerate(vals):
             c = row.cells[col_idx]
             c.text = text_val
-            if c.paragraphs and c.paragraphs[0].runs:
-                c.paragraphs[0].runs[0].font.size = Pt(9)
+            if c.paragraphs:
+                p = c.paragraphs[0]
+                p.alignment = alignments[col_idx]
+                if p.runs:
+                    p.runs[0].font.size = Pt(10)
+                    p.runs[0].font.name = "Times New Roman"
 
     doc.add_paragraph()
     p_sign = doc.add_paragraph()
     p_sign.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     r_sign1 = p_sign.add_run("GIÁM ĐỐC / THỦ TRƯỞNG ĐƠN VỊ\n")
     r_sign1.bold = True
-    p_sign.add_run("(Ký, ghi rõ họ tên và đóng dấu)")
+    r_sign1.font.size = Pt(11)
+    r_sign1.font.name = "Times New Roman"
+    r_sign2 = p_sign.add_run("(Ký, ghi rõ họ tên và đóng dấu)")
+    r_sign2.italic = True
+    r_sign2.font.size = Pt(10)
+    r_sign2.font.name = "Times New Roman"
 
     out_io = io.BytesIO()
     doc.save(out_io)
@@ -1548,10 +1667,10 @@ HTML_PAGE = """<!DOCTYPE html>
   <!-- MAIN BODY: SIDEBAR + CONTENT -->
   <div class="app-container">
 
-    <!-- SIDEBAR 8 TÁC VỤ ĐƯỢC CHIA THÀNH 2 NHÓM -->
+    <!-- SIDEBAR 9 TÁC VỤ ĐƯỢC CHIA THÀNH 2 NHÓM -->
     <div class="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-title">📑 DANH MỤC TÁC VỤ (8 CHỨC NĂNG)</div>
+        <div class="sidebar-title">📑 DANH MỤC TÁC VỤ (9 CHỨC NĂNG)</div>
         <div class="sidebar-subtitle">Hệ thống phân thành 2 nhóm chuyên biệt</div>
       </div>
 
@@ -1562,7 +1681,7 @@ HTML_PAGE = """<!DOCTYPE html>
             <div class="group-header-title">
               <span>🔐 NHÓM CKS & MAIL CÔNG VỤ</span>
             </div>
-            <span class="group-header-badge">4 tác vụ</span>
+            <span class="group-header-badge">5 tác vụ</span>
           </div>
           <ul class="sidebar-menu">
             <li class="active" data-task="1" onclick="switchTask(1)">
@@ -1576,14 +1695,14 @@ HTML_PAGE = """<!DOCTYPE html>
               <div class="nav-icon">📝</div>
               <div class="nav-text">
                 <span class="nav-title">2. CKS (Công văn Mẫu 02)</span>
-                <span class="nav-desc">Xuất Công văn Word Mẫu 02 chuẩn</span>
+                <span class="nav-desc">Xuất Công văn Mẫu 02 (Có Excel SSO)</span>
               </div>
             </li>
             <li data-task="3" onclick="switchTask(3)">
-              <div class="nav-icon">📧</div>
+              <div class="nav-icon">📝</div>
               <div class="nav-text">
-                <span class="nav-title">3. Cấp Email Công Vụ</span>
-                <span class="nav-desc">Tổng hợp danh sách xin cấp Email</span>
+                <span class="nav-title">3. CKS (Mẫu CV02 chỉ đọc file Word)</span>
+                <span class="nav-desc">Đọc toàn bộ file Word xuất Mẫu 02</span>
               </div>
             </li>
             <li data-task="7" onclick="switchTask(7)">
@@ -1591,6 +1710,13 @@ HTML_PAGE = """<!DOCTYPE html>
               <div class="nav-text">
                 <span class="nav-title">7. VGCA (Từ File Word)</span>
                 <span class="nav-desc">Đọc nhiều file Word không cần SSO</span>
+              </div>
+            </li>
+            <li data-task="9" onclick="switchTask(9)">
+              <div class="nav-icon">📧</div>
+              <div class="nav-text">
+                <span class="nav-title">9. Cấp Email Công Vụ</span>
+                <span class="nav-desc">Tổng hợp danh sách xin cấp Email</span>
               </div>
             </li>
           </ul>
@@ -1779,12 +1905,13 @@ HTML_PAGE = """<!DOCTYPE html>
             </div>
             <div class="guide-box">
               <h3>🎯 Mục đích:</h3>
-              <p>Quét các file Word (.docx) để tổng hợp danh sách đề nghị cấp mới tài khoản Thư điện tử công vụ ra file Công văn và bảng Excel chuẩn Sở TT&TT Bắc Ninh.</p>
+              <p>Tổng hợp danh sách xin cấp Chữ ký số (CKS) xuất file <b>Công văn Mẫu 02</b> (.docx) <b>chỉ từ file Word</b> đề nghị, độc lập hoàn toàn, <b>KHÔNG CẦN file Excel SSO</b>.</p>
+              <p>Hệ thống tự động đọc toàn bộ thông tin từ file Word (Họ tên, Ngày sinh, CCCD, Ngày cấp, Nơi cấp, Email công vụ, Đơn vị, Chức vụ, SĐT...) và tự động điền vào Công văn Mẫu 02 chuẩn thể thức văn bản hành chính tương tự Tác vụ 2.</p>
               <h3>📝 Các bước thực hiện:</h3>
               <ol>
-                <li><b>Bước 1:</b> Tải lên các file Word (.docx) xin cấp Email công vụ.</li>
-                <li><b>Bước 2:</b> Chọn định dạng mong muốn: File Excel bảng danh sách hoặc File Word công văn.</li>
-                <li><b>Bước 3:</b> Nhấn nút <b>"🚀 Bắt Đầu Tổng Hợp Danh Sách Email"</b>.</li>
+                <li><b>Bước 1:</b> Tải lên một hoặc nhiều file Word (.docx) hoặc file nén (.zip) chứa các file Word đề nghị.</li>
+                <li><b>Bước 2:</b> Nhấn nút <b>"🚀 Bắt Đầu Tổng Hợp CKS Mẫu 02 (Chỉ Từ File Word)"</b>.</li>
+                <li><b>Bước 3:</b> Chọn vị trí lưu và nhận ngay file Công văn Word Mẫu 02 (.docx) hoàn chỉnh sẵn sàng in và trình ký.</li>
               </ol>
             </div>
           </div>
@@ -1796,38 +1923,18 @@ HTML_PAGE = """<!DOCTYPE html>
             </div>
             <form onsubmit="handleTask3(event)">
               <div class="form-group">
-                <label class="form-label">1️⃣ Chọn các file Word (.docx) xin cấp Email:</label>
+                <label class="form-label">1️⃣ Chọn các file Word (.docx) đề nghị cấp CKS:</label>
                 <div class="file-dropzone" onclick="document.getElementById('file-t3-word').click()">
-                  <div class="drop-icon">📧</div>
-                  <div class="drop-text">Nhấp để chọn các file Word (.docx)</div>
+                  <div class="drop-icon">📄</div>
+                  <div class="drop-text">Nhấp để chọn một hoặc nhiều file Word (.docx / .zip)</div>
                   <input type="file" id="file-t3-word" multiple accept=".docx,.zip" onchange="previewFiles(this, 'chosen-t3-word')">
                 </div>
                 <div class="file-chosen-badge" id="chosen-t3-word"></div>
               </div>
 
-              <div class="form-group">
-                <label class="form-label">2️⃣ Định dạng xuất kết quả:</label>
-                <div class="radio-group">
-                  <label class="radio-card">
-                    <input type="radio" name="email_format" value="excel" checked>
-                    <div>
-                      <div class="radio-title">Bảng tính Excel (.xlsx) chuẩn Sở TT&TT</div>
-                      <div class="radio-desc">Gồm 7 cột: STT, Họ tên, Ngày sinh, SĐT, CCCD, Đơn vị, Chức vụ</div>
-                    </div>
-                  </label>
-                  <label class="radio-card">
-                    <input type="radio" name="email_format" value="word">
-                    <div>
-                      <div class="radio-title">Văn bản Công văn Word (.docx) hoàn chỉnh</div>
-                      <div class="radio-desc">Có đầy đủ tiêu ngữ, căn cứ và phần ký tên</div>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
               <button type="submit" class="btn" id="btn-t3">
                 <span class="spinner" id="spin-t3"></span>
-                <span id="txt-t3">🚀 Bắt Đầu Tổng Hợp Danh Sách Email</span>
+                <span id="txt-t3">🚀 Bắt Đầu Tổng Hợp CKS (Mẫu CV02 - Chỉ File Word)</span>
               </button>
               <div class="alert" id="alert-t3"></div>
             </form>
@@ -2125,6 +2232,72 @@ HTML_PAGE = """<!DOCTYPE html>
         </div>
       </div>
 
+      <!-- ==================== TÁC VỤ 9 ==================== -->
+      <div class="page" id="page-task-9">
+        <div class="two-col-grid">
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">📖</span>
+              <h2>Hướng Dẫn Nghiệp Vụ Tác Vụ 9</h2>
+            </div>
+            <div class="guide-box">
+              <h3>🎯 Mục đích:</h3>
+              <p>Quét các file Word (.docx) để tổng hợp danh sách đề nghị cấp mới tài khoản Thư điện tử công vụ ra file Công văn và bảng Excel chuẩn Sở TT&TT Bắc Ninh.</p>
+              <h3>📝 Các bước thực hiện:</h3>
+              <ol>
+                <li><b>Bước 1:</b> Tải lên các file Word (.docx) xin cấp Email công vụ.</li>
+                <li><b>Bước 2:</b> Chọn định dạng mong muốn: File Excel bảng danh sách hoặc File Word công văn.</li>
+                <li><b>Bước 3:</b> Nhấn nút <b>"🚀 Bắt Đầu Tổng Hợp Danh Sách Email"</b>.</li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">⚡</span>
+              <h2>Thao Tác Thực Thi & Chọn Dữ Liệu</h2>
+            </div>
+            <form onsubmit="handleTask9(event)">
+              <div class="form-group">
+                <label class="form-label">1️⃣ Chọn các file Word (.docx) xin cấp Email:</label>
+                <div class="file-dropzone" onclick="document.getElementById('file-t9-word').click()">
+                  <div class="drop-icon">📧</div>
+                  <div class="drop-text">Nhấp để chọn các file Word (.docx)</div>
+                  <input type="file" id="file-t9-word" multiple accept=".docx,.zip" onchange="previewFiles(this, 'chosen-t9-word')">
+                </div>
+                <div class="file-chosen-badge" id="chosen-t9-word"></div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">2️⃣ Định dạng xuất kết quả:</label>
+                <div class="radio-group">
+                  <label class="radio-card">
+                    <input type="radio" name="email_format_9" value="excel" checked>
+                    <div>
+                      <div class="radio-title">Bảng tính Excel (.xlsx) chuẩn Sở TT&TT</div>
+                      <div class="radio-desc">Gồm 7 cột: STT, Họ tên, Ngày sinh, SĐT, CCCD, Đơn vị, Chức vụ</div>
+                    </div>
+                  </label>
+                  <label class="radio-card">
+                    <input type="radio" name="email_format_9" value="word">
+                    <div>
+                      <div class="radio-title">Văn bản Công văn Word (.docx) hoàn chỉnh</div>
+                      <div class="radio-desc">Có đầy đủ tiêu ngữ, căn cứ và phần ký tên</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <button type="submit" class="btn" id="btn-t9">
+                <span class="spinner" id="spin-t9"></span>
+                <span id="txt-t9">🚀 Bắt Đầu Tổng Hợp Danh Sách Email</span>
+              </button>
+              <div class="alert" id="alert-t9"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -2132,12 +2305,13 @@ HTML_PAGE = """<!DOCTYPE html>
     const taskMeta = {
       1: { badge: 'TÁC VỤ 1', title: '🎯 1. VGCA (Word + Excel SSO)  ─  Đối chiếu cấp CKS Word & Excel SSO' },
       2: { badge: 'TÁC VỤ 2', title: '📝 2. CKS (Công văn Mẫu 02)  ─  Xuất Công văn Word Mẫu 02 chuẩn' },
-      3: { badge: 'TÁC VỤ 3', title: '📧 3. Cấp Email Công Vụ  ─  Tổng hợp danh sách xin cấp Email' },
+      3: { badge: 'TÁC VỤ 3', title: '📝 3. CKS (Mẫu CV02 chỉ đọc file Word)  ─  Đọc toàn bộ file Word xuất Mẫu 02' },
       4: { badge: 'TÁC VỤ 4', title: '📊 4. Báo Cáo P.CNTT (File)  ─  Tổng hợp từ file Excel máy tính' },
       5: { badge: 'TÁC VỤ 5', title: '🏥 5. Giám Định BHYT  ─  Lọc người dùng & xuất Excel A4 dọc' },
       6: { badge: 'TÁC VỤ 6', title: '🤖 6. P.CNTT Tự Động  ─  Quét từ link Google Sheets bất kỳ' },
       7: { badge: 'TÁC VỤ 7', title: '📄 7. VGCA (Từ File Word)  ─  Đọc nhiều file Word không cần SSO' },
-      8: { badge: 'TÁC VỤ 8', title: '⚡ 8. P.CNTT (Sheet Cố Định)  ─  Tự động tải Google Sheets của viện' }
+      8: { badge: 'TÁC VỤ 8', title: '⚡ 8. P.CNTT (Sheet Cố Định)  ─  Tự động tải Google Sheets của viện' },
+      9: { badge: 'TÁC VỤ 9', title: '📧 9. Cấp Email Công Vụ  ─  Tổng hợp danh sách xin cấp Email' }
     };
 
     function switchTask(taskId) {
@@ -2399,18 +2573,17 @@ HTML_PAGE = """<!DOCTYPE html>
       }
     }
 
-    // XỬ LÝ TÁC VỤ 3
+    // XỬ LÝ TÁC VỤ 3 (CKS MẪU CV02 CHỈ ĐỌC FILE WORD)
     async function handleTask3(e) {
       e.preventDefault();
       hideAlert('alert-t3');
       const wInput = document.getElementById('file-t3-word');
       if (!wInput.files || wInput.files.length === 0) {
-        showAlert('alert-t3', 'error', '⚠️ Vui lòng chọn các file Word xin cấp Email!');
+        showAlert('alert-t3', 'error', '⚠️ Vui lòng chọn ít nhất 1 file Word (.docx / .zip)!');
         return;
       }
-      const fmt = document.querySelector('input[name="email_format"]:checked').value;
-      const defaultName = fmt === 'word' ? 'De_nghi_cap_email_cong_vu.docx' : 'Danh_sach_cap_email_cong_vu.xlsx';
 
+      const defaultName = 'Cong_van_de_nghi_Mau_02.docx';
       const picker = await promptSaveFile(defaultName);
       if (picker.canceled) return;
 
@@ -2418,7 +2591,6 @@ HTML_PAGE = """<!DOCTYPE html>
       for (let i = 0; i < wInput.files.length; i++) {
         formData.append('word_files', wInput.files[i]);
       }
-      formData.append('format', fmt);
 
       setLoading('t3', true);
       try {
@@ -2430,14 +2602,56 @@ HTML_PAGE = """<!DOCTYPE html>
         const blob = await res.blob();
         const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, defaultName);
         if (picker.handle) {
-          showAlert('alert-t3', 'success', `✅ Đã lưu file "${savedName}" thành công tại vị trí bạn đã chọn!`);
+          showAlert('alert-t3', 'success', `✅ Đã xuất Công văn Mẫu 02 và lưu file "${savedName}" tại vị trí bạn đã chọn!`);
         } else {
-          showAlert('alert-t3', 'success', `✅ Đã tổng hợp và tải xuống danh sách cấp Email công vụ thành công!`);
+          showAlert('alert-t3', 'success', `✅ Đã xuất Công văn Mẫu 02 (.docx) thành công!`);
         }
       } catch (err) {
         showAlert('alert-t3', 'error', '❌ Lỗi: ' + err.message);
       } finally {
-        setLoading('t3', false, '🚀 Bắt Đầu Tổng Hợp Danh Sách Email');
+        setLoading('t3', false, '🚀 Bắt Đầu Tổng Hợp CKS (Mẫu CV02 - Chỉ File Word)');
+      }
+    }
+
+    // XỬ LÝ TÁC VỤ 9 (CẤP EMAIL CÔNG VỤ)
+    async function handleTask9(e) {
+      e.preventDefault();
+      hideAlert('alert-t9');
+      const wInput = document.getElementById('file-t9-word');
+      if (!wInput.files || wInput.files.length === 0) {
+        showAlert('alert-t9', 'error', '⚠️ Vui lòng chọn các file Word xin cấp Email!');
+        return;
+      }
+      const fmt = document.querySelector('input[name="email_format_9"]:checked').value;
+      const defaultName = fmt === 'word' ? 'De_nghi_cap_email_cong_vu.docx' : 'Danh_sach_cap_email_cong_vu.xlsx';
+
+      const picker = await promptSaveFile(defaultName);
+      if (picker.canceled) return;
+
+      const formData = new FormData();
+      for (let i = 0; i < wInput.files.length; i++) {
+        formData.append('word_files', wInput.files[i]);
+      }
+      formData.append('format', fmt);
+
+      setLoading('t9', true);
+      try {
+        const res = await fetch('/api/task-9?action=task-9', { method: 'POST', body: formData });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({ error: 'Lỗi máy chủ.' }));
+          throw new Error(errData.error || 'Xử lý thất bại.');
+        }
+        const blob = await res.blob();
+        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, defaultName);
+        if (picker.handle) {
+          showAlert('alert-t9', 'success', `✅ Đã lưu file "${savedName}" thành công tại vị trí bạn đã chọn!`);
+        } else {
+          showAlert('alert-t9', 'success', `✅ Đã tổng hợp và tải xuống danh sách cấp Email công vụ thành công!`);
+        }
+      } catch (err) {
+        showAlert('alert-t9', 'error', '❌ Lỗi: ' + err.message);
+      } finally {
+        setLoading('t9', false, '🚀 Bắt Đầu Tổng Hợp Danh Sách Email');
       }
     }
 
@@ -2739,6 +2953,31 @@ def handle_task_3():
 
         all_people = []
         for fname, dstream in doc_list:
+            people = parse_people_from_word_stream(fname, dstream, sso_map=None)
+            all_people.extend(people)
+
+        if not all_people:
+            return jsonify({"error": "Không trích xuất được bản ghi nào từ các file Word!"}), 400
+
+        out_io = build_mau_02_docx(all_people)
+        return send_file(
+            out_io,
+            as_attachment=True,
+            download_name="Cong_van_de_nghi_Mau_02.docx",
+            mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def handle_task_9():
+    try:
+        word_files = request.files.getlist("word_files")
+        doc_list = extract_word_documents_from_files(word_files)
+        if not doc_list:
+            return jsonify({"error": "Không tìm thấy file Word (.docx) hợp lệ nào!"}), 400
+
+        all_people = []
+        for fname, dstream in doc_list:
             people = parse_people_from_word_stream(fname, dstream)
             all_people.extend(people)
 
@@ -2908,6 +3147,8 @@ def dispatch_request(path=""):
             return handle_task_7()
         if "task-8" in matched or action == "task-8" or "process-cntt" in matched or "sheet_name" in request.form:
             return handle_task_8()
+        if "task-9" in matched or action == "task-9":
+            return handle_task_9()
         if "url" in request.form and "sheet_name" not in request.form:
             return handle_get_sheets()
 
@@ -2930,6 +3171,7 @@ def dispatch_request(path=""):
 @app.route("/api/task-6", methods=["GET", "POST"])
 @app.route("/api/task-7", methods=["GET", "POST"])
 @app.route("/api/task-8", methods=["GET", "POST"])
+@app.route("/api/task-9", methods=["GET", "POST"])
 @app.route("/api/process-giam-dinh", methods=["GET", "POST"])
 @app.route("/api/process-cntt", methods=["GET", "POST"])
 @app.route("/<path:path>", methods=["GET", "POST"])
