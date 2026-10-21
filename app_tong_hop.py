@@ -845,6 +845,19 @@ def run_task_vgca_word(word_input, log_func=print, progress_func=lambda v: None,
 
         file_people = []
 
+        # Nhận diện loại thiết bị ký số ở cấp độ toàn văn bản tài liệu
+        full_doc_text = "\n".join(p.text for p in doc.paragraphs) + "\n" + "\n".join(
+            " ".join(cell.text for cell in row.cells) for t in doc.tables for row in t.rows
+        )
+        norm_doc_full = remove_accents(full_doc_text).lower()
+        doc_device_type = ""
+        if "ky so tap trung" in norm_doc_full or "rssp" in norm_doc_full:
+            doc_device_type = "RSSP"
+        elif "sim pki" in norm_doc_full or "dang ky sim" in norm_doc_full:
+            doc_device_type = "SIM"
+        elif "token" in norm_doc_full:
+            doc_device_type = "TOKEN"
+
         # 1. Quét các bảng trong tài liệu
         for t_idx, table in enumerate(doc.tables):
             if not table.rows:
@@ -958,6 +971,20 @@ def run_task_vgca_word(word_input, log_func=print, progress_func=lambda v: None,
                 transfer_val = vals[transfer_idx] if transfer_idx != -1 and transfer_idx < len(vals) else ""
                 dev_val = vals[device_idx] if device_idx != -1 and device_idx < len(vals) else ""
 
+                if not dev_val and doc_device_type:
+                    dev_val = doc_device_type
+                elif dev_val.upper() in ["X", "CÓ", "CO", "ĐĂNG KÝ", "DANG KY"] and device_idx != -1:
+                    dev_val = "SIM" if "sim" in remove_accents(header_texts[device_idx]).lower() else (doc_device_type or "RSSP")
+
+                unit_val = vals[unit_idx] if unit_idx != -1 and unit_idx < len(vals) else ""
+                org3_val = DEFAULT_ORG3
+                if unit_val:
+                    u_norm = remove_accents(unit_val).lower()
+                    if any(k in u_norm for k in ["bvd-k", "benh vien", "bac ninh so 2", "khoa", "phong", "ttyt"]):
+                        org3_val = DEFAULT_ORG3
+                    else:
+                        org3_val = unit_val
+
                 person = {
                     "name": name_val,
                     "dob": dob_val,
@@ -967,7 +994,7 @@ def run_task_vgca_word(word_input, log_func=print, progress_func=lambda v: None,
                     "email": email_val,
                     "org1": DEFAULT_ORG1,
                     "org2": DEFAULT_ORG2,
-                    "org3": DEFAULT_ORG3,
+                    "org3": org3_val,
                     "org4": "",
                     "province": prov_val if prov_val else DEFAULT_PROVINCE,
                     "position": pos_val if pos_val else "Nhân viên",
@@ -1000,14 +1027,22 @@ def run_task_vgca_word(word_input, log_func=print, progress_func=lambda v: None,
                 phone_v = clean_text(m_phone.group(1)) if m_phone else ""
                 pos_v = clean_text(m_pos.group(1)) if m_pos else "Nhân viên"
 
+                org3_v = DEFAULT_ORG3
+                if m_unit:
+                    u_norm = remove_accents(m_unit.group(1)).lower()
+                    if any(k in u_norm for k in ["bvd-k", "benh vien", "bac ninh so 2", "khoa", "phong", "ttyt"]):
+                        org3_v = DEFAULT_ORG3
+                    else:
+                        org3_v = clean_text(m_unit.group(1))
+
                 file_people.append({
                     "name": name_v, "dob": dob_v, "cccd": format_cccd_output(cccd_v),
                     "issue_place": "CCSQLHCVTTXH", "issue_date": "", "email": email_v,
                     "org1": DEFAULT_ORG1, "org2": DEFAULT_ORG2,
-                    "org3": DEFAULT_ORG3,
+                    "org3": org3_v,
                     "org4": "",
                     "province": DEFAULT_PROVINCE, "position": pos_v, "phone": phone_v,
-                    "serial_old": "", "network": "", "is_transfer": "", "device_type": ""
+                    "serial_old": "", "network": "", "is_transfer": "", "device_type": doc_device_type
                 })
                 log_func(f"     + Lấy được từ đoạn văn: {name_v} - CCCD: {format_cccd_output(cccd_v)}")
 

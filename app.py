@@ -147,18 +147,32 @@ def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
         sso_map = {}
     try:
         doc = Document(doc_stream)
+        full_doc_text = "\n".join(p.text for p in doc.paragraphs) + "\n" + "\n".join(
+            " ".join(cell.text for cell in row.cells) for t in doc.tables for row in t.rows
+        )
+        norm_doc_full = remove_accents(full_doc_text).lower()
+        doc_device_type = ""
+        if "ky so tap trung" in norm_doc_full or "rssp" in norm_doc_full:
+            doc_device_type = "RSSP"
+        elif "sim pki" in norm_doc_full or "dang ky sim" in norm_doc_full:
+            doc_device_type = "SIM"
+        elif "token" in norm_doc_full:
+            doc_device_type = "TOKEN"
+
         for t_idx, table in enumerate(doc.tables):
             if not table.rows:
                 continue
             header_row_idx = -1
             name_idx, cccd_idx, dob_idx = -1, -1, -1
             issue_date_idx, issue_place_idx, email_idx = -1, -1, -1
-            unit_idx, pos_idx, phone_idx = -1, -1, -1
+            unit_idx, pos_idx, phone_idx, prov_idx = -1, -1, -1, -1
+            serial_idx, network_idx, transfer_idx, device_idx = -1, -1, -1, -1
 
             for r_idx, row in enumerate(table.rows[:min(4, len(table.rows))]):
                 header_texts = [clean_text(cell.text) for cell in row.cells]
                 t_name, t_cccd, t_dob, t_idate, t_iplace, t_email = -1, -1, -1, -1, -1, -1
-                t_unit, t_pos, t_phone = -1, -1, -1
+                t_unit, t_pos, t_phone, t_prov = -1, -1, -1, -1
+                t_serial, t_network, t_transfer, t_dev = -1, -1, -1, -1
 
                 for idx, col in enumerate(header_texts):
                     c_norm = remove_accents(col)
@@ -183,12 +197,23 @@ def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
                         if t_pos == -1: t_pos = idx
                     elif any(k in c_norm for k in ['sdt', 'dien thoai', 'di dong', 'phone']):
                         if t_phone == -1: t_phone = idx
+                    elif ("tinh" in c_norm or "thanh pho" in c_norm) and "don vi" not in c_norm and "gioi" not in c_norm:
+                        if t_prov == -1: t_prov = idx
+                    elif ("serial" in c_norm or "chung thu cu" in c_norm or "cts cu" in c_norm or "so hieu" in c_norm):
+                        if t_serial == -1: t_serial = idx
+                    elif ("nha mang" in c_norm or "mang" in c_norm):
+                        if t_network == -1: t_network = idx
+                    elif ("chuyen so" in c_norm):
+                        if t_transfer == -1: t_transfer = idx
+                    elif ("thiet bi" in c_norm or "sim" in c_norm or "pki" in c_norm):
+                        if t_dev == -1: t_dev = idx
 
                 if t_name != -1 and t_cccd != -1:
                     header_row_idx = r_idx
                     name_idx, cccd_idx, dob_idx = t_name, t_cccd, t_dob
                     issue_date_idx, issue_place_idx, email_idx = t_idate, t_iplace, t_email
-                    unit_idx, pos_idx, phone_idx = t_unit, t_pos, t_phone
+                    unit_idx, pos_idx, phone_idx, prov_idx = t_unit, t_pos, t_phone, t_prov
+                    serial_idx, network_idx, transfer_idx, device_idx = t_serial, t_network, t_transfer, t_dev
                     break
 
             if header_row_idx == -1:
@@ -223,6 +248,18 @@ def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
                 phone = vals[phone_idx] if phone_idx != -1 and phone_idx < len(vals) else ""
                 unit = vals[unit_idx] if unit_idx != -1 and unit_idx < len(vals) else ""
                 pos = vals[pos_idx] if pos_idx != -1 and pos_idx < len(vals) else ""
+                prov = vals[prov_idx] if prov_idx != -1 and prov_idx < len(vals) else DEFAULT_PROVINCE
+                if not prov or prov.lower() in ["nam", "nu", "nữ", ""]:
+                    prov = DEFAULT_PROVINCE
+                serial_val = vals[serial_idx] if serial_idx != -1 and serial_idx < len(vals) else ""
+                network_val = vals[network_idx] if network_idx != -1 and network_idx < len(vals) else ""
+                transfer_val = vals[transfer_idx] if transfer_idx != -1 and transfer_idx < len(vals) else ""
+                dev_val = vals[device_idx] if device_idx != -1 and device_idx < len(vals) else ""
+
+                if not dev_val and doc_device_type:
+                    dev_val = doc_device_type
+                elif dev_val.upper() in ["X", "CÓ", "CO", "ĐĂNG KÝ", "DANG KY"] and device_idx != -1:
+                    dev_val = "SIM" if "sim" in remove_accents(header_texts[device_idx]).lower() else (doc_device_type or "RSSP")
 
                 kn = norm_name(name_val)
                 kc = norm_cccd(cccd_clean)
@@ -232,6 +269,15 @@ def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
                     unit = sso_info.get("unit", DEFAULT_ORG3)
                 if not pos:
                     pos = sso_info.get("position", "Nhân viên")
+
+                # Chuẩn hóa org3
+                org3_val = DEFAULT_ORG3
+                if unit:
+                    u_norm = remove_accents(unit).lower()
+                    if any(k in u_norm for k in ["bvd-k", "benh vien", "bac ninh so 2", "khoa", "phong", "ttyt"]):
+                        org3_val = DEFAULT_ORG3
+                    else:
+                        org3_val = unit
 
                 email = sso_info.get("email", "")
                 if not email and email_idx != -1 and email_idx < len(vals):
@@ -250,9 +296,10 @@ def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
                 people.append({
                     "name": name_val, "dob": dob, "cccd": format_cccd_output(cccd_clean),
                     "issue_place": issue_place, "issue_date": issue_date, "email": email,
-                    "org1": DEFAULT_ORG1, "org2": DEFAULT_ORG2, "org3": unit if unit else DEFAULT_ORG3,
-                    "org4": "", "province": DEFAULT_PROVINCE, "position": pos if pos else "Nhân viên", "phone": phone,
-                    "serial_old": "", "network": "", "is_transfer": "", "device_type": ""
+                    "org1": DEFAULT_ORG1, "org2": DEFAULT_ORG2, "org3": org3_val,
+                    "org4": "", "province": prov if prov else DEFAULT_PROVINCE,
+                    "position": pos if pos else "Nhân viên", "phone": phone,
+                    "serial_old": serial_val, "network": network_val, "is_transfer": transfer_val, "device_type": dev_val
                 })
 
         # Nếu không có bảng dữ liệu, quét các đoạn văn bản (đơn đề nghị cá nhân)
@@ -291,12 +338,20 @@ def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
                 if pos_v == "Nhân viên" and sso_info.get("position"):
                     pos_v = sso_info.get("position")
 
+                org3_v = DEFAULT_ORG3
+                if unit_v:
+                    u_norm = remove_accents(unit_v).lower()
+                    if any(k in u_norm for k in ["bvd-k", "benh vien", "bac ninh so 2", "khoa", "phong", "ttyt"]):
+                        org3_v = DEFAULT_ORG3
+                    else:
+                        org3_v = unit_v
+
                 people.append({
                     "name": name_v, "dob": dob_v, "cccd": format_cccd_output(cccd_v),
                     "issue_place": iplace_v, "issue_date": idate_v, "email": email_v,
-                    "org1": DEFAULT_ORG1, "org2": DEFAULT_ORG2, "org3": unit_v if unit_v else DEFAULT_ORG3,
+                    "org1": DEFAULT_ORG1, "org2": DEFAULT_ORG2, "org3": org3_v,
                     "org4": "", "province": DEFAULT_PROVINCE, "position": pos_v, "phone": phone_v,
-                    "serial_old": "", "network": "", "is_transfer": "", "device_type": ""
+                    "serial_old": "", "network": "", "is_transfer": "", "device_type": doc_device_type
                 })
     except Exception as e:
         print(f"Lỗi đọc Word {filename}: {e}")
