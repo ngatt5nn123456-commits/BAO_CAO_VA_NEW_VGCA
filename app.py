@@ -1932,28 +1932,14 @@ HTML_PAGE = """<!DOCTYPE html>
             <div class="group-header-title">
               <span>📊 NHÓM BÁO CÁO & GIÁM ĐỊNH BHYT</span>
             </div>
-            <span class="group-header-badge">4 tác vụ</span>
+            <span class="group-header-badge">2 tác vụ</span>
           </div>
           <ul class="sidebar-menu">
-            <li data-task="4" onclick="switchTask(4)">
-              <div class="nav-icon">📊</div>
-              <div class="nav-text">
-                <span class="nav-title">4. Báo Cáo P.CNTT (File)</span>
-                <span class="nav-desc">Tổng hợp từ file Excel máy tính</span>
-              </div>
-            </li>
             <li data-task="5" onclick="switchTask(5)">
               <div class="nav-icon">🏥</div>
               <div class="nav-text">
                 <span class="nav-title">5. Giám Định BHYT</span>
                 <span class="nav-desc">Lọc người dùng & xuất Excel A4</span>
-              </div>
-            </li>
-            <li data-task="6" onclick="switchTask(6)">
-              <div class="nav-icon">🤖</div>
-              <div class="nav-text">
-                <span class="nav-title">6. P.CNTT Tự Động</span>
-                <span class="nav-desc">Quét từ link Google Sheets bất kỳ</span>
               </div>
             </li>
             <li data-task="8" onclick="switchTask(8)">

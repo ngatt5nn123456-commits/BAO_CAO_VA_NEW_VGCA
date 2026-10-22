@@ -2421,7 +2421,7 @@ class MainApp(tk.Tk):
         sb_title_box.pack(fill=tk.X, pady=(0, 6))
         tk.Label(
             sb_title_box,
-            text="📑 DANH MỤC TÁC VỤ (8 CHỨC NĂNG)",
+            text="📑 DANH MỤC TÁC VỤ",
             font=("Segoe UI", 9, "bold"),
             fg="#93c5fd", bg="#1e293b"
         ).pack(anchor="w")
@@ -2481,9 +2481,7 @@ class MainApp(tk.Tk):
             (1, "📌", "1. VGCA (Word + Excel SSO)", "Đối chiếu cấp CKS Word & Excel SSO"),
             (2, "📝", "2. CKS (Mẫu 02)", "Xuất Công văn Word Mẫu 02 (Có SSO)"),
             (3, "📝", "3. CKS (Mẫu CV02 chỉ đọc file Word)", "Đọc toàn bộ file Word xuất Mẫu 02"),
-            (4, "📊", "4. Báo Cáo P.CNTT", "Tổng hợp sửa chữa A4 ngang dòng 7"),
             (5, "🏥", "5. Giám Định BHYT", "Báo cáo cổng giám định A4 dọc"),
-            (6, "🤖", "6. P.CNTT Tự Động", "Quét từ link Google Sheets bất kỳ"),
             (7, "📄", "7. VGCA (Từ File Word)", "Đọc nhiều file Word không cần SSO"),
             (8, "⚡", "8. P.CNTT (Sheet Cố Định)", "Tự động tải Google Sheets cố định"),
             (9, "📧", "9. Cấp Email Công Vụ", "Tổng hợp danh sách xin cấp Email"),
