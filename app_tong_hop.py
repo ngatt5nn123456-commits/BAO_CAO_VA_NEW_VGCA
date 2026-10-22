@@ -2478,13 +2478,13 @@ class MainApp(tk.Tk):
         self.current_task = 1
 
         self.tasks_meta = [
-            (1, "📌", "1. VGCA (Word + Excel SSO)", "Đối chiếu cấp CKS Word & Excel SSO"),
-            (2, "📝", "2. CKS (Mẫu 02)", "Xuất Công văn Word Mẫu 02 (Có SSO)"),
-            (3, "📝", "3. CKS (Mẫu CV02 chỉ đọc file Word)", "Đọc toàn bộ file Word xuất Mẫu 02"),
-            (5, "🏥", "5. Giám Định BHYT", "Báo cáo cổng giám định A4 dọc"),
-            (7, "📄", "7. VGCA (Từ File Word)", "Đọc nhiều file Word không cần SSO"),
-            (8, "⚡", "8. P.CNTT (Sheet Cố Định)", "Tự động tải Google Sheets cố định"),
-            (9, "📧", "9. Cấp Email Công Vụ", "Tổng hợp danh sách xin cấp Email"),
+            (1, "📌", "VGCA (Word + Excel SSO)", "Đối chiếu cấp CKS Word & Excel SSO"),
+            (2, "📝", "CKS (Mẫu 02)", "Xuất Công văn Word Mẫu 02 (Có SSO)"),
+            (3, "📝", "CKS (Mẫu CV02 chỉ đọc file Word)", "Đọc toàn bộ file Word xuất Mẫu 02"),
+            (5, "🏥", "Giám Định BHYT", "Báo cáo cổng giám định A4 dọc"),
+            (7, "📄", "VGCA (Từ File Word)", "Đọc nhiều file Word không cần SSO"),
+            (8, "⚡", "P.CNTT (Sheet Cố Định)", "Tự động tải Google Sheets cố định"),
+            (9, "📧", "Cấp Email Công Vụ", "Tổng hợp danh sách xin cấp Email"),
         ]
 
         # Khởi tạo 8 trang nội dung và 8 mục chọn ở Sidebar

@@ -1871,10 +1871,10 @@ HTML_PAGE = """<!DOCTYPE html>
   <!-- MAIN BODY: SIDEBAR + CONTENT -->
   <div class="app-container">
 
-    <!-- SIDEBAR 9 TÁC VỤ ĐƯỢC CHIA THÀNH 2 NHÓM -->
+    <!-- SIDEBAR ĐƯỢC CHIA THÀNH 2 NHÓM -->
     <div class="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-title">📑 DANH MỤC TÁC VỤ (9 CHỨC NĂNG)</div>
+        <div class="sidebar-title">📑 DANH MỤC TÁC VỤ</div>
         <div class="sidebar-subtitle">Hệ thống phân thành 2 nhóm chuyên biệt</div>
       </div>
 
@@ -1891,35 +1891,35 @@ HTML_PAGE = """<!DOCTYPE html>
             <li class="active" data-task="1" onclick="switchTask(1)">
               <div class="nav-icon">🎯</div>
               <div class="nav-text">
-                <span class="nav-title">1. VGCA (Word + Excel SSO)</span>
+                <span class="nav-title">VGCA (Word + Excel SSO)</span>
                 <span class="nav-desc">Đối chiếu cấp CKS Word & Excel SSO</span>
               </div>
             </li>
             <li data-task="2" onclick="switchTask(2)">
               <div class="nav-icon">📝</div>
               <div class="nav-text">
-                <span class="nav-title">2. CKS (Công văn Mẫu 02)</span>
+                <span class="nav-title">CKS (Công văn Mẫu 02)</span>
                 <span class="nav-desc">Xuất Công văn Mẫu 02 (Có Excel SSO)</span>
               </div>
             </li>
             <li data-task="3" onclick="switchTask(3)">
               <div class="nav-icon">📝</div>
               <div class="nav-text">
-                <span class="nav-title">3. CKS (Mẫu CV02 chỉ đọc file Word)</span>
+                <span class="nav-title">CKS (Mẫu CV02 chỉ đọc file Word)</span>
                 <span class="nav-desc">Đọc toàn bộ file Word xuất Mẫu 02</span>
               </div>
             </li>
             <li data-task="7" onclick="switchTask(7)">
               <div class="nav-icon">📄</div>
               <div class="nav-text">
-                <span class="nav-title">7. VGCA (Từ File Word)</span>
+                <span class="nav-title">VGCA (Từ File Word)</span>
                 <span class="nav-desc">Đọc nhiều file Word không cần SSO</span>
               </div>
             </li>
             <li data-task="9" onclick="switchTask(9)">
               <div class="nav-icon">📧</div>
               <div class="nav-text">
-                <span class="nav-title">9. Cấp Email Công Vụ</span>
+                <span class="nav-title">Cấp Email Công Vụ</span>
                 <span class="nav-desc">Tổng hợp danh sách xin cấp Email</span>
               </div>
             </li>
@@ -1938,14 +1938,14 @@ HTML_PAGE = """<!DOCTYPE html>
             <li data-task="5" onclick="switchTask(5)">
               <div class="nav-icon">🏥</div>
               <div class="nav-text">
-                <span class="nav-title">5. Giám Định BHYT</span>
+                <span class="nav-title">Giám Định BHYT</span>
                 <span class="nav-desc">Lọc người dùng & xuất Excel A4</span>
               </div>
             </li>
             <li data-task="8" onclick="switchTask(8)">
               <div class="nav-icon">⚡</div>
               <div class="nav-text">
-                <span class="nav-title">8. P.CNTT (Sheet Cố Định)</span>
+                <span class="nav-title">P.CNTT (Sheet Cố Định)</span>
                 <span class="nav-desc">Tự động tải Google Sheets của viện</span>
               </div>
             </li>
@@ -1962,8 +1962,8 @@ HTML_PAGE = """<!DOCTYPE html>
     <!-- CONTENT AREA -->
     <div class="content-area">
       <div class="breadcrumb-bar">
-        <span class="badge" id="task-badge">TÁC VỤ 1</span>
-        <span class="breadcrumb-title" id="task-breadcrumb">🎯 1. VGCA (Word + Excel SSO)  ─  Đối chiếu cấp CKS Word & Excel SSO</span>
+        <span class="badge" id="task-badge">VGCA</span>
+        <span class="breadcrumb-title" id="task-breadcrumb">🎯 VGCA (Word + Excel SSO)  ─  Đối chiếu cấp CKS Word & Excel SSO</span>
       </div>
 
       <!-- ==================== TÁC VỤ 1 ==================== -->
@@ -2493,15 +2493,13 @@ HTML_PAGE = """<!DOCTYPE html>
 
   <script>
     const taskMeta = {
-      1: { badge: 'TÁC VỤ 1', title: '🎯 1. VGCA (Word + Excel SSO)  ─  Đối chiếu cấp CKS Word & Excel SSO' },
-      2: { badge: 'TÁC VỤ 2', title: '📝 2. CKS (Công văn Mẫu 02)  ─  Xuất Công văn Word Mẫu 02 chuẩn' },
-      3: { badge: 'TÁC VỤ 3', title: '📝 3. CKS (Mẫu CV02 chỉ đọc file Word)  ─  Đọc toàn bộ file Word xuất Mẫu 02' },
-      4: { badge: 'TÁC VỤ 4', title: '📊 4. Báo Cáo P.CNTT (File)  ─  Tổng hợp từ file Excel máy tính' },
-      5: { badge: 'TÁC VỤ 5', title: '🏥 5. Giám Định BHYT  ─  Lọc người dùng & xuất Excel A4 dọc' },
-      6: { badge: 'TÁC VỤ 6', title: '🤖 6. P.CNTT Tự Động  ─  Quét từ link Google Sheets bất kỳ' },
-      7: { badge: 'TÁC VỤ 7', title: '📄 7. VGCA (Từ File Word)  ─  Đọc nhiều file Word không cần SSO' },
-      8: { badge: 'TÁC VỤ 8', title: '⚡ 8. P.CNTT (Sheet Cố Định)  ─  Tự động tải Google Sheets của viện' },
-      9: { badge: 'TÁC VỤ 9', title: '📧 9. Cấp Email Công Vụ  ─  Tổng hợp danh sách xin cấp Email' }
+      1: { badge: 'VGCA', title: '🎯 VGCA (Word + Excel SSO)  ─  Đối chiếu cấp CKS Word & Excel SSO' },
+      2: { badge: 'MẪU 02', title: '📝 CKS (Công văn Mẫu 02)  ─  Xuất Công văn Word Mẫu 02 chuẩn' },
+      3: { badge: 'MẪU 02 (WORD)', title: '📝 CKS (Mẫu CV02 chỉ đọc file Word)  ─  Đọc toàn bộ file Word xuất Mẫu 02' },
+      5: { badge: 'GIÁM ĐỊNH BHYT', title: '🏥 Giám Định BHYT  ─  Lọc người dùng & xuất Excel A4 dọc' },
+      7: { badge: 'VGCA (WORD)', title: '📄 VGCA (Từ File Word)  ─  Đọc nhiều file Word không cần SSO' },
+      8: { badge: 'P.CNTT', title: '⚡ P.CNTT (Sheet Cố Định)  ─  Tự động tải Google Sheets của viện' },
+      9: { badge: 'EMAIL CÔNG VỤ', title: '📧 Cấp Email Công Vụ  ─  Tổng hợp danh sách xin cấp Email' }
     };
 
     function switchTask(taskId) {
