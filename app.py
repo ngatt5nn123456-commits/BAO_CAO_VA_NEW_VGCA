@@ -34,6 +34,9 @@ DEFAULT_ORG3 = "BỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2"
 DEFAULT_PROVINCE = "Bắc Ninh"
 
 DEFAULT_FIXED_GSHEET_URL = "https://docs.google.com/spreadsheets/d/1_I7qmDx7mtIOcCLkEkDz_PCaC8KPd_Po-pqEh7krdPA/edit?gid=800962139#gid=800962139"
+DEFAULT_ERROR_TRACKER_URL = "https://docs.google.com/spreadsheets/d/1VJ3_I4ehRDLSbm5w0CHAODtS8Y4fN3b-wsvo4p4ANVI/edit?gid=637670018#gid=637670018"
+_DM_KHOA_CACHE = {}
+_TRACKER_SHEETS_CACHE = {}
 
 ALLOWED_USERS = {
     "PHCN", "NGOẠI TH", "XNTT", "NHH", "TTTM", "NGOẠI CT", "DA LIỄU", "PTGMHS",
@@ -1847,10 +1850,104 @@ HTML_PAGE = """<!DOCTYPE html>
     }
     @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+    /* TÁC VỤ 10: THỐNG KÊ LỖI XML BHYT */
+    .tracker-card {
+      background: white; border-radius: var(--radius); border: 1px solid var(--border);
+      padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px;
+    }
+    .tracker-header-box {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
+      margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border);
+    }
+    .tracker-title-box h2 { font-size: 1.15rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+    .tracker-title-box p { font-size: 0.82rem; color: var(--text-muted); margin-top: 3px; }
+
+    .tracker-filter-bar {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px;
+      align-items: flex-end; background: #f8fafc; padding: 16px; border-radius: 10px; border: 1px solid #e2e8f0;
+    }
+    .tracker-filter-item { display: flex; flex-direction: column; gap: 5px; }
+    .tracker-filter-item label { font-size: 0.76rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.4px; }
+    .tracker-select, .tracker-input {
+      padding: 8px 12px; font-size: 0.85rem; border-radius: 7px; border: 1px solid #cbd5e1;
+      background: white; color: #0f172a; outline: none; transition: border-color 0.15s; width: 100%;
+    }
+    .tracker-select:focus, .tracker-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }
+
+    .tracker-stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 22px;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; position: relative; overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .stat-card.c-total::before { background: linear-gradient(90deg, #ef4444, #f97316); }
+    .stat-card.c-unique::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .stat-card.c-khoa::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+    .stat-card.c-phong::before { background: linear-gradient(90deg, #10b981, #34d399); }
+    .stat-card.c-xml::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+
+    .stat-card-title { font-size: 0.74rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
+    .stat-card-value { font-size: 1.65rem; font-weight: 800; color: #0f172a; line-height: 1.1; }
+    .stat-card-sub { font-size: 0.72rem; color: #94a3b8; margin-top: 4px; }
+
+    .tracker-cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 22px; }
+
+    .ranking-box {
+      border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; max-height: 320px; overflow-y: auto;
+    }
+    .ranking-item {
+      display: flex; align-items: center; justify-content: space-between; padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s; font-size: 0.85rem;
+    }
+    .ranking-item:hover { background: #f0fdf4; }
+    .ranking-item:last-child { border-bottom: none; }
+    .ranking-name { font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 8px; flex: 1; }
+    .ranking-count-badge {
+      background: #fee2e2; color: #dc2626; font-weight: 800; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem;
+    }
+    .ranking-bar-bg { width: 90px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin-left: 12px; }
+    .ranking-bar-fill { height: 100%; background: #3b82f6; border-radius: 3px; }
+
+    .tracker-table-wrap {
+      border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; max-height: 540px; overflow-y: auto; background: white;
+    }
+    .tracker-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; text-align: left; }
+    .tracker-table th {
+      background: #f8fafc; color: #475569; font-weight: 700; font-size: 0.77rem; text-transform: uppercase;
+      padding: 10px 14px; border-bottom: 1px solid #cbd5e1; position: sticky; top: 0; z-index: 5;
+    }
+    .tracker-table td { padding: 9px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: top; color: #1e293b; }
+    .tracker-table tr:hover td { background: #f8fafc; }
+
+    .badge-xml {
+      display: inline-block; padding: 2px 7px; border-radius: 5px; font-size: 0.72rem; font-weight: 800;
+      letter-spacing: 0.3px; text-transform: uppercase; white-space: nowrap;
+    }
+    .badge-xml1 { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
+    .badge-xml2 { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-xml3 { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .badge-xml4 { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .badge-xml5 { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+    .badge-xml13 { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; }
+    .badge-xml-default { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+
+    .btn-copy-hs {
+      background: none; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 1px 5px; font-size: 0.72rem;
+      cursor: pointer; color: #475569; margin-left: 6px; transition: all 0.15s;
+    }
+    .btn-copy-hs:hover { background: #eff6ff; color: #2563eb; border-color: #93c5fd; }
+
     @media (max-width: 992px) {
       .app-container { flex-direction: column; }
       .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid #1e293b; }
       .two-col-grid { grid-template-columns: 1fr; }
+      .tracker-cols-2 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -1932,7 +2029,7 @@ HTML_PAGE = """<!DOCTYPE html>
             <div class="group-header-title">
               <span>📊 NHÓM BÁO CÁO & GIÁM ĐỊNH BHYT</span>
             </div>
-            <span class="group-header-badge">2 tác vụ</span>
+            <span class="group-header-badge">3 tác vụ</span>
           </div>
           <ul class="sidebar-menu">
             <li data-task="5" onclick="switchTask(5)">
@@ -1947,6 +2044,13 @@ HTML_PAGE = """<!DOCTYPE html>
               <div class="nav-text">
                 <span class="nav-title">P.CNTT (Sheet Cố Định)</span>
                 <span class="nav-desc">Tự động tải Google Sheets của viện</span>
+              </div>
+            </li>
+            <li data-task="10" onclick="switchTask(10)">
+              <div class="nav-icon">📊</div>
+              <div class="nav-text">
+                <span class="nav-title">Thống Kê Lỗi XML BHYT</span>
+                <span class="nav-desc">Google Sheets • Lọc Khoa/Phòng & Lỗi</span>
               </div>
             </li>
           </ul>
@@ -2488,6 +2592,148 @@ HTML_PAGE = """<!DOCTYPE html>
         </div>
       </div>
 
+      <!-- ==================== TÁC VỤ 10: THỐNG KÊ LỖI XML BHYT ==================== -->
+      <div class="page" id="page-task-10">
+        <div class="tracker-card">
+          <div class="tracker-header-box">
+            <div class="tracker-title-box">
+              <h2>📊 Bảng Điều Khiển Thống Kê & Lọc Lỗi XML Đẩy Cổng Giám Định BHYT</h2>
+              <p>Chỉ đọc dữ liệu từ Google Sheets: <a href="https://docs.google.com/spreadsheets/d/1VJ3_I4ehRDLSbm5w0CHAODtS8Y4fN3b-wsvo4p4ANVI/edit?gid=637670018#gid=637670018" target="_blank" style="color:#2563eb; text-decoration:underline; font-weight:600;">Xem file gốc trên Google Drive ↗</a></p>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <button type="button" class="btn btn-secondary" onclick="loadTrackerSheets(true)" title="Cập nhật lại danh sách Sheet">
+                🔄 Làm Mới Sheets
+              </button>
+              <button type="button" class="btn" onclick="exportTrackerExcel()" id="btn-tracker-export" style="width:auto; padding:8px 16px; font-size:0.85rem; background:linear-gradient(135deg, #059669 0%, #047857 100%);">
+                📥 Xuất Báo Cáo Excel
+              </button>
+            </div>
+          </div>
+
+          <!-- THANH CÔNG CỤ LỌC -->
+          <div class="tracker-filter-bar">
+            <div class="tracker-filter-item">
+              <label>📅 Chọn Sheet Ngày:</label>
+              <select id="tracker-sheet-select" class="tracker-select" onchange="onTrackerSheetChange()">
+                <option value="">⏳ Đang nạp danh sách sheet...</option>
+              </select>
+            </div>
+            <div class="tracker-filter-item">
+              <label>🏥 Lọc Theo Khoa:</label>
+              <select id="tracker-khoa-select" class="tracker-select" onchange="applyTrackerFilters()">
+                <option value="ALL">-- Tất Cả Khoa --</option>
+              </select>
+            </div>
+            <div class="tracker-filter-item">
+              <label>🩺 Lọc Phòng Khám:</label>
+              <select id="tracker-phong-select" class="tracker-select" onchange="applyTrackerFilters()">
+                <option value="ALL">-- Tất Cả Phòng --</option>
+              </select>
+            </div>
+            <div class="tracker-filter-item">
+              <label>📑 Lọc Bảng XML:</label>
+              <select id="tracker-xml-select" class="tracker-select" onchange="applyTrackerFilters()">
+                <option value="ALL">-- Tất Cả Bảng XML --</option>
+              </select>
+            </div>
+            <div class="tracker-filter-item" style="grid-column: span 2;">
+              <label>🔍 Tìm Kiếm (Mã HS, Nội dung lỗi):</label>
+              <input type="text" id="tracker-search-input" class="tracker-input" placeholder="Nhập mã hồ sơ hoặc từ khóa lỗi..." oninput="applyTrackerFilters()">
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 THẺ THỐNG KÊ TỔNG QUAN -->
+        <div class="tracker-stats-grid">
+          <div class="stat-card c-total">
+            <div class="stat-card-title">⚠️ Tổng Số Lỗi</div>
+            <div class="stat-card-value" id="stat-total-errors">0</div>
+            <div class="stat-card-sub" id="stat-sub-errors">Đang tải...</div>
+          </div>
+          <div class="stat-card c-unique">
+            <div class="stat-card-title">📑 Hồ Sơ Bị Lỗi</div>
+            <div class="stat-card-value" id="stat-unique-hs">0</div>
+            <div class="stat-card-sub">Hồ sơ khác nhau</div>
+          </div>
+          <div class="stat-card c-khoa">
+            <div class="stat-card-title">🏥 Khoa Vi Phạm</div>
+            <div class="stat-card-value" id="stat-total-khoa">0</div>
+            <div class="stat-card-sub">Có hồ sơ phát sinh lỗi</div>
+          </div>
+          <div class="stat-card c-phong">
+            <div class="stat-card-title">🩺 Phòng Khám Lỗi</div>
+            <div class="stat-card-value" id="stat-total-phong">0</div>
+            <div class="stat-card-sub">Phòng ngoại trú ghi nhận</div>
+          </div>
+          <div class="stat-card c-xml">
+            <div class="stat-card-title">📑 XML Lỗi Nhiều Nhất</div>
+            <div class="stat-card-value" id="stat-top-xml">-</div>
+            <div class="stat-card-sub" id="stat-top-xml-sub">Tỷ lệ lỗi cao nhất</div>
+          </div>
+        </div>
+
+        <!-- 2 KHỐI THỐNG KÊ CHI TIẾT: KHOA & BẢNG XML -->
+        <div class="tracker-cols-2">
+          <!-- Cột 1: Xếp hạng Khoa -->
+          <div class="tracker-card" style="margin-bottom:0;">
+            <div class="tracker-title-box" style="margin-bottom:12px;">
+              <h2>🏥 Xếp Hạng Lỗi Theo Khoa <span style="font-size:0.75rem; color:#64748b; font-weight:normal;">(Nhấp vào khoa để lọc nhanh)</span></h2>
+            </div>
+            <div class="ranking-box" id="tracker-khoa-ranking">
+              <div style="padding:16px; text-align:center; color:#94a3b8;">Đang nạp dữ liệu thống kê...</div>
+            </div>
+          </div>
+
+          <!-- Cột 2: Thống kê XML & Top lỗi -->
+          <div class="tracker-card" style="margin-bottom:0;">
+            <div class="tracker-title-box" style="margin-bottom:12px;">
+              <h2>📑 Cơ Cấu Bảng XML & Nhóm Lỗi Thường Gặp</h2>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;" id="tracker-xml-chips">
+            </div>
+            <div style="font-size:0.76rem; font-weight:700; color:#475569; text-transform:uppercase; margin-bottom:8px;">Top Nhóm Lỗi Phổ Biến:</div>
+            <div class="ranking-box" style="max-height:220px;" id="tracker-top-errors-box">
+              <div style="padding:16px; text-align:center; color:#94a3b8;">Đang nạp dữ liệu...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BẢNG CHI TIẾT HỒ SƠ LỖI -->
+        <div class="tracker-card" style="margin-top:20px;">
+          <div class="tracker-header-box" style="margin-bottom:12px; padding-bottom:10px;">
+            <div class="tracker-title-box">
+              <h2>📋 Danh Sách Chi Tiết Các Bản Ghi Lỗi</h2>
+              <p id="tracker-table-summary">Hiển thị 0 / 0 hồ sơ lỗi</p>
+            </div>
+            <div id="tracker-active-filter-badge" style="display:none; font-size:0.8rem; background:#eff6ff; color:#1d4ed8; padding:4px 10px; border-radius:6px; border:1px solid #bfdbfe;">
+            </div>
+          </div>
+
+          <div class="tracker-table-wrap">
+            <table class="tracker-table" id="tracker-records-table">
+              <thead>
+                <tr>
+                  <th style="width: 45px; text-align:center;">STT</th>
+                  <th style="width: 140px;">Mã Hồ Sơ</th>
+                  <th style="width: 150px;">Ngày Giờ Đẩy</th>
+                  <th style="width: 85px; text-align:center;">Bảng XML</th>
+                  <th style="width: 220px;">Khoa / Bộ Phận</th>
+                  <th style="width: 220px;">Phòng Khám</th>
+                  <th>Nội Dung Chi Tiết Lỗi</th>
+                </tr>
+              </thead>
+              <tbody id="tracker-records-tbody">
+                <tr>
+                  <td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">
+                    ⏳ Đang tải dữ liệu hồ sơ lỗi...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -2499,7 +2745,8 @@ HTML_PAGE = """<!DOCTYPE html>
       5: { badge: 'GIÁM ĐỊNH BHYT', title: '🏥 Giám Định BHYT  ─  Lọc người dùng & xuất Excel A4 dọc' },
       7: { badge: 'VGCA (WORD)', title: '📄 VGCA (Từ File Word)  ─  Đọc nhiều file Word không cần SSO' },
       8: { badge: 'P.CNTT', title: '⚡ P.CNTT (Sheet Cố Định)  ─  Tự động tải Google Sheets của viện' },
-      9: { badge: 'EMAIL CÔNG VỤ', title: '📧 Cấp Email Công Vụ  ─  Tổng hợp danh sách xin cấp Email' }
+      9: { badge: 'EMAIL CÔNG VỤ', title: '📧 Cấp Email Công Vụ  ─  Tổng hợp danh sách xin cấp Email' },
+      10: { badge: 'LỖI XML BHYT', title: '📊 Thống Kê & Lọc Lỗi XML BHYT (Google Sheets) ─ Đọc & Tra Cứu Lỗi Đẩy Cổng BHYT' }
     };
 
     function switchTask(taskId) {
@@ -2515,6 +2762,9 @@ HTML_PAGE = """<!DOCTYPE html>
       if (meta) {
         document.getElementById('task-badge').textContent = meta.badge;
         document.getElementById('task-breadcrumb').textContent = meta.title;
+      }
+      if (taskId === 10) {
+        initErrorTracker();
       }
     }
 
@@ -3052,6 +3302,333 @@ HTML_PAGE = """<!DOCTYPE html>
       }
     }
 
+    // ============================================================
+    // LOGIC TÁC VỤ 10: THỐNG KÊ & LỌC LỖI XML BHYT
+    // ============================================================
+    let trackerInitialized = false;
+    let currentTrackerSheet = '';
+    let trackerAllRecords = [];
+    let trackerFilteredRecords = [];
+
+    async function initErrorTracker() {
+      if (trackerInitialized) return;
+      trackerInitialized = true;
+      await loadTrackerSheets();
+    }
+
+    async function loadTrackerSheets(forceReload = false) {
+      const select = document.getElementById('tracker-sheet-select');
+      select.innerHTML = '<option value="">⏳ Đang nạp danh sách sheet ngày...</option>';
+      try {
+        const res = await fetch('/api/error-tracker/sheets' + (forceReload ? '?action=error-tracker-sheets&reload=1' : '?action=error-tracker-sheets'));
+        if (!res.ok) throw new Error('Không thể tải danh sách sheets.');
+        const data = await res.json();
+        if (!data.sheets || data.sheets.length === 0) {
+          select.innerHTML = '<option value="">Không tìm thấy sheet nào</option>';
+          return;
+        }
+
+        select.innerHTML = '';
+        data.sheets.forEach((s) => {
+          const opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = 'Ngày ' + s;
+          if (s === data.default_sheet) opt.selected = true;
+          select.appendChild(opt);
+        });
+
+        currentTrackerSheet = select.value;
+        await loadTrackerSheetData(currentTrackerSheet);
+      } catch (err) {
+        select.innerHTML = '<option value="">❌ Lỗi tải sheet</option>';
+        alert('Lỗi tải danh sách sheets: ' + err.message);
+      }
+    }
+
+    async function onTrackerSheetChange() {
+      const select = document.getElementById('tracker-sheet-select');
+      const sheet = select.value;
+      if (!sheet) return;
+      currentTrackerSheet = sheet;
+      await loadTrackerSheetData(sheet);
+    }
+
+    async function loadTrackerSheetData(sheetName) {
+      const tbody = document.getElementById('tracker-records-tbody');
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#2563eb;">⏳ Đang tải và phân tích dữ liệu ngày ' + sheetName + '...</td></tr>';
+
+      try {
+        const res = await fetch('/api/error-tracker/data?action=error-tracker-data&sheet=' + encodeURIComponent(sheetName));
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || ('Lỗi máy chủ ' + res.status));
+        }
+        const data = await res.json();
+        trackerAllRecords = data.records || [];
+
+        // Nạp dropdown Khoa
+        const kSel = document.getElementById('tracker-khoa-select');
+        kSel.innerHTML = '<option value="ALL">-- Tất Cả Khoa (' + (data.total_khoa || 0) + ') --</option>';
+        (data.khoa_list || []).forEach(k => {
+          const opt = document.createElement('option');
+          opt.value = k.name;
+          opt.textContent = `${k.name} (${k.count})`;
+          kSel.appendChild(opt);
+        });
+
+        // Nạp dropdown Phòng
+        const pSel = document.getElementById('tracker-phong-select');
+        pSel.innerHTML = '<option value="ALL">-- Tất Cả Phòng (' + (data.total_phong || 0) + ') --</option>';
+        (data.phong_list || []).forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.name;
+          opt.textContent = `${p.name} (${p.count})`;
+          pSel.appendChild(opt);
+        });
+
+        // Nạp dropdown XML
+        const xSel = document.getElementById('tracker-xml-select');
+        xSel.innerHTML = '<option value="ALL">-- Tất Cả Bảng XML --</option>';
+        (data.xml_list || []).forEach(x => {
+          const opt = document.createElement('option');
+          opt.value = x.name;
+          opt.textContent = `${x.name} (${x.count})`;
+          xSel.appendChild(opt);
+        });
+
+        applyTrackerFilters();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:#dc2626;">❌ Không thể tải dữ liệu: ${err.message}</td></tr>`;
+      }
+    }
+
+    function applyTrackerFilters() {
+      const kVal = document.getElementById('tracker-khoa-select').value;
+      const pVal = document.getElementById('tracker-phong-select').value;
+      const xVal = document.getElementById('tracker-xml-select').value;
+      const search = document.getElementById('tracker-search-input').value.trim().toLowerCase();
+
+      let filtered = trackerAllRecords.filter(r => {
+        if (kVal !== 'ALL' && r.khoa !== kVal) return false;
+        if (pVal !== 'ALL' && r.phong !== pVal) return false;
+        if (xVal !== 'ALL' && r.xml !== xVal) return false;
+        if (search) {
+          const matchHs = r.hs && r.hs.toLowerCase().includes(search);
+          const matchLoi = r.loi && r.loi.toLowerCase().includes(search);
+          const matchKhoa = r.khoa && r.khoa.toLowerCase().includes(search);
+          const matchPhong = r.phong && r.phong.toLowerCase().includes(search);
+          if (!matchHs && !matchLoi && !matchKhoa && !matchPhong) return false;
+        }
+        return true;
+      });
+
+      trackerFilteredRecords = filtered;
+      renderTrackerStats(filtered);
+      renderTrackerTable(filtered);
+    }
+
+    function renderTrackerStats(records) {
+      const totalErrors = records.length;
+      const uniqueHs = new Set(records.map(r => r.hs).filter(Boolean)).size;
+      const khoaSet = new Set(records.map(r => r.khoa).filter(Boolean));
+      const phongSet = new Set(records.map(r => r.phong).filter(Boolean));
+
+      document.getElementById('stat-total-errors').textContent = totalErrors.toLocaleString();
+      document.getElementById('stat-sub-errors').textContent = `Ngày ${currentTrackerSheet}`;
+      document.getElementById('stat-unique-hs').textContent = uniqueHs.toLocaleString();
+      document.getElementById('stat-total-khoa').textContent = khoaSet.size;
+      document.getElementById('stat-total-phong').textContent = phongSet.size;
+
+      // XML stats
+      const xmlCounts = {};
+      records.forEach(r => {
+        if (r.xml) xmlCounts[r.xml] = (xmlCounts[r.xml] || 0) + 1;
+      });
+      const sortedXml = Object.entries(xmlCounts).sort((a,b) => b[1] - a[1]);
+      if (sortedXml.length > 0) {
+        const top = sortedXml[0];
+        const pct = totalErrors > 0 ? Math.round((top[1] / totalErrors) * 100) : 0;
+        document.getElementById('stat-top-xml').textContent = top[0];
+        document.getElementById('stat-top-xml-sub').textContent = `${top[1]} lỗi (${pct}%)`;
+      } else {
+        document.getElementById('stat-top-xml').textContent = '-';
+        document.getElementById('stat-top-xml-sub').textContent = 'Chưa có lỗi';
+      }
+
+      // XML Chips
+      const chipsBox = document.getElementById('tracker-xml-chips');
+      if (sortedXml.length > 0) {
+        chipsBox.innerHTML = sortedXml.map(([name, count]) => {
+          const badgeClass = getXmlBadgeClass(name);
+          return `<span class="badge-xml ${badgeClass}" style="cursor:pointer; font-size:0.8rem; padding:4px 9px;" onclick="filterByXmlQuick('${name}')">${name}: <b>${count}</b></span>`;
+        }).join('');
+      } else {
+        chipsBox.innerHTML = '<span style="color:#94a3b8; font-size:0.82rem;">Không có dữ liệu</span>';
+      }
+
+      // Khoa ranking
+      const khoaCounts = {};
+      records.forEach(r => {
+        const k = r.khoa || 'Chưa xác định';
+        khoaCounts[k] = (khoaCounts[k] || 0) + 1;
+      });
+      const sortedKhoa = Object.entries(khoaCounts).sort((a,b) => b[1] - a[1]);
+      const rankingBox = document.getElementById('tracker-khoa-ranking');
+      if (sortedKhoa.length > 0) {
+        const maxK = sortedKhoa[0][1];
+        rankingBox.innerHTML = sortedKhoa.map(([name, count], idx) => {
+          const pct = Math.round((count / maxK) * 100);
+          const safeName = name.replace(/'/g, "\\'");
+          return `
+            <div class="ranking-item" onclick="filterByKhoaQuick('${safeName}')" title="Nhấp để lọc ${name}">
+              <div class="ranking-name">
+                <span style="color:#94a3b8; font-size:0.75rem; width:20px;">#${idx+1}</span>
+                <span>${name}</span>
+              </div>
+              <div style="display:flex; align-items:center;">
+                <span class="ranking-count-badge">${count} lỗi</span>
+                <div class="ranking-bar-bg"><div class="ranking-bar-fill" style="width:${pct}%;"></div></div>
+              </div>
+            </div>`;
+        }).join('');
+      } else {
+        rankingBox.innerHTML = '<div style="padding:16px; text-align:center; color:#94a3b8;">Không có dữ liệu phù hợp bộ lọc</div>';
+      }
+
+      // Top errors patterns
+      const loiCounts = {};
+      records.forEach(r => {
+        const l = r.loi || '';
+        const firstLine = l.split('\n')[0].trim();
+        let pat = firstLine.length > 70 ? firstLine.substring(0, 70) + '...' : firstLine;
+        loiCounts[pat] = (loiCounts[pat] || 0) + 1;
+      });
+      const sortedLoi = Object.entries(loiCounts).sort((a,b) => b[1] - a[1]).slice(0, 8);
+      const topErrorsBox = document.getElementById('tracker-top-errors-box');
+      if (sortedLoi.length > 0) {
+        topErrorsBox.innerHTML = sortedLoi.map(([rule, count]) => `
+          <div class="ranking-item" style="cursor:default;">
+            <div class="ranking-name" style="font-size:0.8rem; line-height:1.3;">
+              <span style="color:#ef4444; font-weight:700;">•</span>
+              <span>${rule}</span>
+            </div>
+            <span class="ranking-count-badge" style="background:#fee2e2; color:#b91c1c;">${count}</span>
+          </div>`).join('');
+      } else {
+        topErrorsBox.innerHTML = '<div style="padding:16px; text-align:center; color:#94a3b8;">Không có dữ liệu</div>';
+      }
+    }
+
+    function renderTrackerTable(records) {
+      const tbody = document.getElementById('tracker-records-tbody');
+      const summary = document.getElementById('tracker-table-summary');
+      summary.textContent = `Hiển thị ${records.length} / ${trackerAllRecords.length} hồ sơ lỗi (Ngày ${currentTrackerSheet})`;
+
+      if (!records || records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">🔍 Không tìm thấy bản ghi nào khớp với điều kiện lọc hiện tại.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = records.map((r, i) => {
+        const badgeClass = getXmlBadgeClass(r.xml);
+        const escapedLoi = (r.loi || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+        return `
+          <tr>
+            <td style="text-align:center; font-weight:700; color:#64748b;">${i + 1}</td>
+            <td>
+              <span style="font-family:monospace; font-weight:700; color:#1e293b; font-size:0.88rem;">${r.hs || '-'}</span>
+              ${r.hs ? `<button type="button" class="btn-copy-hs" onclick="copyHsToClipboard('${r.hs}')" title="Copy mã HS">📋</button>` : ''}
+            </td>
+            <td style="color:#475569; font-size:0.8rem; white-space:nowrap;">${r.ngay || '-'}</td>
+            <td style="text-align:center;"><span class="badge-xml ${badgeClass}">${r.xml || '-'}</span></td>
+            <td><b style="color:#0f172a;">${r.khoa || '-'}</b></td>
+            <td style="color:#334155;">${r.phong || '-'}</td>
+            <td style="line-height:1.4; color:#991b1b; font-size:0.82rem;">${escapedLoi || '-'}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    function getXmlBadgeClass(xml) {
+      if (!xml) return 'badge-xml-default';
+      const x = xml.toUpperCase().trim();
+      if (x === 'XML1') return 'badge-xml1';
+      if (x === 'XML2') return 'badge-xml2';
+      if (x === 'XML3') return 'badge-xml3';
+      if (x === 'XML4') return 'badge-xml4';
+      if (x === 'XML5') return 'badge-xml5';
+      if (x === 'XML13') return 'badge-xml13';
+      return 'badge-xml-default';
+    }
+
+    function filterByKhoaQuick(khoaName) {
+      const kSel = document.getElementById('tracker-khoa-select');
+      kSel.value = khoaName;
+      applyTrackerFilters();
+      kSel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function filterByXmlQuick(xmlName) {
+      const xSel = document.getElementById('tracker-xml-select');
+      xSel.value = xmlName;
+      applyTrackerFilters();
+      xSel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function copyHsToClipboard(hs) {
+      if (!hs) return;
+      navigator.clipboard.writeText(hs).then(() => {
+        alert('Đã copy mã hồ sơ: ' + hs);
+      }).catch(() => {
+        prompt('Copy mã hồ sơ:', hs);
+      });
+    }
+
+    async function exportTrackerExcel() {
+      if (!trackerFilteredRecords || trackerFilteredRecords.length === 0) {
+        alert('Không có dữ liệu nào để xuất!');
+        return;
+      }
+
+      const defaultFileName = `Bao_cao_loi_XML_${currentTrackerSheet.replace(/[^a-zA-Z0-9.-]/g, '_')}.xlsx`;
+      const picker = await promptSaveFile(defaultFileName);
+      if (picker.canceled) return;
+
+      const btn = document.getElementById('btn-tracker-export');
+      const oldTxt = btn.innerHTML;
+      btn.innerHTML = '⏳ Đang Xuất File...';
+      btn.disabled = true;
+
+      try {
+        const payload = {
+          sheet: currentTrackerSheet,
+          records: trackerFilteredRecords,
+          filter_khoa: document.getElementById('tracker-khoa-select').value,
+          filter_phong: document.getElementById('tracker-phong-select').value,
+          filter_xml: document.getElementById('tracker-xml-select').value
+        };
+
+        const res = await fetch('/api/error-tracker/export?action=error-tracker-export', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Lỗi xuất file Excel.');
+        }
+
+        const blob = await res.blob();
+        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, defaultFileName);
+        alert(`✅ Đã lưu file "${savedName}" thành công!`);
+      } catch (err) {
+        alert('❌ Lỗi xuất file: ' + err.message);
+      } finally {
+        btn.innerHTML = oldTxt;
+        btn.disabled = false;
+      }
+    }
+
   </script>
 </body>
 </html>
@@ -3305,6 +3882,342 @@ def handle_task_8():
         return jsonify({"error": str(e)}), 500
 
 # ============================================================
+# LOGIC TÁC VỤ 10: THỐNG KÊ & LỌC LỖI XML BHYT (GOOGLE SHEETS)
+# ============================================================
+def get_dm_khoa_mapping(url=None):
+    url = url or DEFAULT_ERROR_TRACKER_URL
+    sid = extract_spreadsheet_id(url)
+    if sid in _DM_KHOA_CACHE:
+        return _DM_KHOA_CACHE[sid]
+
+    encoded = urllib.parse.quote('Danh mục khoa phòng')
+    csv_url = f"https://docs.google.com/spreadsheets/d/{sid}/gviz/tq?tqx=out:csv&sheet={encoded}"
+    mapping = {}
+    try:
+        req = urllib.request.Request(csv_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            content = resp.read().decode('utf-8', errors='ignore')
+        reader = csv.reader(io.StringIO(content))
+        rows = list(reader)
+        for r in rows[1:]:
+            if len(r) >= 3 and r[1].strip() and r[2].strip():
+                code = r[1].strip().upper()
+                name = r[2].strip()
+                mapping[code] = name
+        _DM_KHOA_CACHE[sid] = mapping
+    except Exception as e:
+        print("Error get_dm_khoa_mapping:", e)
+    return mapping
+
+def get_error_tracker_sheets(url=None):
+    url = url or DEFAULT_ERROR_TRACKER_URL
+    sid = extract_spreadsheet_id(url)
+    if sid in _TRACKER_SHEETS_CACHE:
+        return _TRACKER_SHEETS_CACHE[sid]
+
+    html_url = f"https://docs.google.com/spreadsheets/d/{sid}/edit"
+    req = urllib.request.Request(html_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+    clean_sheets = []
+    try:
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            html = resp.read().decode('utf-8', errors='ignore')
+        sheets = re.findall(r'class="[^"]*docs-sheet-tab-caption[^"]*">([^<]+)<', html)
+        seen = set()
+        for s in sheets:
+            s_clean = s.strip()
+            if s_clean and s_clean not in seen and s_clean != 'Danh mục khoa phòng' and not s_clean.startswith('Copy'):
+                seen.add(s_clean)
+                clean_sheets.append(s_clean)
+    except Exception as e:
+        print("Error get_error_tracker_sheets:", e)
+
+    clean_sheets.reverse()
+    if clean_sheets:
+        _TRACKER_SHEETS_CACHE[sid] = clean_sheets
+    return clean_sheets
+
+def parse_error_tracker_sheet(url, sheet_name):
+    url = url or DEFAULT_ERROR_TRACKER_URL
+    sid = extract_spreadsheet_id(url)
+    dm_map = get_dm_khoa_mapping(url)
+
+    encoded = urllib.parse.quote(sheet_name)
+    csv_url = f"https://docs.google.com/spreadsheets/d/{sid}/gviz/tq?tqx=out:csv&sheet={encoded}"
+
+    req = urllib.request.Request(csv_url, headers={'User-Agent': 'Mozilla/5.0'})
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        content = resp.read().decode('utf-8', errors='ignore')
+    reader = csv.reader(io.StringIO(content))
+    rows = list(reader)
+    if not rows:
+        return {"records": [], "stats": {}, "khoa_list": [], "phong_list": [], "xml_list": []}
+
+    header = rows[0]
+    hs_col = -1
+    ngay_col = -1
+    xml_col = -1
+    loi_col = -1
+    phong_cols = []
+    khoa_cols = []
+
+    for idx, c in enumerate(header):
+        c_clean = c.strip().upper()
+        if c_clean == 'HS': hs_col = idx
+        elif ('NGÀY' in c_clean or 'NGAY' in c_clean) and ngay_col == -1: ngay_col = idx
+        elif 'XML' in c_clean and xml_col == -1: xml_col = idx
+        elif c_clean in ('LỖI', 'LOI'): loi_col = idx
+        elif ('LỖI' in c_clean or 'LOI' in c_clean) and 'TRÙNG' not in c_clean and 'TRUNG' not in c_clean and loi_col == -1:
+            loi_col = idx
+        elif 'PHÒNG' in c_clean or 'PHONG' in c_clean:
+            phong_cols.append(idx)
+        elif 'KHOA' in c_clean:
+            khoa_cols.append(idx)
+
+    if hs_col == -1: hs_col = 1
+    if ngay_col == -1: ngay_col = 2
+    if xml_col == -1: xml_col = 3
+    if loi_col == -1: loi_col = 4
+
+    records = []
+    for r_idx, r in enumerate(rows[1:], start=1):
+        if not any(r): continue
+        hs = r[hs_col].strip() if hs_col < len(r) else ''
+        if hs.endswith('.0'): hs = hs[:-2]
+        loi = r[loi_col].strip() if loi_col < len(r) else ''
+        if not hs and not loi: continue
+
+        ngay = r[ngay_col].strip() if ngay_col < len(r) else ''
+        xml = r[xml_col].strip() if xml_col < len(r) else ''
+        if xml.upper().startswith('XML'):
+            xml = xml.upper()
+
+        phong = ''
+        for p_i in phong_cols:
+            if p_i < len(r) and r[p_i].strip():
+                phong = r[p_i].strip()
+                break
+
+        khoa_raw = ''
+        for k_i in khoa_cols:
+            if k_i < len(r) and r[k_i].strip():
+                khoa_raw = r[k_i].strip()
+                break
+
+        khoa_norm = khoa_raw.upper()
+        if khoa_norm in dm_map:
+            khoa = f"{dm_map[khoa_norm]} ({khoa_raw})"
+        else:
+            khoa = khoa_raw if khoa_raw else "Chưa xác định"
+
+        records.append({
+            'stt': r_idx,
+            'hs': hs,
+            'ngay': ngay,
+            'xml': xml,
+            'loi': loi,
+            'phong': phong,
+            'khoa': khoa,
+            'khoa_raw': khoa_raw
+        })
+
+    from collections import Counter
+    total_records = len(records)
+    unique_hs = len(set(r['hs'] for r in records if r['hs']))
+
+    khoa_counter = Counter(r['khoa'] for r in records if r['khoa'])
+    phong_counter = Counter(r['phong'] for r in records if r['phong'])
+    xml_counter = Counter(r['xml'] for r in records if r['xml'])
+
+    error_patterns = []
+    for r in records:
+        l = r['loi']
+        first_line = l.split('\n')[0].strip()
+        m_rule = re.match(r'([A-Z0-9_]+(?:\s+[0-9.]+)?(?:[^:\d]+)?)', first_line)
+        pattern = m_rule.group(1).strip() if m_rule else first_line[:60]
+        if len(pattern) > 75: pattern = pattern[:75] + "..."
+        error_patterns.append(pattern)
+    loi_counter = Counter(error_patterns)
+
+    khoa_list = [{"name": k, "count": v} for k, v in khoa_counter.most_common()]
+    phong_list = [{"name": k, "count": v} for k, v in phong_counter.most_common()]
+    xml_list = [{"name": k, "count": v} for k, v in xml_counter.most_common()]
+    top_errors = [{"rule": k, "count": v} for k, v in loi_counter.most_common(10)]
+
+    return {
+        "sheet": sheet_name,
+        "total_records": total_records,
+        "unique_hs": unique_hs,
+        "total_khoa": len(khoa_list),
+        "total_phong": len(phong_list),
+        "records": records,
+        "khoa_list": khoa_list,
+        "phong_list": phong_list,
+        "xml_list": xml_list,
+        "top_errors": top_errors
+    }
+
+def build_error_tracker_excel(records, sheet_name, filter_desc=""):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = f"Lỗi XML {sheet_name}"[:31]
+
+    ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+    ws.sheet_view.showGridLines = True
+
+    ws.merge_cells("A1:G1")
+    ws["A1"] = "BỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2 - PHÒNG CÔNG NGHỆ THÔNG TIN"
+    ws["A1"].font = Font(name="Times New Roman", size=11, italic=True)
+    ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
+
+    ws.merge_cells("A2:G2")
+    ws["A2"] = f"BÁO CÁO THỐNG KÊ LỖI XML ĐẨY CỔNG GIÁM ĐỊNH BHYT (NGÀY {sheet_name})"
+    ws["A2"].font = Font(name="Times New Roman", size=14, bold=True, color="1E3A8A")
+    ws["A2"].alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[2].height = 28
+
+    ws.merge_cells("A3:G3")
+    desc = f"Ngày dữ liệu: {sheet_name} • Tổng số bản ghi lỗi: {len(records)}"
+    if filter_desc:
+        desc += f" • Lọc: {filter_desc}"
+    ws["A3"] = desc
+    ws["A3"].font = Font(name="Times New Roman", size=11, italic=True, color="4B5563")
+    ws["A3"].alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[3].height = 20
+
+    headers = ["STT", "Mã Hồ Sơ", "Ngày Giờ Đẩy", "Bảng XML", "Khoa / Bộ Phận", "Phòng Khám", "Nội Dung Lỗi Chi Tiết"]
+    header_row = 4
+    ws.row_dimensions[header_row].height = 26
+
+    thin_border = Border(
+        left=Side(style='thin', color='CBD5E1'),
+        right=Side(style='thin', color='CBD5E1'),
+        top=Side(style='thin', color='CBD5E1'),
+        bottom=Side(style='thin', color='CBD5E1')
+    )
+    header_fill = PatternFill(start_color="F1F5F9", end_color="F1F5F9", fill_type="solid")
+
+    for col_idx, h in enumerate(headers, start=1):
+        cell = ws.cell(row=header_row, column=col_idx, value=h)
+        cell.font = Font(name="Times New Roman", size=12, bold=True, color="0F172A")
+        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        cell.border = thin_border
+        cell.fill = header_fill
+
+    for r_idx, r in enumerate(records, start=header_row + 1):
+        ws.row_dimensions[r_idx].height = 24
+        vals = [
+            r_idx - header_row,
+            r.get("hs", ""),
+            r.get("ngay", ""),
+            r.get("xml", ""),
+            r.get("khoa", ""),
+            r.get("phong", ""),
+            r.get("loi", "")
+        ]
+        for c_idx, v in enumerate(vals, start=1):
+            cell = ws.cell(row=r_idx, column=c_idx, value=v)
+            cell.font = Font(name="Times New Roman", size=11)
+            cell.border = thin_border
+            if c_idx in (1, 4):
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            elif c_idx in (2, 3):
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+                cell.number_format = "@"
+            elif c_idx in (5, 6):
+                cell.alignment = Alignment(horizontal="left", vertical="center")
+            else:
+                cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+
+    ws.column_dimensions["A"].width = 7
+    ws.column_dimensions["B"].width = 16
+    ws.column_dimensions["C"].width = 20
+    ws.column_dimensions["D"].width = 13
+    ws.column_dimensions["E"].width = 28
+    ws.column_dimensions["F"].width = 30
+    ws.column_dimensions["G"].width = 65
+
+    out = io.BytesIO()
+    wb.save(out)
+    out.seek(0)
+    return out
+
+def handle_error_tracker_sheets():
+    try:
+        url = request.args.get("url") or request.form.get("url") or DEFAULT_ERROR_TRACKER_URL
+        if request.args.get("reload") == "1":
+            sid = extract_spreadsheet_id(url)
+            _TRACKER_SHEETS_CACHE.pop(sid, None)
+            _DM_KHOA_CACHE.pop(sid, None)
+        sheets = get_error_tracker_sheets(url)
+        default_sheet = sheets[0] if sheets else ""
+        return jsonify({
+            "sheets": sheets,
+            "default_sheet": default_sheet,
+            "total_sheets": len(sheets)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def handle_error_tracker_data():
+    try:
+        url = request.args.get("url") or request.form.get("url") or DEFAULT_ERROR_TRACKER_URL
+        sheet_name = request.args.get("sheet") or request.form.get("sheet")
+        if not sheet_name:
+            sheets = get_error_tracker_sheets(url)
+            sheet_name = sheets[0] if sheets else ""
+        if not sheet_name:
+            return jsonify({"error": "Không tìm thấy sheet nào để xử lý."}), 400
+
+        data = parse_error_tracker_sheet(url, sheet_name)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def handle_error_tracker_export():
+    try:
+        body = request.get_json(silent=True) or request.form
+        sheet_name = body.get("sheet") or "Bao_cao"
+        records = body.get("records")
+
+        if not records:
+            url = body.get("url") or DEFAULT_ERROR_TRACKER_URL
+            data = parse_error_tracker_sheet(url, sheet_name)
+            records = data.get("records", [])
+
+            filter_khoa = body.get("filter_khoa", "ALL")
+            filter_phong = body.get("filter_phong", "ALL")
+            filter_xml = body.get("filter_xml", "ALL")
+
+            filtered = []
+            for r in records:
+                if filter_khoa != "ALL" and r.get("khoa") != filter_khoa: continue
+                if filter_phong != "ALL" and r.get("phong") != filter_phong: continue
+                if filter_xml != "ALL" and r.get("xml") != filter_xml: continue
+                filtered.append(r)
+            records = filtered
+
+        f_desc_parts = []
+        if body.get("filter_khoa") and body.get("filter_khoa") != "ALL":
+            f_desc_parts.append(f"Khoa: {body.get('filter_khoa')}")
+        if body.get("filter_phong") and body.get("filter_phong") != "ALL":
+            f_desc_parts.append(f"Phòng: {body.get('filter_phong')}")
+        if body.get("filter_xml") and body.get("filter_xml") != "ALL":
+            f_desc_parts.append(f"XML: {body.get('filter_xml')}")
+        filter_desc = " • ".join(f_desc_parts)
+
+        out_io = build_error_tracker_excel(records, sheet_name, filter_desc)
+        safe_name = re.sub(r'[^a-zA-Z0-9.-]', '_', sheet_name)
+        return send_file(
+            out_io,
+            as_attachment=True,
+            download_name=f"Bao_cao_loi_XML_{safe_name}.xlsx",
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ============================================================
 # MASTER DISPATCH ROUTER (TƯƠNG THÍCH MỌI CẤU HÌNH REWRITE VERCEL)
 # ============================================================
 def dispatch_request(path=""):
@@ -3315,6 +4228,14 @@ def dispatch_request(path=""):
         request.environ.get("HTTP_X_MATCHED_PATH", "") + " " +
         request.args.get("action", "")
     ).lower()
+
+    # Route xử lý Tác vụ 10 (Thống kê lỗi XML) hỗ trợ cả GET lẫn POST
+    if "error-tracker/sheets" in matched or request.args.get("action") == "error-tracker-sheets":
+        return handle_error_tracker_sheets()
+    if "error-tracker/data" in matched or request.args.get("action") == "error-tracker-data":
+        return handle_error_tracker_data()
+    if "error-tracker/export" in matched or request.args.get("action") == "error-tracker-export":
+        return handle_error_tracker_export()
 
     if request.method == "POST":
         action = request.args.get("action", "")
@@ -3361,6 +4282,9 @@ def dispatch_request(path=""):
 @app.route("/api/task-7", methods=["GET", "POST"])
 @app.route("/api/task-8", methods=["GET", "POST"])
 @app.route("/api/task-9", methods=["GET", "POST"])
+@app.route("/api/error-tracker/sheets", methods=["GET", "POST"])
+@app.route("/api/error-tracker/data", methods=["GET", "POST"])
+@app.route("/api/error-tracker/export", methods=["GET", "POST"])
 @app.route("/api/process-giam-dinh", methods=["GET", "POST"])
 @app.route("/api/process-cntt", methods=["GET", "POST"])
 @app.route("/<path:path>", methods=["GET", "POST"])
