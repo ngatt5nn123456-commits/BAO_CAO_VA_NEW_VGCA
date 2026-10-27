@@ -37,6 +37,27 @@ DEFAULT_FIXED_GSHEET_URL = "https://docs.google.com/spreadsheets/d/1_I7qmDx7mtIO
 DEFAULT_ERROR_TRACKER_URL = "https://docs.google.com/spreadsheets/d/1VJ3_I4ehRDLSbm5w0CHAODtS8Y4fN3b-wsvo4p4ANVI/edit?gid=637670018#gid=637670018"
 _DM_KHOA_CACHE = {}
 _TRACKER_SHEETS_CACHE = {}
+_LOCAL_STATUS_CACHE = {}
+TRACKER_CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tracker_config.json")
+
+def get_tracker_apps_script_url():
+    env_url = os.environ.get("TRACKER_APPS_SCRIPT_URL", "").strip()
+    if env_url:
+        return env_url
+    if os.path.exists(TRACKER_CONFIG_FILE):
+        try:
+            with open(TRACKER_CONFIG_FILE, "r", encoding="utf-8") as f:
+                return json.load(f).get("script_url", "").strip()
+        except Exception:
+            pass
+    return ""
+
+def set_tracker_apps_script_url(url):
+    try:
+        with open(TRACKER_CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump({"script_url": url.strip()}, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print("Error saving tracker config:", e)
 
 ALLOWED_USERS = {
     "PHCN", "NGOẠI TH", "XNTT", "NHH", "TTTM", "NGOẠI CT", "DA LIỄU", "PTGMHS",
@@ -3607,6 +3628,15 @@ function handleRequest(e) {
     async function initErrorTracker() {
       if (trackerInitialized) return;
       trackerInitialized = true;
+      try {
+        const res = await fetch('/api/error-tracker/config?action=error-tracker-config');
+        if (res.ok) {
+          const cfg = await res.json();
+          if (cfg.script_url && !localStorage.getItem('tracker_apps_script_url')) {
+            localStorage.setItem('tracker_apps_script_url', cfg.script_url);
+          }
+        }
+      } catch (_) {}
       await loadTrackerSheets();
     }
 
@@ -3833,6 +3863,17 @@ function handleRequest(e) {
         return;
       }
 
+      // Khôi phục trạng thái từ LocalStorage nếu có
+      records.forEach(r => {
+        try {
+          const localVal = localStorage.getItem('tracker_status_' + currentTrackerSheet + '_' + r.hs);
+          if (localVal !== null && localVal !== '') {
+            r.status = localVal;
+            r.is_ok = (localVal.toUpperCase() === 'OK');
+          }
+        } catch (_) {}
+      });
+
       tbody.innerHTML = records.map((r, i) => {
         const badgeClass = getXmlBadgeClass(r.xml);
         const escapedLoi = (r.loi || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(new RegExp(String.fromCharCode(10), 'g'), '<br>');
@@ -3869,15 +3910,28 @@ function handleRequest(e) {
       const statusVal = isChecked ? 'OK' : '';
       const badge = document.getElementById('status-badge-' + sheetRow);
 
-      const prevBadgeText = badge ? badge.textContent : '';
-      const prevBadgeClass = badge ? badge.className : '';
-
+      // 1. Phản hồi giao diện tức thì
       if (badge) {
-        badge.className = 'status-badge badge-saving';
-        badge.textContent = '⏳ Đang lưu...';
+        badge.className = isChecked ? 'status-badge badge-ok' : 'status-badge badge-pending';
+        badge.textContent = isChecked ? '✓ OK' : 'Chưa xử lý';
       }
-      checkbox.disabled = true;
 
+      // 2. Cập nhật mảng bản ghi trong bộ nhớ
+      const rec = trackerAllRecords.find(r => r.sheet_row === sheetRow || r.hs === hs);
+      if (rec) {
+        rec.status = statusVal;
+        rec.is_ok = isChecked;
+      }
+
+      // 3. Lưu vào LocalStorage
+      try {
+        localStorage.setItem('tracker_status_' + currentTrackerSheet + '_' + hs, statusVal);
+      } catch (_) {}
+
+      // 4. Cập nhật lại các thẻ thống kê
+      renderTrackerStats(trackerFilteredRecords);
+
+      // 5. Gửi ngầm lên server để lưu vào hệ thống và đồng bộ sang Google Sheet nếu có Webhook
       const scriptUrl = localStorage.getItem('tracker_apps_script_url') || '';
 
       try {
@@ -3895,44 +3949,13 @@ function handleRequest(e) {
 
         const data = await res.json().catch(() => ({}));
 
-        if (!res.ok || data.success === false) {
-          if (data.need_config || !scriptUrl) {
-            checkbox.checked = !isChecked;
-            if (badge) {
-              badge.className = prevBadgeClass;
-              badge.textContent = prevBadgeText;
-            }
-            checkbox.disabled = false;
-            openAppsScriptModal();
-            alert('⚠️ Bạn cần thiết lập mã Google Apps Script một lần duy nhất để phần mềm có quyền ghi "OK" vào Google Sheet!');
-            return;
-          }
-          throw new Error(data.error || 'Cập nhật thất bại');
+        if (data && data.synced_to_sheet) {
+          showMiniToast(`✅ Đã tự động điền 'OK' vào Google Sheet (Dòng ${sheetRow}, HS ${hs})!`);
+        } else {
+          showMiniToast(`✅ Đã lưu trạng thái HS ${hs} thành "${statusVal || 'Chưa xử lý'}"!`);
         }
-
-        checkbox.disabled = false;
-        if (badge) {
-          badge.className = isChecked ? 'status-badge badge-ok' : 'status-badge badge-pending';
-          badge.textContent = isChecked ? '✓ OK' : 'Chưa xử lý';
-        }
-
-        const rec = trackerAllRecords.find(r => r.sheet_row === sheetRow || r.hs === hs);
-        if (rec) {
-          rec.status = statusVal;
-          rec.is_ok = isChecked;
-        }
-
-        renderTrackerStats(trackerFilteredRecords);
-        showMiniToast(`✅ Đã cập nhật thành công hồ sơ ${hs} thành "${statusVal || 'Chưa xử lý'}" trên Google Sheet!`);
-
       } catch (err) {
-        checkbox.disabled = false;
-        checkbox.checked = !isChecked;
-        if (badge) {
-          badge.className = prevBadgeClass;
-          badge.textContent = prevBadgeText;
-        }
-        alert('❌ Lỗi cập nhật Google Sheet: ' + err.message);
+        showMiniToast(`✅ Đã lưu trạng thái HS ${hs}!`);
       }
     }
 
@@ -3965,7 +3988,7 @@ function handleRequest(e) {
       }
     }
 
-    function saveAppsScriptUrl() {
+    async function saveAppsScriptUrl() {
       const input = document.getElementById('apps-script-url-input');
       if (!input) return;
       const val = input.value.trim();
@@ -3974,8 +3997,15 @@ function handleRequest(e) {
         return;
       }
       localStorage.setItem('tracker_apps_script_url', val);
+      try {
+        await fetch('/api/error-tracker/config?action=error-tracker-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ script_url: val })
+        });
+      } catch (_) {}
       closeAppsScriptModal();
-      showMiniToast('✅ Đã lưu liên kết Google Apps Script Web App thành công!');
+      showMiniToast('✅ Đã lưu cấu hình kết nối Google Sheet thành công!');
     }
 
     function showMiniToast(msg) {
@@ -4492,6 +4522,12 @@ def parse_error_tracker_sheet(url, sheet_name):
 
         sheet_row = r_idx + 1
         status_val = r[status_col].strip() if status_col != -1 and status_col < len(r) else ''
+        cache_key = (sheet_name.strip(), hs.strip())
+        if cache_key in _LOCAL_STATUS_CACHE:
+            status_val = _LOCAL_STATUS_CACHE[cache_key]
+        elif status_val:
+            _LOCAL_STATUS_CACHE[cache_key] = status_val
+
         is_ok = status_val.upper() in ('OK', 'XONG', 'ĐÃ XỬ LÝ', 'DA XU LY', 'TRUE', '1')
 
         records.append({
@@ -4730,14 +4766,20 @@ def handle_error_tracker_update_status():
         hs = data.get("hs", "").strip()
         row = data.get("row")
         status = data.get("status", "OK").strip()
-        script_url = data.get("script_url", "").strip() or os.environ.get("TRACKER_APPS_SCRIPT_URL", "").strip()
+        script_url = data.get("script_url", "").strip() or get_tracker_apps_script_url()
+
+        # Luôn ghi nhận vào bộ nhớ cache hệ thống để giao diện cập nhật ngay lập tức
+        if sheet_name and hs:
+            _LOCAL_STATUS_CACHE[(sheet_name, hs)] = status
 
         if not script_url:
             return jsonify({
-                "success": False,
-                "error": "Chưa cấu hình URL Google Apps Script Web App để ghi dữ liệu vào Google Sheet.",
-                "need_config": True
-            }), 400
+                "success": True,
+                "synced_to_sheet": False,
+                "need_config": True,
+                "status": status,
+                "message": f"Đã lưu trạng thái '{status or 'Chưa xử lý'}' vào hệ thống."
+            })
 
         # Gửi cập nhật sang Google Apps Script Web App
         params = urllib.parse.urlencode({
@@ -4755,12 +4797,35 @@ def handle_error_tracker_update_status():
 
         try:
             res_json = json.loads(content)
+            res_json["synced_to_sheet"] = True
             return jsonify(res_json)
         except Exception:
-            return jsonify({"success": True, "message": "Đã gửi cập nhật thành công!", "raw": content[:200]})
+            return jsonify({
+                "success": True, 
+                "synced_to_sheet": True, 
+                "status": status,
+                "message": "Đã gửi cập nhật thành công lên Google Sheet!"
+            })
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({
+            "success": True, 
+            "synced_to_sheet": False, 
+            "warning": str(e), 
+            "message": "Đã lưu nội bộ trên hệ thống."
+        })
+
+def handle_error_tracker_config():
+    try:
+        if request.method == "POST":
+            data = request.get_json(silent=True) or request.form.to_dict()
+            script_url = data.get("script_url", "").strip()
+            set_tracker_apps_script_url(script_url)
+            return jsonify({"success": True, "script_url": script_url})
+        else:
+            return jsonify({"script_url": get_tracker_apps_script_url()})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # ============================================================
 # MASTER DISPATCH ROUTER (TƯƠNG THÍCH MỌI CẤU HÌNH REWRITE VERCEL)
@@ -4783,6 +4848,8 @@ def dispatch_request(path=""):
         return handle_error_tracker_export()
     if "error-tracker/update-status" in matched or request.args.get("action") == "error-tracker-update-status":
         return handle_error_tracker_update_status()
+    if "error-tracker/config" in matched or request.args.get("action") == "error-tracker-config":
+        return handle_error_tracker_config()
 
     if request.method == "POST":
         action = request.args.get("action", "")
@@ -4833,6 +4900,7 @@ def dispatch_request(path=""):
 @app.route("/api/error-tracker/data", methods=["GET", "POST"])
 @app.route("/api/error-tracker/export", methods=["GET", "POST"])
 @app.route("/api/error-tracker/update-status", methods=["GET", "POST"])
+@app.route("/api/error-tracker/config", methods=["GET", "POST"])
 @app.route("/api/process-giam-dinh", methods=["GET", "POST"])
 @app.route("/api/process-cntt", methods=["GET", "POST"])
 @app.route("/<path:path>", methods=["GET", "POST"])
