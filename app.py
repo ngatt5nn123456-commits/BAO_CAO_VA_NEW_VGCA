@@ -2051,6 +2051,18 @@ HTML_PAGE = """<!DOCTYPE html>
     .stat-card.c-khoa::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
     .stat-card.c-phong::before { background: linear-gradient(90deg, #10b981, #34d399); }
     .stat-card.c-xml::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .stat-card.c-ok::before { background: linear-gradient(90deg, #059669, #10b981); }
+
+    .status-badge {
+      display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 3px 8px; border-radius: 6px;
+      font-size: 0.74rem; font-weight: 700; white-space: nowrap; transition: all 0.2s;
+    }
+    .badge-ok { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-pending { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+    .badge-saving { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .tracker-status-check {
+      width: 17px; height: 17px; cursor: pointer; accent-color: #10b981; margin: 0;
+    }
 
     .stat-card-title { font-size: 0.74rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
     .stat-card-value { font-size: 1.65rem; font-weight: 800; color: #0f172a; line-height: 1.1; }
@@ -2761,6 +2773,9 @@ HTML_PAGE = """<!DOCTYPE html>
               <p>Chỉ đọc dữ liệu từ Google Sheets: <a href="https://docs.google.com/spreadsheets/d/1VJ3_I4ehRDLSbm5w0CHAODtS8Y4fN3b-wsvo4p4ANVI/edit?gid=637670018#gid=637670018" target="_blank" style="color:#2563eb; text-decoration:underline; font-weight:600;">Xem file gốc trên Google Drive ↗</a></p>
             </div>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <button type="button" class="btn btn-secondary" onclick="openAppsScriptModal()" style="background:#4338ca; color:#ffffff; border:none; padding:8px 16px; font-size:0.85rem;" title="Cấu hình Google Apps Script Web App để ghi dữ liệu trực tiếp vào Google Sheet">
+                ⚡ Cấu Hình Ghi Google Sheet
+              </button>
               <button type="button" class="btn btn-secondary" onclick="loadTrackerSheets(true)" title="Cập nhật lại danh sách Sheet">
                 🔄 Làm Mới Sheets
               </button>
@@ -2796,14 +2811,22 @@ HTML_PAGE = """<!DOCTYPE html>
                 <option value="ALL">-- Tất Cả Bảng XML --</option>
               </select>
             </div>
-            <div class="tracker-filter-item" style="grid-column: span 2;">
-              <label>🔍 Tìm Kiếm (Mã HS, Nội dung lỗi):</label>
+            <div class="tracker-filter-item">
+              <label>✅ Lọc Trạng Thái:</label>
+              <select id="tracker-status-select" class="tracker-select" onchange="applyTrackerFilters()">
+                <option value="ALL">-- Tất Cả Trạng Thái --</option>
+                <option value="PENDING">⏳ Chưa Xử Lý</option>
+                <option value="OK">✅ Đã Xử Lý (OK)</option>
+              </select>
+            </div>
+            <div class="tracker-filter-item">
+              <label>🔍 Tìm Kiếm (Mã HS, Lỗi):</label>
               <input type="text" id="tracker-search-input" class="tracker-input" placeholder="Nhập mã hồ sơ hoặc từ khóa lỗi..." oninput="applyTrackerFilters()">
             </div>
           </div>
         </div>
 
-        <!-- 5 THẺ THỐNG KÊ TỔNG QUAN -->
+        <!-- 6 THẺ THỐNG KÊ TỔNG QUAN -->
         <div class="tracker-stats-grid">
           <div class="stat-card c-total">
             <div class="stat-card-title">⚠️ Tổng Số Lỗi</div>
@@ -2814,6 +2837,11 @@ HTML_PAGE = """<!DOCTYPE html>
             <div class="stat-card-title">📑 Hồ Sơ Bị Lỗi</div>
             <div class="stat-card-value" id="stat-unique-hs">0</div>
             <div class="stat-card-sub">Hồ sơ khác nhau</div>
+          </div>
+          <div class="stat-card c-ok">
+            <div class="stat-card-title">✅ Đã Xử Lý (OK)</div>
+            <div class="stat-card-value" id="stat-total-ok">0</div>
+            <div class="stat-card-sub" id="stat-sub-ok">0% hoàn thành</div>
           </div>
           <div class="stat-card c-khoa">
             <div class="stat-card-title">🏥 Khoa Vi Phạm</div>
@@ -2874,23 +2902,113 @@ HTML_PAGE = """<!DOCTYPE html>
               <thead>
                 <tr>
                   <th style="width: 45px; text-align:center;">STT</th>
-                  <th style="width: 140px;">Mã Hồ Sơ</th>
-                  <th style="width: 150px;">Ngày Giờ Đẩy</th>
-                  <th style="width: 85px; text-align:center;">Bảng XML</th>
-                  <th style="width: 220px;">Khoa / Bộ Phận</th>
-                  <th style="width: 220px;">Phòng Khám</th>
+                  <th style="width: 130px;">Mã Hồ Sơ</th>
+                  <th style="width: 140px;">Ngày Giờ Đẩy</th>
+                  <th style="width: 80px; text-align:center;">Bảng XML</th>
+                  <th style="width: 190px;">Khoa / Bộ Phận</th>
+                  <th style="width: 190px;">Phòng Khám</th>
                   <th>Nội Dung Chi Tiết Lỗi</th>
+                  <th style="width: 135px; text-align:center;">Trạng Thái Xử Lý</th>
                 </tr>
               </thead>
               <tbody id="tracker-records-tbody">
                 <tr>
-                  <td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">
+                  <td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">
                     ⏳ Đang tải dữ liệu hồ sơ lỗi...
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      <!-- MODAL CẤU HÌNH APPS SCRIPT -->
+      <div id="apps-script-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.65); backdrop-filter:blur(4px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+        <div style="background:#ffffff; border-radius:14px; max-width:680px; width:100%; max-height:90vh; overflow-y:auto; padding:24px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:14px; margin-bottom:16px;">
+            <h3 style="margin:0; font-size:1.15rem; color:#1e293b; display:flex; align-items:center; gap:8px;">
+              <span>⚡ Cấu Hình Tự Động Cập Nhật Vào Google Sheet</span>
+            </h3>
+            <button type="button" onclick="closeAppsScriptModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#64748b; line-height:1;">&times;</button>
+          </div>
+          
+          <div style="font-size:0.88rem; color:#475569; line-height:1.6; margin-bottom:16px;">
+            <p style="margin-top:0;">Để phần mềm có quyền ghi <b>"OK"</b> vào cột <b>Trạng thái xử lý</b> trực tuyến trên Google Sheet khi bạn tích chọn, vui lòng thiết lập Apps Script một lần duy nhất theo các bước sau:</p>
+            
+            <ol style="padding-left:20px; margin-bottom:14px;">
+              <li style="margin-bottom:6px;">Mở file: <a href="https://docs.google.com/spreadsheets/d/1VJ3_I4ehRDLSbm5w0CHAODtS8Y4fN3b-wsvo4p4ANVI/edit?gid=637670018#gid=637670018" target="_blank" style="color:#2563eb; font-weight:600; text-decoration:underline;">Google Sheets Lỗi XML BHYT ↗</a></li>
+              <li style="margin-bottom:6px;">Vào menu <b>Tiện ích mở rộng (Extensions)</b> ➔ <b>Apps Script</b>.</li>
+              <li style="margin-bottom:6px;">Xóa hết mã cũ trong cửa sổ soạn thảo và <b>Dán đoạn mã</b> bên dưới vào rồi bấm <b>Lưu (Ctrl + S)</b>.</li>
+              <li style="margin-bottom:6px;">Bấm nút <b>Triển khai (Deploy)</b> ➔ <b>Triển khai mới (New deployment)</b> ➔ Chọn loại <b>Ứng dụng web (Web app)</b>:
+                <ul style="margin-top:4px; font-size:0.82rem; color:#334155;">
+                  <li><i>Thực thi dưới dạng (Execute as):</i> <b>Tôi (Me)</b></li>
+                  <li><i>Người có quyền truy cập (Who has access):</i> <b>Bất kỳ ai (Anyone)</b></li>
+                </ul>
+              </li>
+              <li>Sao chép <b>URL ứng dụng web</b> (dạng: <code>https://script.google.com/macros/s/.../exec</code>) và dán vào ô bên dưới.</li>
+            </ol>
+
+            <div style="position:relative; margin-bottom:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; color:#94a3b8; padding:6px 12px; border-top-left-radius:8px; border-top-right-radius:8px; font-size:0.78rem;">
+                <span>MÃ GOOGLE APPS SCRIPT (Chuẩn tự động điền OK)</span>
+                <button type="button" onclick="copyAppsScriptCode()" id="btn-copy-script" style="background:#3b82f6; color:#fff; border:none; border-radius:4px; padding:3px 8px; cursor:pointer; font-size:0.75rem;">📋 Sao Chép Mã</button>
+              </div>
+              <textarea id="apps-script-code-box" readonly style="width:100%; height:160px; font-family:monospace; font-size:0.78rem; background:#0f172a; color:#f8fafc; border:none; border-bottom-left-radius:8px; border-bottom-right-radius:8px; padding:10px; resize:vertical; outline:none; box-sizing:border-box;">function doGet(e) { return handleRequest(e); }
+function doPost(e) { return handleRequest(e); }
+function handleRequest(e) {
+  try {
+    var p = e.parameter || {};
+    var sheetName = p.sheet || "";
+    var hs = (p.hs || "").trim();
+    var row = parseInt(p.row || 0);
+    var status = p.status !== undefined ? p.status : "OK";
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = sheetName ? ss.getSheetByName(sheetName) : ss.getActiveSheet();
+    if (!sheet) return ContentService.createTextOutput(JSON.stringify({success:false, error:"Sheet not found"})).setMimeType(ContentService.MimeType.JSON);
+    var lastRow = sheet.getLastRow();
+    var targetRow = -1;
+    if (row >= 2 && row <= lastRow) {
+      if (hs) {
+        var cVal = String(sheet.getRange(row, 2).getValue()).split(".")[0].trim();
+        if (cVal === hs) targetRow = row;
+      } else targetRow = row;
+    }
+    if (targetRow <= 0 && hs) {
+      var hsVals = sheet.getRange(1, 2, lastRow, 1).getValues();
+      for (var i = 1; i < hsVals.length; i++) {
+        if (String(hsVals[i][0]).split(".")[0].trim() === hs) { targetRow = i + 1; break; }
+      }
+    }
+    if (targetRow <= 1) return ContentService.createTextOutput(JSON.stringify({success:false, error:"Row not found for HS " + hs})).setMimeType(ContentService.MimeType.JSON);
+    var lastCol = sheet.getLastColumn();
+    var headers = sheet.getRange(1, 1, 1, Math.max(lastCol, 15)).getValues()[0];
+    var colIdx = -1;
+    for (var j = 0; j < headers.length; j++) {
+      var h = String(headers[j]).trim().toLowerCase();
+      if (h.indexOf("trạng thái") !== -1 || h.indexOf("kết quả xử lý") !== -1) { colIdx = j + 1; break; }
+    }
+    if (colIdx === -1) { colIdx = 13; sheet.getRange(1, colIdx).setValue("Trạng thái xử lý"); }
+    sheet.getRange(targetRow, colIdx).setValue(status);
+    return ContentService.createTextOutput(JSON.stringify({success:true, sheet:sheet.getName(), row:targetRow, col:colIdx, status:status, hs:hs})).setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({success:false, error:err.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }
+}</textarea>
+            </div>
+
+            <div style="margin-bottom:16px;">
+              <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:6px;">Dán Link URL Web App (kết thúc bằng /exec):</label>
+              <input type="text" id="apps-script-url-input" class="tracker-input" placeholder="https://script.google.com/macros/s/AKfycb.../exec" style="width:100%; font-family:monospace; font-size:0.82rem;">
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+              <button type="button" class="btn btn-secondary" onclick="closeAppsScriptModal()" style="width:auto; padding:8px 16px;">Đóng</button>
+              <button type="button" class="btn" onclick="saveAppsScriptUrl()" style="width:auto; padding:8px 20px; background:linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);">💾 Lưu Cấu Hình</button>
+            </div>
+          </div>
+        </div>
+      </div>
         </div>
       </div>
 
@@ -3582,12 +3700,16 @@ HTML_PAGE = """<!DOCTYPE html>
       const kVal = document.getElementById('tracker-khoa-select').value;
       const pVal = document.getElementById('tracker-phong-select').value;
       const xVal = document.getElementById('tracker-xml-select').value;
+      const statusSelect = document.getElementById('tracker-status-select');
+      const statusVal = statusSelect ? statusSelect.value : 'ALL';
       const search = document.getElementById('tracker-search-input').value.trim().toLowerCase();
 
       let filtered = trackerAllRecords.filter(r => {
         if (kVal !== 'ALL' && r.khoa !== kVal) return false;
         if (pVal !== 'ALL' && r.phong !== pVal) return false;
         if (xVal !== 'ALL' && r.xml !== xVal) return false;
+        if (statusVal === 'PENDING' && r.is_ok) return false;
+        if (statusVal === 'OK' && !r.is_ok) return false;
         if (search) {
           const matchHs = r.hs && r.hs.toLowerCase().includes(search);
           const matchLoi = r.loi && r.loi.toLowerCase().includes(search);
@@ -3608,12 +3730,19 @@ HTML_PAGE = """<!DOCTYPE html>
       const uniqueHs = new Set(records.map(r => r.hs).filter(Boolean)).size;
       const khoaSet = new Set(records.map(r => r.khoa).filter(Boolean));
       const phongSet = new Set(records.map(r => r.phong).filter(Boolean));
+      const totalOk = records.filter(r => r.is_ok).length;
+      const pctOk = totalErrors > 0 ? Math.round((totalOk / totalErrors) * 100) : 0;
 
       document.getElementById('stat-total-errors').textContent = totalErrors.toLocaleString();
       document.getElementById('stat-sub-errors').textContent = `Ngày ${currentTrackerSheet}`;
       document.getElementById('stat-unique-hs').textContent = uniqueHs.toLocaleString();
       document.getElementById('stat-total-khoa').textContent = khoaSet.size;
       document.getElementById('stat-total-phong').textContent = phongSet.size;
+
+      const statOkVal = document.getElementById('stat-total-ok');
+      if (statOkVal) statOkVal.textContent = totalOk.toLocaleString();
+      const statOkSub = document.getElementById('stat-sub-ok');
+      if (statOkSub) statOkSub.textContent = `${pctOk}% hoàn thành`;
 
       // XML stats
       const xmlCounts = {};
@@ -3700,7 +3829,7 @@ HTML_PAGE = """<!DOCTYPE html>
       summary.textContent = `Hiển thị ${records.length} / ${trackerAllRecords.length} hồ sơ lỗi (Ngày ${currentTrackerSheet})`;
 
       if (!records || records.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">🔍 Không tìm thấy bản ghi nào khớp với điều kiện lọc hiện tại.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">🔍 Không tìm thấy bản ghi nào khớp với điều kiện lọc hiện tại.</td></tr>';
         return;
       }
 
@@ -3719,8 +3848,152 @@ HTML_PAGE = """<!DOCTYPE html>
             <td><b style="color:#0f172a;">${r.khoa || '-'}</b></td>
             <td style="color:#334155;">${r.phong || '-'}</td>
             <td style="line-height:1.4; color:#991b1b; font-size:0.82rem;">${escapedLoi || '-'}</td>
+            <td style="text-align:center; vertical-align:middle;">
+              <label style="display:inline-flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; user-select:none; margin:0;" title="${r.is_ok ? 'Đã xử lý (Nhấp để hủy OK)' : 'Chưa xử lý (Nhấp để đánh dấu OK)'}">
+                <input type="checkbox" class="tracker-status-check" 
+                  data-hs="${r.hs}" 
+                  data-row="${r.sheet_row}"
+                  ${r.is_ok ? 'checked' : ''} 
+                  onchange="onTrackerStatusToggle(this, '${r.hs}', ${r.sheet_row})">
+                <span class="status-badge ${r.is_ok ? 'badge-ok' : 'badge-pending'}" id="status-badge-${r.sheet_row}">
+                  ${r.is_ok ? '✓ OK' : 'Chưa xử lý'}
+                </span>
+              </label>
+            </td>
           </tr>`;
       }).join('');
+    }
+
+    async function onTrackerStatusToggle(checkbox, hs, sheetRow) {
+      const isChecked = checkbox.checked;
+      const statusVal = isChecked ? 'OK' : '';
+      const badge = document.getElementById('status-badge-' + sheetRow);
+
+      const prevBadgeText = badge ? badge.textContent : '';
+      const prevBadgeClass = badge ? badge.className : '';
+
+      if (badge) {
+        badge.className = 'status-badge badge-saving';
+        badge.textContent = '⏳ Đang lưu...';
+      }
+      checkbox.disabled = true;
+
+      const scriptUrl = localStorage.getItem('tracker_apps_script_url') || '';
+
+      try {
+        const res = await fetch('/api/error-tracker/update-status?action=error-tracker-update-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sheet: currentTrackerSheet,
+            hs: hs,
+            row: sheetRow,
+            status: statusVal,
+            script_url: scriptUrl
+          })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || data.success === false) {
+          if (data.need_config || !scriptUrl) {
+            checkbox.checked = !isChecked;
+            if (badge) {
+              badge.className = prevBadgeClass;
+              badge.textContent = prevBadgeText;
+            }
+            checkbox.disabled = false;
+            openAppsScriptModal();
+            alert('⚠️ Bạn cần thiết lập mã Google Apps Script một lần duy nhất để phần mềm có quyền ghi "OK" vào Google Sheet!');
+            return;
+          }
+          throw new Error(data.error || 'Cập nhật thất bại');
+        }
+
+        checkbox.disabled = false;
+        if (badge) {
+          badge.className = isChecked ? 'status-badge badge-ok' : 'status-badge badge-pending';
+          badge.textContent = isChecked ? '✓ OK' : 'Chưa xử lý';
+        }
+
+        const rec = trackerAllRecords.find(r => r.sheet_row === sheetRow || r.hs === hs);
+        if (rec) {
+          rec.status = statusVal;
+          rec.is_ok = isChecked;
+        }
+
+        renderTrackerStats(trackerFilteredRecords);
+        showMiniToast(`✅ Đã cập nhật thành công hồ sơ ${hs} thành "${statusVal || 'Chưa xử lý'}" trên Google Sheet!`);
+
+      } catch (err) {
+        checkbox.disabled = false;
+        checkbox.checked = !isChecked;
+        if (badge) {
+          badge.className = prevBadgeClass;
+          badge.textContent = prevBadgeText;
+        }
+        alert('❌ Lỗi cập nhật Google Sheet: ' + err.message);
+      }
+    }
+
+    function openAppsScriptModal() {
+      const modal = document.getElementById('apps-script-modal');
+      if (modal) {
+        const input = document.getElementById('apps-script-url-input');
+        if (input) input.value = localStorage.getItem('tracker_apps_script_url') || '';
+        modal.style.display = 'flex';
+      }
+    }
+
+    function closeAppsScriptModal() {
+      const modal = document.getElementById('apps-script-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function copyAppsScriptCode() {
+      const codeBox = document.getElementById('apps-script-code-box');
+      if (codeBox) {
+        codeBox.select();
+        navigator.clipboard.writeText(codeBox.value).then(() => {
+          const btn = document.getElementById('btn-copy-script');
+          if (btn) {
+            const orig = btn.textContent;
+            btn.textContent = '✅ Đã Chép!';
+            setTimeout(() => { btn.textContent = orig; }, 2000);
+          }
+        });
+      }
+    }
+
+    function saveAppsScriptUrl() {
+      const input = document.getElementById('apps-script-url-input');
+      if (!input) return;
+      const val = input.value.trim();
+      if (val && !val.startsWith('http')) {
+        alert('Vui lòng nhập đúng đường link Web App (bắt đầu bằng https://)!');
+        return;
+      }
+      localStorage.setItem('tracker_apps_script_url', val);
+      closeAppsScriptModal();
+      showMiniToast('✅ Đã lưu liên kết Google Apps Script Web App thành công!');
+    }
+
+    function showMiniToast(msg) {
+      let toast = document.getElementById('tracker-mini-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'tracker-mini-toast';
+        toast.style.cssText = 'position:fixed; bottom:24px; right:24px; background:#065f46; color:#ffffff; padding:12px 20px; border-radius:8px; font-size:0.88rem; font-weight:600; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); z-index:99999; display:none; transition:opacity 0.3s;';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      toast.style.opacity = '1';
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => { toast.style.display = 'none'; }, 300);
+      }, 3500);
     }
 
     function getXmlBadgeClass(xml) {
@@ -4152,6 +4425,7 @@ def parse_error_tracker_sheet(url, sheet_name):
     ngay_col = -1
     xml_col = -1
     loi_col = -1
+    status_col = -1
     phong_cols = []
     khoa_cols = []
 
@@ -4167,6 +4441,18 @@ def parse_error_tracker_sheet(url, sheet_name):
             phong_cols.append(idx)
         elif 'KHOA' in c_clean:
             khoa_cols.append(idx)
+        elif any(k in c_clean for k in ['TRẠNG THÁI', 'TRANG THAI', 'KẾT QUẢ XỬ LÝ', 'KET QUA XU LY']) and status_col == -1:
+            status_col = idx
+
+    if status_col == -1:
+        for idx, c in enumerate(header):
+            c_u = c.strip().upper()
+            if 'XỬ LÝ' in c_u or 'XU LY' in c_u or c_u in ('KẾT QUẢ', 'KET QUA'):
+                status_col = idx
+                break
+
+    if status_col == -1 and len(header) > 12:
+        status_col = 12
 
     if hs_col == -1: hs_col = 1
     if ngay_col == -1: ngay_col = 2
@@ -4204,20 +4490,29 @@ def parse_error_tracker_sheet(url, sheet_name):
         else:
             khoa = khoa_raw if khoa_raw else "Chưa xác định"
 
+        sheet_row = r_idx + 1
+        status_val = r[status_col].strip() if status_col != -1 and status_col < len(r) else ''
+        is_ok = status_val.upper() in ('OK', 'XONG', 'ĐÃ XỬ LÝ', 'DA XU LY', 'TRUE', '1')
+
         records.append({
             'stt': r_idx,
+            'sheet_row': sheet_row,
             'hs': hs,
             'ngay': ngay,
             'xml': xml,
             'loi': loi,
             'phong': phong,
             'khoa': khoa,
-            'khoa_raw': khoa_raw
+            'khoa_raw': khoa_raw,
+            'status': status_val,
+            'is_ok': is_ok
         })
 
     from collections import Counter
     total_records = len(records)
     unique_hs = len(set(r['hs'] for r in records if r['hs']))
+    total_ok = sum(1 for r in records if r.get('is_ok'))
+    total_pending = total_records - total_ok
 
     khoa_counter = Counter(r['khoa'] for r in records if r['khoa'])
     phong_counter = Counter(r['phong'] for r in records if r['phong'])
@@ -4242,6 +4537,8 @@ def parse_error_tracker_sheet(url, sheet_name):
         "sheet": sheet_name,
         "total_records": total_records,
         "unique_hs": unique_hs,
+        "total_ok": total_ok,
+        "total_pending": total_pending,
         "total_khoa": len(khoa_list),
         "total_phong": len(phong_list),
         "records": records,
@@ -4260,18 +4557,18 @@ def build_error_tracker_excel(records, sheet_name, filter_desc=""):
     ws.page_setup.paperSize = ws.PAPERSIZE_A4
     ws.sheet_view.showGridLines = True
 
-    ws.merge_cells("A1:G1")
+    ws.merge_cells("A1:H1")
     ws["A1"] = "BỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2 - PHÒNG CÔNG NGHỆ THÔNG TIN"
     ws["A1"].font = Font(name="Times New Roman", size=11, italic=True)
     ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
 
-    ws.merge_cells("A2:G2")
+    ws.merge_cells("A2:H2")
     ws["A2"] = f"BÁO CÁO THỐNG KÊ LỖI XML ĐẨY CỔNG GIÁM ĐỊNH BHYT (NGÀY {sheet_name})"
     ws["A2"].font = Font(name="Times New Roman", size=14, bold=True, color="1E3A8A")
     ws["A2"].alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[2].height = 28
 
-    ws.merge_cells("A3:G3")
+    ws.merge_cells("A3:H3")
     desc = f"Ngày dữ liệu: {sheet_name} • Tổng số bản ghi lỗi: {len(records)}"
     if filter_desc:
         desc += f" • Lọc: {filter_desc}"
@@ -4280,7 +4577,7 @@ def build_error_tracker_excel(records, sheet_name, filter_desc=""):
     ws["A3"].alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[3].height = 20
 
-    headers = ["STT", "Mã Hồ Sơ", "Ngày Giờ Đẩy", "Bảng XML", "Khoa / Bộ Phận", "Phòng Khám", "Nội Dung Lỗi Chi Tiết"]
+    headers = ["STT", "Mã Hồ Sơ", "Ngày Giờ Đẩy", "Bảng XML", "Khoa / Bộ Phận", "Phòng Khám", "Nội Dung Lỗi Chi Tiết", "Trạng Thái Xử Lý"]
     header_row = 4
     ws.row_dimensions[header_row].height = 26
 
@@ -4301,6 +4598,9 @@ def build_error_tracker_excel(records, sheet_name, filter_desc=""):
 
     for r_idx, r in enumerate(records, start=header_row + 1):
         ws.row_dimensions[r_idx].height = 24
+        st_val = r.get("status", "")
+        if not st_val:
+            st_val = "OK" if r.get("is_ok") else "Chưa xử lý"
         vals = [
             r_idx - header_row,
             r.get("hs", ""),
@@ -4308,7 +4608,8 @@ def build_error_tracker_excel(records, sheet_name, filter_desc=""):
             r.get("xml", ""),
             r.get("khoa", ""),
             r.get("phong", ""),
-            r.get("loi", "")
+            r.get("loi", ""),
+            st_val
         ]
         for c_idx, v in enumerate(vals, start=1):
             cell = ws.cell(row=r_idx, column=c_idx, value=v)
@@ -4321,6 +4622,10 @@ def build_error_tracker_excel(records, sheet_name, filter_desc=""):
                 cell.number_format = "@"
             elif c_idx in (5, 6):
                 cell.alignment = Alignment(horizontal="left", vertical="center")
+            elif c_idx == 8:
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+                if str(v).upper() == "OK":
+                    cell.font = Font(name="Times New Roman", size=11, bold=True, color="047857")
             else:
                 cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
 
@@ -4331,6 +4636,7 @@ def build_error_tracker_excel(records, sheet_name, filter_desc=""):
     ws.column_dimensions["E"].width = 28
     ws.column_dimensions["F"].width = 30
     ws.column_dimensions["G"].width = 65
+    ws.column_dimensions["H"].width = 18
 
     out = io.BytesIO()
     wb.save(out)
@@ -4412,6 +4718,50 @@ def handle_error_tracker_export():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+def handle_error_tracker_update_status():
+    try:
+        data = {}
+        if request.is_json:
+            data = request.get_json(silent=True) or {}
+        else:
+            data = request.form.to_dict() or request.args.to_dict()
+
+        sheet_name = data.get("sheet", "").strip()
+        hs = data.get("hs", "").strip()
+        row = data.get("row")
+        status = data.get("status", "OK").strip()
+        script_url = data.get("script_url", "").strip() or os.environ.get("TRACKER_APPS_SCRIPT_URL", "").strip()
+
+        if not script_url:
+            return jsonify({
+                "success": False,
+                "error": "Chưa cấu hình URL Google Apps Script Web App để ghi dữ liệu vào Google Sheet.",
+                "need_config": True
+            }), 400
+
+        # Gửi cập nhật sang Google Apps Script Web App
+        params = urllib.parse.urlencode({
+            "sheet": sheet_name,
+            "hs": hs,
+            "row": row if row else "",
+            "status": status
+        })
+        sep = "&" if "?" in script_url else "?"
+        full_url = f"{script_url}{sep}{params}"
+
+        req = urllib.request.Request(full_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            content = resp.read().decode('utf-8', errors='ignore')
+
+        try:
+            res_json = json.loads(content)
+            return jsonify(res_json)
+        except Exception:
+            return jsonify({"success": True, "message": "Đã gửi cập nhật thành công!", "raw": content[:200]})
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 # ============================================================
 # MASTER DISPATCH ROUTER (TƯƠNG THÍCH MỌI CẤU HÌNH REWRITE VERCEL)
 # ============================================================
@@ -4431,6 +4781,8 @@ def dispatch_request(path=""):
         return handle_error_tracker_data()
     if "error-tracker/export" in matched or request.args.get("action") == "error-tracker-export":
         return handle_error_tracker_export()
+    if "error-tracker/update-status" in matched or request.args.get("action") == "error-tracker-update-status":
+        return handle_error_tracker_update_status()
 
     if request.method == "POST":
         action = request.args.get("action", "")
@@ -4480,6 +4832,7 @@ def dispatch_request(path=""):
 @app.route("/api/error-tracker/sheets", methods=["GET", "POST"])
 @app.route("/api/error-tracker/data", methods=["GET", "POST"])
 @app.route("/api/error-tracker/export", methods=["GET", "POST"])
+@app.route("/api/error-tracker/update-status", methods=["GET", "POST"])
 @app.route("/api/process-giam-dinh", methods=["GET", "POST"])
 @app.route("/api/process-cntt", methods=["GET", "POST"])
 @app.route("/<path:path>", methods=["GET", "POST"])
