@@ -3659,12 +3659,18 @@ function handleRequest(e) {
     async function initErrorTracker() {
       if (trackerInitialized) return;
       trackerInitialized = true;
+      // Dọn sạch mọi cache trạng thái cũ trong LocalStorage để luôn đọc chuẩn từ Google Sheet
+      try {
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith('tracker_status_')) localStorage.removeItem(k);
+        });
+      } catch (_) {}
       const stored = localStorage.getItem('tracker_apps_script_url') || '';
       if (!stored || stored.includes('/edit') || stored.includes('vercel.app')) {
         localStorage.setItem('tracker_apps_script_url', DEFAULT_TRACKER_APPS_SCRIPT_URL);
       }
       try {
-        const res = await fetch('/api/error-tracker/config?action=error-tracker-config');
+        const res = await fetch('/api/error-tracker/config?action=error-tracker-config&_t=' + Date.now());
         if (res.ok) {
           const cfg = await res.json();
           if (cfg.script_url && !cfg.script_url.includes('/edit')) {
@@ -3718,7 +3724,7 @@ function handleRequest(e) {
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#2563eb;">⏳ Đang tải và phân tích dữ liệu ngày ' + sheetName + '...</td></tr>';
 
       try {
-        const res = await fetch('/api/error-tracker/data?action=error-tracker-data&sheet=' + encodeURIComponent(sheetName));
+        const res = await fetch('/api/error-tracker/data?action=error-tracker-data&sheet=' + encodeURIComponent(sheetName) + '&_t=' + Date.now());
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
           throw new Error(errData.error || ('Lỗi máy chủ ' + res.status));
@@ -3899,17 +3905,6 @@ function handleRequest(e) {
         return;
       }
 
-      // Khôi phục trạng thái từ LocalStorage nếu có
-      records.forEach(r => {
-        try {
-          const localVal = localStorage.getItem('tracker_status_' + currentTrackerSheet + '_' + r.hs);
-          if (localVal !== null && localVal !== '') {
-            r.status = localVal;
-            r.is_ok = (localVal.toUpperCase() === 'OK');
-          }
-        } catch (_) {}
-      });
-
       tbody.innerHTML = records.map((r, i) => {
         const badgeClass = getXmlBadgeClass(r.xml);
         const escapedLoi = (r.loi || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(new RegExp(String.fromCharCode(10), 'g'), '<br>');
@@ -3959,12 +3954,7 @@ function handleRequest(e) {
         rec.is_ok = isChecked;
       }
 
-      // 3. Lưu vào LocalStorage
-      try {
-        localStorage.setItem('tracker_status_' + currentTrackerSheet + '_' + hs, statusVal);
-      } catch (_) {}
-
-      // 4. Cập nhật lại các thẻ thống kê
+      // 3. Cập nhật lại các thẻ thống kê
       renderTrackerStats(trackerFilteredRecords);
 
       // 5. Gửi ngầm lên server để lưu vào hệ thống và đồng bộ sang Google Sheet nếu có Webhook
@@ -4576,9 +4566,14 @@ def parse_error_tracker_sheet(url, sheet_name):
     dm_map = get_dm_khoa_mapping(url)
 
     encoded = urllib.parse.quote(sheet_name)
-    csv_url = f"https://docs.google.com/spreadsheets/d/{sid}/gviz/tq?tqx=out:csv&sheet={encoded}"
+    now_ts = int(time.time() * 1000)
+    csv_url = f"https://docs.google.com/spreadsheets/d/{sid}/gviz/tq?tqx=out:csv&sheet={encoded}&_t={now_ts}"
 
-    req = urllib.request.Request(csv_url, headers={'User-Agent': 'Mozilla/5.0'})
+    req = urllib.request.Request(csv_url, headers={
+        'User-Agent': 'Mozilla/5.0',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+    })
     with urllib.request.urlopen(req, timeout=15) as resp:
         content = resp.read().decode('utf-8', errors='ignore')
     reader = csv.reader(io.StringIO(content))
@@ -4658,12 +4653,6 @@ def parse_error_tracker_sheet(url, sheet_name):
 
         sheet_row = r_idx + 1
         status_val = r[status_col].strip() if status_col != -1 and status_col < len(r) else ''
-        cache_key = (sheet_name.strip(), hs.strip())
-        if cache_key in _LOCAL_STATUS_CACHE:
-            status_val = _LOCAL_STATUS_CACHE[cache_key]
-        elif status_val:
-            _LOCAL_STATUS_CACHE[cache_key] = status_val
-
         is_ok = status_val.upper() in ('OK', 'XONG', 'ĐÃ XỬ LÝ', 'DA XU LY', 'TRUE', '1')
 
         records.append({
@@ -4843,7 +4832,11 @@ def handle_error_tracker_data():
             return jsonify({"error": "Không tìm thấy sheet nào để xử lý."}), 400
 
         data = parse_error_tracker_sheet(url, sheet_name)
-        return jsonify(data)
+        resp = jsonify(data)
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        resp.headers["Pragma"] = "no-cache"
+        resp.headers["Expires"] = "0"
+        return resp
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
