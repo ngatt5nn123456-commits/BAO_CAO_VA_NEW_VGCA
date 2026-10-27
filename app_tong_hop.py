@@ -509,9 +509,13 @@ def generate_email_doc(output_dir, records, log_func=print):
         os.path.join(output_dir, f"{template_name_base}.docx"),
         os.path.join(os.getcwd(), f"{template_name_base}.docx"),
         os.path.join(exe_dir, f"{template_name_base}.docx"),
+        os.path.join(exe_dir, "templates", f"{template_name_base}.docx"),
+        os.path.join(os.getcwd(), "templates", f"{template_name_base}.docx"),
+        os.path.join(output_dir, "templates", f"{template_name_base}.docx"),
     ]
     if meipass:
         candidate_paths.append(os.path.join(meipass, f"{template_name_base}.docx"))
+        candidate_paths.append(os.path.join(meipass, "templates", f"{template_name_base}.docx"))
     candidate_paths.extend([
         os.path.join(os.path.dirname(os.getcwd()), f"{template_name_base}.docx"),
         os.path.join(r"C:\Users\Admin\Desktop\Công việc\ĐƠN ĐỀ NGHỊ CẤP CTS CỤC CTS 2023-2025\ĐƠN ĐỀ NGHỊ CẤP CTS CỤC CTS 2023-2025\2026 T8", "27.08.2026. Đề nghị cấp mới địa chỉ email công vụ_TTBVSK_TTTM_HSTC_Trang_Nam_Thảo_Diện.docx"),
@@ -597,13 +601,23 @@ def generate_email_doc(output_dir, records, log_func=print):
             for idx, r_data in enumerate(records, start=1):
                 new_tr = copy.deepcopy(template_tr)
                 new_row = docx.table._Row(new_tr, t_target)
+                raw_u = clean_text(str(r_data[4]) if r_data[4] is not None else "")
+                if raw_u:
+                    u_low = raw_u.lower()
+                    if any(k in u_low for k in ["bv", "bệnh viện", "benh vien", "bbvskcb"]):
+                        unit_str = raw_u
+                    else:
+                        unit_str = f"{raw_u} - BVĐK Bắc Ninh số 2"
+                else:
+                    unit_str = DEFAULT_ORG3
+
                 vals = [
                     idx,
                     r_data[0], # Họ tên
                     r_data[1], # Ngày sinh
                     r_data[2], # Di động
                     r_data[3], # CCCD
-                    r_data[4], # Đơn vị công tác
+                    unit_str,  # Đơn vị công tác
                     r_data[5], # Chức vụ
                     r_data[6]  # Ghi chú
                 ]
@@ -613,13 +627,22 @@ def generate_email_doc(output_dir, records, log_func=print):
                     p = cell.paragraphs[0]
                     if p.runs:
                         p.runs[0].text = val_str
+                        p.runs[0].font.name = "Times New Roman"
+                        p.runs[0].font.size = Pt(12)
                         for r in p.runs[1:]:
                             r.text = ""
                     else:
                         p.text = val_str
+                        if p.runs:
+                            p.runs[0].font.name = "Times New Roman"
+                            p.runs[0].font.size = Pt(12)
                 parent.append(new_tr)
 
-        out_docx_name = f"{template_name_base}.docx"
+        if len(records) == 1:
+            p_name = clean_text(records[0][0])
+            out_docx_name = f"Đề nghị cấp mới địa chỉ email công vụ_{p_name}.docx"
+        else:
+            out_docx_name = f"{template_name_base}.docx"
         out_docx_path = os.path.join(output_dir, out_docx_name)
         doc.save(out_docx_path)
 

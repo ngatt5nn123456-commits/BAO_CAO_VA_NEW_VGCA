@@ -175,7 +175,7 @@ def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
                 header_texts = [clean_text(cell.text) for cell in row.cells]
                 t_name, t_cccd, t_dob, t_idate, t_iplace, t_email = -1, -1, -1, -1, -1, -1
                 t_unit, t_pos, t_phone, t_prov = -1, -1, -1, -1
-                t_serial, t_network, t_transfer, t_dev = -1, -1, -1, -1
+                t_serial, t_network, t_transfer, t_dev, t_note = -1, -1, -1, -1, -1
 
                 for idx, col in enumerate(header_texts):
                     c_norm = remove_accents(col)
@@ -210,6 +210,8 @@ def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
                         if t_transfer == -1: t_transfer = idx
                     elif ("thiet bi" in c_norm or "sim" in c_norm or "pki" in c_norm):
                         if t_dev == -1: t_dev = idx
+                    elif any(k in c_norm for k in ['ghi chu', 'note']):
+                        if t_note == -1: t_note = idx
 
                 if t_name != -1 and t_cccd != -1:
                     header_row_idx = r_idx
@@ -217,6 +219,7 @@ def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
                     issue_date_idx, issue_place_idx, email_idx = t_idate, t_iplace, t_email
                     unit_idx, pos_idx, phone_idx, prov_idx = t_unit, t_pos, t_phone, t_prov
                     serial_idx, network_idx, transfer_idx, device_idx = t_serial, t_network, t_transfer, t_dev
+                    note_idx = t_note
                     break
 
             if header_row_idx == -1:
@@ -251,6 +254,8 @@ def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
                 phone = vals[phone_idx] if phone_idx != -1 and phone_idx < len(vals) else ""
                 unit = vals[unit_idx] if unit_idx != -1 and unit_idx < len(vals) else ""
                 pos = vals[pos_idx] if pos_idx != -1 and pos_idx < len(vals) else ""
+                note_val = vals[note_idx] if note_idx != -1 and note_idx < len(vals) else "Cấp mới"
+                if not note_val: note_val = "Cấp mới"
                 prov = vals[prov_idx] if prov_idx != -1 and prov_idx < len(vals) else DEFAULT_PROVINCE
                 if not prov or prov.lower() in ["nam", "nu", "nữ", ""]:
                     prov = DEFAULT_PROVINCE
@@ -302,6 +307,7 @@ def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
                     "org1": DEFAULT_ORG1, "org2": DEFAULT_ORG2, "org3": org3_val,
                     "org4": "", "province": prov if prov else DEFAULT_PROVINCE,
                     "position": pos if pos else "Nhân viên", "phone": phone,
+                    "unit": unit, "note": note_val,
                     "serial_old": serial_val, "network": network_val, "is_transfer": transfer_val, "device_type": dev_val
                 })
 
@@ -354,6 +360,7 @@ def parse_people_from_word_stream(filename, doc_stream, sso_map=None):
                     "issue_place": iplace_v, "issue_date": idate_v, "email": email_v,
                     "org1": DEFAULT_ORG1, "org2": DEFAULT_ORG2, "org3": org3_v,
                     "org4": "", "province": DEFAULT_PROVINCE, "position": pos_v, "phone": phone_v,
+                    "unit": unit_v, "note": "Cấp mới",
                     "serial_old": "", "network": "", "is_transfer": "", "device_type": doc_device_type
                 })
     except Exception as e:
@@ -747,6 +754,153 @@ def build_mau_02_docx(people_list):
     return out_io
 
 
+def build_email_docx(people_list):
+    """Xuất file Công văn Đề nghị cấp mới địa chỉ email công vụ chuẩn Sở TT&TT / BVĐK Bắc Ninh số 2."""
+    template_name_base = "Đề nghị cấp mới địa chỉ email công vụ"
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    candidate_paths = [
+        os.path.join(base_dir, "templates", f"{template_name_base}.docx"),
+        os.path.join(os.getcwd(), "templates", f"{template_name_base}.docx"),
+        os.path.join(base_dir, f"{template_name_base}.docx"),
+        os.path.join(os.getcwd(), f"{template_name_base}.docx"),
+    ]
+
+    template_path = None
+    for cp in candidate_paths:
+        if os.path.exists(cp):
+            template_path = cp
+            break
+
+    doc = None
+    if template_path:
+        try:
+            doc = Document(template_path)
+        except Exception:
+            doc = None
+
+    if doc is None:
+        raise ValueError("Không tìm thấy file mẫu 'Đề nghị cấp mới địa chỉ email công vụ.docx'!")
+
+    now = datetime.now()
+    date_str = f"Bắc Ninh, ngày {now.day:02d} tháng {now.month:02d} năm {now.year}"
+
+    # 1. Cập nhật ngày tháng văn bản (Table 0, R1C1)
+    if len(doc.tables) > 0 and len(doc.tables[0].rows) > 1:
+        cell_date = doc.tables[0].rows[1].cells[1]
+        for p in cell_date.paragraphs:
+            if "Bắc Ninh" in p.text:
+                if p.runs:
+                    p.runs[0].text = date_str
+                    for r in p.runs[1:]:
+                        r.text = ""
+                else:
+                    p.text = date_str
+
+    # 2. Cập nhật số lượng bản ghi ở Mục 2
+    count_val = len(people_list)
+    for p in doc.paragraphs:
+        if "Số lượng và danh" in p.text or "danh sách đăng ký" in p.text:
+            found_colon = False
+            count_runs = []
+            for r in p.runs:
+                if ":" in r.text:
+                    found_colon = True
+                    continue
+                if found_colon:
+                    if "," in r.text or "gồm" in r.text:
+                        break
+                    count_runs.append(r)
+            if count_runs:
+                count_runs[0].text = f" {count_val:02d}"
+                for r in count_runs[1:]:
+                    r.text = ""
+            else:
+                p.text = f"2. Số lượng và danh sách đăng ký: {count_val:02d}, gồm:"
+
+    # 3. Điền bảng danh sách đăng ký Email (Table 1 trong doc - 8 cột)
+    t_target = None
+    for t in doc.tables:
+        if len(t.columns) == 8:
+            t_target = t
+            break
+    if not t_target and len(doc.tables) >= 2:
+        t_target = doc.tables[1]
+
+    if t_target and len(t_target.rows) > 1:
+        template_tr = copy.deepcopy(t_target.rows[1]._tr)
+        parent = t_target._tbl
+
+        for r in list(t_target.rows)[1:]:
+            parent.remove(r._tr)
+
+        alignments = [
+            WD_ALIGN_PARAGRAPH.CENTER,  # 0: STT
+            WD_ALIGN_PARAGRAPH.LEFT,    # 1: Họ và tên
+            WD_ALIGN_PARAGRAPH.CENTER,  # 2: Ngày sinh
+            WD_ALIGN_PARAGRAPH.CENTER,  # 3: Di động
+            WD_ALIGN_PARAGRAPH.CENTER,  # 4: Số CCCD
+            WD_ALIGN_PARAGRAPH.LEFT,    # 5: Đơn vị công tác
+            WD_ALIGN_PARAGRAPH.CENTER,  # 6: Chức vụ
+            WD_ALIGN_PARAGRAPH.CENTER   # 7: Ghi chú
+        ]
+
+        for idx, p_info in enumerate(people_list, start=1):
+            name = p_info.get("name", "")
+            dob = normalize_date(p_info.get("dob", ""))
+            phone = clean_text(p_info.get("phone", ""))
+            cccd = format_cccd_output(p_info.get("cccd", ""))
+            
+            raw_unit = clean_text(p_info.get("unit") or p_info.get("org3") or "")
+            if raw_unit:
+                u_low = raw_unit.lower()
+                if any(k in u_low for k in ["bv", "bệnh viện", "benh vien", "bbvskcb"]):
+                    unit_str = raw_unit
+                else:
+                    unit_str = f"{raw_unit} - BVĐK Bắc Ninh số 2"
+            else:
+                unit_str = "Bệnh viện Đa khoa Bắc Ninh số 2"
+
+            pos = p_info.get("position", "Nhân viên")
+            note = p_info.get("note", "Cấp mới")
+            if not note:
+                note = "Cấp mới"
+
+            row_vals = [
+                str(idx),
+                name,
+                dob,
+                phone,
+                cccd,
+                unit_str,
+                pos,
+                note
+            ]
+
+            new_tr = copy.deepcopy(template_tr)
+            new_row = docx.table._Row(new_tr, t_target)
+            for col_idx, text_val in enumerate(row_vals):
+                cell = new_row.cells[col_idx]
+                p = cell.paragraphs[0]
+                if p.runs:
+                    p.runs[0].text = str(text_val)
+                    p.runs[0].font.name = "Times New Roman"
+                    p.runs[0].font.size = Pt(12)
+                    for r in p.runs[1:]:
+                        r.text = ""
+                else:
+                    p.text = str(text_val)
+                    if p.runs:
+                        p.runs[0].font.name = "Times New Roman"
+                        p.runs[0].font.size = Pt(12)
+                p.alignment = alignments[col_idx]
+            parent.append(new_tr)
+
+    out_io = io.BytesIO()
+    doc.save(out_io)
+    out_io.seek(0)
+    return out_io
+
+
 def build_email_excel(people_list):
     """Xuất danh sách đăng ký mở hòm thư điện tử công vụ ra Excel."""
     wb = Workbook()
@@ -755,7 +909,7 @@ def build_email_excel(people_list):
 
     ws.merge_cells("A1:G1")
     ws["A1"] = "DANH SÁCH ĐỀ NGHỊ CẤP MỚI ĐỊA CHỈ THƯ ĐIỆN TỬ CÔNG VỤ"
-    ws["A1"].font = Font(name="Arial", size=13, bold=True)
+    ws["A1"].font = Font(name="Times New Roman", size=14, bold=True)
     center_cell(ws["A1"])
     ws.row_dimensions[1].height = 28
 
@@ -764,16 +918,22 @@ def build_email_excel(people_list):
 
     for c_idx, h in enumerate(headers, 1):
         cell = ws.cell(row=3, column=c_idx, value=h)
-        cell.font = Font(name="Arial", size=10, bold=True)
+        cell.font = Font(name="Times New Roman", size=11, bold=True)
         cell.border = border
         center_cell(cell, wrap=True)
 
     for idx, p in enumerate(people_list, 1):
         r = idx + 3
-        row_vals = [idx, p["name"], p["dob"], p["phone"], p["cccd"], p["org3"], p["position"]]
+        raw_u = clean_text(p.get("unit") or p.get("org3") or "")
+        if raw_u and not any(k in raw_u.lower() for k in ["bv", "bệnh viện", "benh vien", "bbvskcb"]):
+            unit_disp = f"{raw_u} - BVĐK Bắc Ninh số 2"
+        else:
+            unit_disp = raw_u or "Bệnh viện Đa khoa Bắc Ninh số 2"
+
+        row_vals = [idx, p["name"], p["dob"], p["phone"], p["cccd"], unit_disp, p["position"]]
         for c_idx, v in enumerate(row_vals, 1):
             cell = ws.cell(row=r, column=c_idx, value=v)
-            cell.font = Font(name="Arial", size=10)
+            cell.font = Font(name="Times New Roman", size=11)
             cell.border = border
             if c_idx in [1, 3, 4, 5]:
                 center_cell(cell)
@@ -3062,7 +3222,16 @@ HTML_PAGE = """<!DOCTYPE html>
         return;
       }
       const fmt = document.querySelector('input[name="email_format_9"]:checked').value;
-      const defaultName = fmt === 'word' ? 'De_nghi_cap_email_cong_vu.docx' : 'Danh_sach_cap_email_cong_vu.xlsx';
+      let defaultName = fmt === 'word' ? 'Đề nghị cấp mới địa chỉ email công vụ.docx' : 'Danh_sach_cap_email_cong_vu.xlsx';
+      if (wInput.files.length === 1) {
+        const fnameStr = wInput.files[0].name;
+        const lastDot = fnameStr.lastIndexOf('.');
+        const rawFname = lastDot !== -1 ? fnameStr.substring(0, lastDot) : fnameStr;
+        const cleanSub = rawFname.replace(/^(Cấp mới và cấp lại CKS|Đơn đề nghị cấp CKS|Đề nghị cấp CKS)[ \t_–—-]*/i, '').trim();
+        if (cleanSub) {
+          defaultName = fmt === 'word' ? `Đề nghị cấp mới địa chỉ email công vụ_${cleanSub}.docx` : `Danh_sach_cap_email_cong_vu_${cleanSub}.xlsx`;
+        }
+      }
 
       const picker = await promptSaveFile(defaultName);
       if (picker.canceled) return;
@@ -3080,12 +3249,19 @@ HTML_PAGE = """<!DOCTYPE html>
           const errData = await res.json().catch(() => ({ error: 'Lỗi máy chủ.' }));
           throw new Error(errData.error || 'Xử lý thất bại.');
         }
+
+        let finalFilename = defaultName;
+        const xFilename = res.headers.get('X-Filename');
+        if (xFilename) {
+          try { finalFilename = decodeURIComponent(xFilename); } catch (_) {}
+        }
+
         const blob = await res.blob();
-        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, defaultName);
+        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, finalFilename);
         if (picker.handle) {
           showAlert('alert-t9', 'success', `✅ Đã lưu file "${savedName}" thành công tại vị trí bạn đã chọn!`);
         } else {
-          showAlert('alert-t9', 'success', `✅ Đã tổng hợp và tải xuống danh sách cấp Email công vụ thành công!`);
+          showAlert('alert-t9', 'success', `✅ Đã tổng hợp và tải xuống file "${savedName}" thành công!`);
         }
       } catch (err) {
         showAlert('alert-t9', 'error', '❌ Lỗi: ' + err.message);
@@ -3749,23 +3925,43 @@ def handle_task_9():
         if not all_people:
             return jsonify({"error": "Không trích xuất được bản ghi nào từ các file Word!"}), 400
 
-        fmt = request.form.get("format", "excel")
+        fmt = request.form.get("format", "word")
         if fmt == "word":
-            out_io = build_mau_02_docx(all_people)
-            return send_file(
+            out_io = build_email_docx(all_people)
+            if len(all_people) == 1:
+                p_name = all_people[0].get("name", "").strip()
+                out_name = f"Đề nghị cấp mới địa chỉ email công vụ_{p_name}.docx"
+            else:
+                out_name = "Đề nghị cấp mới địa chỉ email công vụ.docx"
+            
+            quoted_name = urllib.parse.quote(out_name)
+            resp = make_response(send_file(
                 out_io,
                 as_attachment=True,
-                download_name="De_nghi_cap_email_cong_vu.docx",
+                download_name=out_name,
                 mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            )
+            ))
+            resp.headers["Content-Disposition"] = f"attachment; filename=\"{out_name.encode('ascii', 'ignore').decode()}\"; filename*=UTF-8''{quoted_name}"
+            resp.headers["X-Filename"] = quoted_name
+            return resp
         else:
             out_io = build_email_excel(all_people)
-            return send_file(
+            if len(all_people) == 1:
+                p_name = all_people[0].get("name", "").strip()
+                out_name = f"Danh_sach_cap_email_cong_vu_{p_name}.xlsx"
+            else:
+                out_name = "Danh_sach_cap_email_cong_vu.xlsx"
+
+            quoted_name = urllib.parse.quote(out_name)
+            resp = make_response(send_file(
                 out_io,
                 as_attachment=True,
-                download_name="Danh_sach_cap_email_cong_vu.xlsx",
+                download_name=out_name,
                 mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+            ))
+            resp.headers["Content-Disposition"] = f"attachment; filename=\"{out_name.encode('ascii', 'ignore').decode()}\"; filename*=UTF-8''{quoted_name}"
+            resp.headers["X-Filename"] = quoted_name
+            return resp
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
