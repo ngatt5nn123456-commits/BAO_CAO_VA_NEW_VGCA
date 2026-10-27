@@ -2794,8 +2794,8 @@ HTML_PAGE = """<!DOCTYPE html>
               <p>Chỉ đọc dữ liệu từ Google Sheets: <a href="https://docs.google.com/spreadsheets/d/1VJ3_I4ehRDLSbm5w0CHAODtS8Y4fN3b-wsvo4p4ANVI/edit?gid=637670018#gid=637670018" target="_blank" style="color:#2563eb; text-decoration:underline; font-weight:600;">Xem file gốc trên Google Drive ↗</a></p>
             </div>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-              <button type="button" class="btn btn-secondary" onclick="openAppsScriptModal()" style="background:#4338ca; color:#ffffff; border:none; padding:8px 16px; font-size:0.85rem;" title="Cấu hình Google Apps Script Web App để ghi dữ liệu trực tiếp vào Google Sheet">
-                ⚡ Cấu Hình Ghi Google Sheet
+              <button type="button" class="btn btn-secondary" onclick="openAppsScriptModal()" id="btn-apps-script-cfg" style="background:#4338ca; color:#ffffff; border:none; padding:8px 16px; font-size:0.85rem;" title="Cấu hình Google Apps Script Web App để tự động điền dữ liệu trực tiếp vào Google Sheet">
+                ⚡ Cấu Hình Ghi Google Sheet (Chưa kết nối ⚠️)
               </button>
               <button type="button" class="btn btn-secondary" onclick="loadTrackerSheets(true)" title="Cập nhật lại danh sách Sheet">
                 🔄 Làm Mới Sheets
@@ -3637,6 +3637,7 @@ function handleRequest(e) {
           }
         }
       } catch (_) {}
+      updateAppsScriptBtnStatus();
       await loadTrackerSheets();
     }
 
@@ -3952,10 +3953,23 @@ function handleRequest(e) {
         if (data && data.synced_to_sheet) {
           showMiniToast(`✅ Đã tự động điền 'OK' vào Google Sheet (Dòng ${sheetRow}, HS ${hs})!`);
         } else {
-          showMiniToast(`✅ Đã lưu trạng thái HS ${hs} thành "${statusVal || 'Chưa xử lý'}"!`);
+          showMiniToast(`⚠️ Đã lưu trên Web! Google Sheet chưa cập nhật do chưa kết nối Webhook. Bấm nút tím "⚡ Cấu Hình" ở trên để kết nối 1 lần.`);
         }
       } catch (err) {
-        showMiniToast(`✅ Đã lưu trạng thái HS ${hs}!`);
+        showMiniToast(`⚠️ Đã lưu trạng thái trên Web!`);
+      }
+    }
+
+    function updateAppsScriptBtnStatus() {
+      const url = localStorage.getItem('tracker_apps_script_url') || '';
+      const btn = document.getElementById('btn-apps-script-cfg');
+      if (!btn) return;
+      if (url && url.startsWith('http')) {
+        btn.innerHTML = '⚡ Đã Kết Nối Google Sheet (Sẵn sàng ✅)';
+        btn.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+      } else {
+        btn.innerHTML = '⚡ Cấu Hình Ghi Google Sheet (Chưa kết nối ⚠️)';
+        btn.style.background = '#4338ca';
       }
     }
 
@@ -4004,8 +4018,9 @@ function handleRequest(e) {
           body: JSON.stringify({ script_url: val })
         });
       } catch (_) {}
+      updateAppsScriptBtnStatus();
       closeAppsScriptModal();
-      showMiniToast('✅ Đã lưu cấu hình kết nối Google Sheet thành công!');
+      showMiniToast('✅ Đã kết nối thành công! Từ bây giờ ô tích sẽ tự động điền vào Google Sheet.');
     }
 
     function showMiniToast(msg) {
@@ -4013,17 +4028,22 @@ function handleRequest(e) {
       if (!toast) {
         toast = document.createElement('div');
         toast.id = 'tracker-mini-toast';
-        toast.style.cssText = 'position:fixed; bottom:24px; right:24px; background:#065f46; color:#ffffff; padding:12px 20px; border-radius:8px; font-size:0.88rem; font-weight:600; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); z-index:99999; display:none; transition:opacity 0.3s;';
+        toast.style.cssText = 'position:fixed; bottom:24px; right:24px; color:#ffffff; padding:12px 20px; border-radius:8px; font-size:0.88rem; font-weight:600; box-shadow:0 10px 15px -3px rgba(0,0,0,0.15); z-index:99999; display:none; transition:opacity 0.3s; max-width:440px; line-height:1.4;';
         document.body.appendChild(toast);
       }
       toast.textContent = msg;
+      if (msg.startsWith('⚠️')) {
+        toast.style.background = '#b45309';
+      } else {
+        toast.style.background = '#065f46';
+      }
       toast.style.display = 'block';
       toast.style.opacity = '1';
       clearTimeout(toast._timer);
       toast._timer = setTimeout(() => {
         toast.style.opacity = '0';
         setTimeout(() => { toast.style.display = 'none'; }, 300);
-      }, 3500);
+      }, 5000);
     }
 
     function getXmlBadgeClass(xml) {
