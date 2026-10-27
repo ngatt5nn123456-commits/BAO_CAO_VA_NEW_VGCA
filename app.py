@@ -4074,7 +4074,8 @@ function handleRequest(e) {
           body: JSON.stringify({ script_url: url })
         });
         const data = await resp.json().catch(() => ({}));
-        if (data && data.success) {
+        const isSuccess = data && (data.success === true || (data.error && data.error.includes('"success":true')) || (data.error && data.error.includes('"ping":"pong"')));
+        if (isSuccess) {
           resBox.style.background = '#ecfdf5';
           resBox.style.color = '#065f46';
           resBox.style.border = '1px solid #a7f3d0';
@@ -4873,6 +4874,29 @@ def handle_error_tracker_export():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+def parse_apps_script_response(content):
+    if not content:
+        return {}
+    content = content.strip()
+    if content.startswith(")]}'"):
+        content = content[4:].strip()
+    try:
+        data = json.loads(content)
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except Exception:
+                pass
+        if isinstance(data, dict):
+            return data
+    except Exception:
+        pass
+
+    clean = content.replace(" ", "").replace("\r", "").replace("\n", "")
+    if '"success":true' in clean or '"ping":"pong"' in clean:
+        return {"success": True, "ping": "pong"}
+    return {}
+
 def handle_error_tracker_test_connection():
     try:
         data = {}
@@ -4906,6 +4930,18 @@ def handle_error_tracker_test_connection():
         with urllib.request.urlopen(req, timeout=12) as resp:
             content = resp.read().decode('utf-8', errors='ignore')
 
+        res_json = parse_apps_script_response(content)
+        if res_json.get("success") is True or "ping" in res_json:
+            return jsonify({
+                "success": True,
+                "message": "Kết nối thành công 100%! Google Sheet đã sẵn sàng tự động điền."
+            })
+        elif res_json.get("error"):
+            return jsonify({
+                "success": False,
+                "error": res_json.get("error")
+            })
+
         if "<!DOCTYPE html>" in content or "<html" in content:
             if "accounts.google.com" in content or "Sign in" in content or "Đăng nhập" in content:
                 return jsonify({
@@ -4917,23 +4953,10 @@ def handle_error_tracker_test_connection():
                 "error": "Google trả về trang đăng nhập HTML thay vì JSON. Vui lòng kiểm tra lại quyền truy cập 'Bất kỳ ai (Anyone)'."
             })
 
-        try:
-            res_json = json.loads(content)
-            if res_json.get("success") is True or "ping" in res_json:
-                return jsonify({
-                    "success": True,
-                    "message": "Kết nối thành công 100%! Google Sheet đã sẵn sàng tự động điền."
-                })
-            else:
-                return jsonify({
-                    "success": False,
-                    "error": res_json.get("error", "Apps Script trả về lỗi không xác định.")
-                })
-        except Exception:
-            return jsonify({
-                "success": False,
-                "error": f"Phản hồi không phải JSON: {content[:120]}"
-            })
+        return jsonify({
+            "success": False,
+            "error": f"Phản hồi không nhận diện được: {content[:120]}"
+        })
 
     except Exception as e:
         return jsonify({
@@ -4999,35 +5022,33 @@ def handle_error_tracker_update_status():
         with urllib.request.urlopen(req, timeout=15) as resp:
             content = resp.read().decode('utf-8', errors='ignore')
 
-        try:
-            res_json = json.loads(content)
-            if res_json.get("success") is True:
-                res_json["synced_to_sheet"] = True
-                return jsonify(res_json)
-            else:
-                err_msg = res_json.get("error", "Apps Script không tìm thấy dòng để ghi")
-                return jsonify({
-                    "success": True,
-                    "synced_to_sheet": False,
-                    "status": status,
-                    "error_detail": f"Google Apps Script báo: {err_msg}"
-                })
-        except Exception:
-            if "<!DOCTYPE html>" in content or "<html" in content:
-                if "accounts.google.com" in content or "Sign in" in content or "Đăng nhập" in content:
-                    detail = "Google chặn quyền truy cập (cần chọn 'Bất kỳ ai / Anyone' khi Triển khai)"
-                elif not script_url.endswith("/exec"):
-                    detail = "Link Script phải kết thúc bằng '/exec', không được dùng link /edit"
-                else:
-                    detail = "Google yêu cầu xác thực hoặc đăng nhập"
-            else:
-                detail = f"Phản hồi từ Google không đúng JSON: {content[:80]}"
+        res_json = parse_apps_script_response(content)
+        if res_json.get("success") is True:
+            res_json["synced_to_sheet"] = True
+            return jsonify(res_json)
+        elif res_json.get("error"):
             return jsonify({
                 "success": True,
                 "synced_to_sheet": False,
                 "status": status,
-                "error_detail": detail
+                "error_detail": f"Google Apps Script báo: {res_json.get('error')}"
             })
+
+        if "<!DOCTYPE html>" in content or "<html" in content:
+            if "accounts.google.com" in content or "Sign in" in content or "Đăng nhập" in content:
+                detail = "Google chặn quyền truy cập (cần chọn 'Bất kỳ ai / Anyone' khi Triển khai)"
+            elif not script_url.endswith("/exec"):
+                detail = "Link Script phải kết thúc bằng '/exec', không được dùng link /edit"
+            else:
+                detail = "Google yêu cầu xác thực hoặc đăng nhập"
+        else:
+            detail = f"Phản hồi từ Google không đúng JSON: {content[:80]}"
+        return jsonify({
+            "success": True,
+            "synced_to_sheet": False,
+            "status": status,
+            "error_detail": detail
+        })
 
     except Exception as e:
         return jsonify({
