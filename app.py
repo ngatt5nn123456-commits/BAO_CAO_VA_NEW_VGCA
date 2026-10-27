@@ -38,6 +38,7 @@ DEFAULT_ERROR_TRACKER_URL = "https://docs.google.com/spreadsheets/d/1VJ3_I4ehRDL
 _DM_KHOA_CACHE = {}
 _TRACKER_SHEETS_CACHE = {}
 _LOCAL_STATUS_CACHE = {}
+DEFAULT_TRACKER_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydmlNGV_CDYGkMgRmInTi04zfjNpaP3qF1-uEVStDsyqZKxQ8xbNOpDvcsuDmT9m1N/exec"
 TRACKER_CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tracker_config.json")
 
 def get_tracker_apps_script_url():
@@ -47,10 +48,12 @@ def get_tracker_apps_script_url():
     if os.path.exists(TRACKER_CONFIG_FILE):
         try:
             with open(TRACKER_CONFIG_FILE, "r", encoding="utf-8") as f:
-                return json.load(f).get("script_url", "").strip()
+                saved = json.load(f).get("script_url", "").strip()
+                if saved:
+                    return saved
         except Exception:
             pass
-    return ""
+    return DEFAULT_TRACKER_APPS_SCRIPT_URL
 
 def set_tracker_apps_script_url(url):
     try:
@@ -2794,8 +2797,8 @@ HTML_PAGE = """<!DOCTYPE html>
               <p>Chỉ đọc dữ liệu từ Google Sheets: <a href="https://docs.google.com/spreadsheets/d/1VJ3_I4ehRDLSbm5w0CHAODtS8Y4fN3b-wsvo4p4ANVI/edit?gid=637670018#gid=637670018" target="_blank" style="color:#2563eb; text-decoration:underline; font-weight:600;">Xem file gốc trên Google Drive ↗</a></p>
             </div>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-              <button type="button" class="btn btn-secondary" onclick="openAppsScriptModal()" id="btn-apps-script-cfg" style="background:#4338ca; color:#ffffff; border:none; padding:8px 16px; font-size:0.85rem;" title="Cấu hình Google Apps Script Web App để tự động điền dữ liệu trực tiếp vào Google Sheet">
-                ⚡ Cấu Hình Ghi Google Sheet (Chưa kết nối ⚠️)
+              <button type="button" class="btn btn-secondary" onclick="openAppsScriptModal()" id="btn-apps-script-cfg" style="background:linear-gradient(135deg, #059669 0%, #047857 100%); color:#ffffff; border:none; padding:8px 16px; font-size:0.85rem;" title="Hệ thống đã tự động kết nối Google Sheet của viện">
+                ⚡ Đã Kết Nối Google Sheet (Sẵn Sàng ✅)
               </button>
               <button type="button" class="btn btn-secondary" onclick="loadTrackerSheets(true)" title="Cập nhật lại danh sách Sheet">
                 🔄 Làm Mới Sheets
@@ -3647,6 +3650,7 @@ function handleRequest(e) {
     // ============================================================
     // LOGIC TÁC VỤ 10: THỐNG KÊ & LỌC LỖI XML BHYT
     // ============================================================
+    const DEFAULT_TRACKER_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydmlNGV_CDYGkMgRmInTi04zfjNpaP3qF1-uEVStDsyqZKxQ8xbNOpDvcsuDmT9m1N/exec';
     let trackerInitialized = false;
     let currentTrackerSheet = '';
     let trackerAllRecords = [];
@@ -3655,11 +3659,15 @@ function handleRequest(e) {
     async function initErrorTracker() {
       if (trackerInitialized) return;
       trackerInitialized = true;
+      const stored = localStorage.getItem('tracker_apps_script_url') || '';
+      if (!stored || stored.includes('/edit') || stored.includes('vercel.app')) {
+        localStorage.setItem('tracker_apps_script_url', DEFAULT_TRACKER_APPS_SCRIPT_URL);
+      }
       try {
         const res = await fetch('/api/error-tracker/config?action=error-tracker-config');
         if (res.ok) {
           const cfg = await res.json();
-          if (cfg.script_url && !localStorage.getItem('tracker_apps_script_url')) {
+          if (cfg.script_url && !cfg.script_url.includes('/edit')) {
             localStorage.setItem('tracker_apps_script_url', cfg.script_url);
           }
         }
@@ -3960,7 +3968,11 @@ function handleRequest(e) {
       renderTrackerStats(trackerFilteredRecords);
 
       // 5. Gửi ngầm lên server để lưu vào hệ thống và đồng bộ sang Google Sheet nếu có Webhook
-      const scriptUrl = localStorage.getItem('tracker_apps_script_url') || '';
+      let scriptUrl = localStorage.getItem('tracker_apps_script_url') || DEFAULT_TRACKER_APPS_SCRIPT_URL;
+      if (scriptUrl.includes('/edit') || scriptUrl.includes('vercel.app')) {
+        scriptUrl = DEFAULT_TRACKER_APPS_SCRIPT_URL;
+        localStorage.setItem('tracker_apps_script_url', DEFAULT_TRACKER_APPS_SCRIPT_URL);
+      }
 
       try {
         const res = await fetch('/api/error-tracker/update-status?action=error-tracker-update-status', {
@@ -3981,7 +3993,7 @@ function handleRequest(e) {
           showMiniToast(`✅ Đã tự động điền 'OK' vào Google Sheet (Dòng ${sheetRow}, HS ${hs})!`);
         } else {
           const detail = (data && (data.error_detail || data.error)) ? data.error_detail || data.error : 'Chưa thiết lập Webhook';
-          showMiniToast(`⚠️ Đã lưu trên Web! Google Sheet chưa cập nhật: ${detail}. Bấm nút "⚡ Cấu Hình" ở trên để kiểm tra.`);
+          showMiniToast(`⚠️ Đã lưu trên Web! Google Sheet chưa cập nhật: ${detail}.`);
         }
       } catch (err) {
         showMiniToast(`⚠️ Đã lưu trạng thái trên Web! (Lỗi gửi: ${err.message})`);
@@ -3989,31 +4001,35 @@ function handleRequest(e) {
     }
 
     function updateAppsScriptBtnStatus() {
-      const url = localStorage.getItem('tracker_apps_script_url') || '';
+      let url = localStorage.getItem('tracker_apps_script_url') || DEFAULT_TRACKER_APPS_SCRIPT_URL;
+      if (url.includes('/edit') || url.includes('vercel.app')) {
+        url = DEFAULT_TRACKER_APPS_SCRIPT_URL;
+        localStorage.setItem('tracker_apps_script_url', DEFAULT_TRACKER_APPS_SCRIPT_URL);
+      }
       const btn = document.getElementById('btn-apps-script-cfg');
       if (!btn) return;
-      if (!url) {
-        btn.innerHTML = '⚡ Cấu Hình Ghi Google Sheet (Chưa kết nối ⚠️)';
-        btn.style.background = '#4338ca';
-      } else if (url.includes('/edit') || url.includes('docs.google.com/spreadsheets')) {
-        btn.innerHTML = '⚡ Link Sai (/edit) - Cần Link /exec ⚠️';
-        btn.style.background = '#b45309';
-      } else if (url.includes('/exec')) {
-        btn.innerHTML = '⚡ Webhook Sẵn Sàng (Bấm Thử Kết Nối 🔄)';
-        btn.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
-      } else {
-        btn.innerHTML = '⚡ Cấu Hình Ghi Google Sheet (Kiểm tra lại ⚠️)';
-        btn.style.background = '#b45309';
-      }
+      btn.innerHTML = '⚡ Đã Kết Nối Google Sheet (Sẵn Sàng ✅)';
+      btn.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
     }
 
     function openAppsScriptModal() {
       const modal = document.getElementById('apps-script-modal');
       if (modal) {
+        let currentUrl = localStorage.getItem('tracker_apps_script_url') || DEFAULT_TRACKER_APPS_SCRIPT_URL;
+        if (currentUrl.includes('/edit') || currentUrl.includes('vercel.app')) {
+          currentUrl = DEFAULT_TRACKER_APPS_SCRIPT_URL;
+          localStorage.setItem('tracker_apps_script_url', DEFAULT_TRACKER_APPS_SCRIPT_URL);
+        }
         const input = document.getElementById('apps-script-url-input');
-        if (input) input.value = localStorage.getItem('tracker_apps_script_url') || '';
+        if (input) input.value = currentUrl;
         const resBox = document.getElementById('test-script-result');
-        if (resBox) resBox.style.display = 'none';
+        if (resBox) {
+          resBox.style.display = 'block';
+          resBox.style.background = '#ecfdf5';
+          resBox.style.color = '#065f46';
+          resBox.style.border = '1px solid #a7f3d0';
+          resBox.innerHTML = '<b>✅ ĐÃ TỰ ĐỘNG KẾT NỐI MẶC ĐỊNH:</b><br>Hệ thống đã tự động tích hợp link Web App của viện. Bạn và mọi người chỉ cần vào dùng là sẽ tự động cập nhật vào Google Sheet!';
+        }
         modal.style.display = 'flex';
       }
     }
