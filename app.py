@@ -3478,9 +3478,8 @@ HTML_PAGE = """<!DOCTYPE html>
         const maxK = sortedKhoa[0][1];
         rankingBox.innerHTML = sortedKhoa.map(([name, count], idx) => {
           const pct = Math.round((count / maxK) * 100);
-          const safeName = name.replace(/'/g, "\\'");
           return `
-            <div class="ranking-item" onclick="filterByKhoaQuick('${safeName}')" title="Nhấp để lọc ${name}">
+            <div class="ranking-item" data-khoa="${encodeURIComponent(name)}" onclick="filterByKhoaQuick(decodeURIComponent(this.getAttribute('data-khoa')))" title="Nhấp để lọc ${name}">
               <div class="ranking-name">
                 <span style="color:#94a3b8; font-size:0.75rem; width:20px;">#${idx+1}</span>
                 <span>${name}</span>
@@ -3499,7 +3498,7 @@ HTML_PAGE = """<!DOCTYPE html>
       const loiCounts = {};
       records.forEach(r => {
         const l = r.loi || '';
-        const firstLine = l.split('\n')[0].trim();
+        const firstLine = (l.split(String.fromCharCode(10))[0] || '').replace(String.fromCharCode(13), '').trim();
         let pat = firstLine.length > 70 ? firstLine.substring(0, 70) + '...' : firstLine;
         loiCounts[pat] = (loiCounts[pat] || 0) + 1;
       });
@@ -3531,7 +3530,7 @@ HTML_PAGE = """<!DOCTYPE html>
 
       tbody.innerHTML = records.map((r, i) => {
         const badgeClass = getXmlBadgeClass(r.xml);
-        const escapedLoi = (r.loi || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+        const escapedLoi = (r.loi || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(new RegExp(String.fromCharCode(10), 'g'), '<br>');
         return `
           <tr>
             <td style="text-align:center; font-weight:700; color:#64748b;">${i + 1}</td>
