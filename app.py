@@ -2960,19 +2960,19 @@ HTML_PAGE = """<!DOCTYPE html>
             <ol style="padding-left:20px; margin-bottom:14px;">
               <li style="margin-bottom:6px;">Mở file: <a href="https://docs.google.com/spreadsheets/d/1VJ3_I4ehRDLSbm5w0CHAODtS8Y4fN3b-wsvo4p4ANVI/edit?gid=637670018#gid=637670018" target="_blank" style="color:#2563eb; font-weight:600; text-decoration:underline;">Google Sheets Lỗi XML BHYT ↗</a></li>
               <li style="margin-bottom:6px;">Vào menu <b>Tiện ích mở rộng (Extensions)</b> ➔ <b>Apps Script</b>.</li>
-              <li style="margin-bottom:6px;">Xóa hết mã cũ trong cửa sổ soạn thảo và <b>Dán đoạn mã</b> bên dưới vào rồi bấm <b>Lưu (Ctrl + S)</b>.</li>
-              <li style="margin-bottom:6px;">Bấm nút <b>Triển khai (Deploy)</b> ➔ <b>Triển khai mới (New deployment)</b> ➔ Chọn loại <b>Ứng dụng web (Web app)</b>:
-                <ul style="margin-top:4px; font-size:0.82rem; color:#334155;">
-                  <li><i>Thực thi dưới dạng (Execute as):</i> <b>Tôi (Me)</b></li>
-                  <li><i>Người có quyền truy cập (Who has access):</i> <b>Bất kỳ ai (Anyone)</b></li>
+              <li style="margin-bottom:6px;">Xóa hết mã cũ trong cửa sổ soạn thảo, bấm nút <b>📋 Sao Chép Mã</b> bên dưới rồi <b>Dán (Ctrl + V)</b> vào và bấm <b>Lưu (Ctrl + S)</b>.</li>
+              <li style="margin-bottom:6px;">Bấm nút <b>Triển khai (Deploy)</b> ➔ <b>Triển khai mới (New deployment)</b> ➔ Bấm bánh răng ⚙️ chọn <b>Ứng dụng web (Web app)</b>:
+                <ul style="margin-top:4px; font-size:0.82rem; color:#b91c1c; font-weight:600;">
+                  <li>Thực thi dưới dạng (Execute as): <b>Tôi (Me)</b></li>
+                  <li>Người có quyền truy cập (Who has access): <span style="background:#fef08a; color:#854d0e; padding:1px 4px; border-radius:3px;">Bắt buộc chọn: Bất kỳ ai (Anyone)</span></li>
                 </ul>
               </li>
-              <li>Sao chép <b>URL ứng dụng web</b> (dạng: <code>https://script.google.com/macros/s/.../exec</code>) và dán vào ô bên dưới.</li>
+              <li>Bấm <b>Triển khai (Deploy)</b> (cấp quyền Google nếu có yêu cầu) ➔ Sao chép <b>URL ứng dụng web</b> (link có đuôi <code>/exec</code>) dán vào ô bên dưới.</li>
             </ol>
 
             <div style="position:relative; margin-bottom:16px;">
               <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; color:#94a3b8; padding:6px 12px; border-top-left-radius:8px; border-top-right-radius:8px; font-size:0.78rem;">
-                <span>MÃ GOOGLE APPS SCRIPT (Chuẩn tự động điền OK)</span>
+                <span>MÃ GOOGLE APPS SCRIPT (Chuẩn tự động điền OK vào Cột M)</span>
                 <button type="button" onclick="copyAppsScriptCode()" id="btn-copy-script" style="background:#3b82f6; color:#fff; border:none; border-radius:4px; padding:3px 8px; cursor:pointer; font-size:0.75rem;">📋 Sao Chép Mã</button>
               </div>
               <textarea id="apps-script-code-box" readonly style="width:100%; height:160px; font-family:monospace; font-size:0.78rem; background:#0f172a; color:#f8fafc; border:none; border-bottom-left-radius:8px; border-bottom-right-radius:8px; padding:10px; resize:vertical; outline:none; box-sizing:border-box;">function doGet(e) { return handleRequest(e); }
@@ -2980,13 +2980,30 @@ function doPost(e) { return handleRequest(e); }
 function handleRequest(e) {
   try {
     var p = e.parameter || {};
-    var sheetName = p.sheet || "";
+    if (p.action === "ping") {
+      return ContentService.createTextOutput(JSON.stringify({success:true, ping:"pong"})).setMimeType(ContentService.MimeType.JSON);
+    }
+    var sheetName = (p.sheet || "").trim();
     var hs = (p.hs || "").trim();
     var row = parseInt(p.row || 0);
     var status = p.status !== undefined ? p.status : "OK";
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = sheetName ? ss.getSheetByName(sheetName) : ss.getActiveSheet();
-    if (!sheet) return ContentService.createTextOutput(JSON.stringify({success:false, error:"Sheet not found"})).setMimeType(ContentService.MimeType.JSON);
+    var SPREADSHEET_ID = "1VJ3_I4ehRDLSbm5w0CHAODtS8Y4fN3b-wsvo4p4ANVI";
+    var ss = null;
+    try { ss = SpreadsheetApp.getActiveSpreadsheet(); } catch(_) {}
+    if (!ss) {
+      try { ss = SpreadsheetApp.openById(SPREADSHEET_ID); } catch(err) {
+        return ContentService.createTextOutput(JSON.stringify({success:false, error:"Không thể mở Spreadsheet: " + err.toString()})).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    var sheet = null;
+    if (sheetName) {
+      sheet = ss.getSheetByName(sheetName);
+      if (!sheet && sheetName.indexOf("Ngày ") !== -1) sheet = ss.getSheetByName(sheetName.replace("Ngày ", "").trim());
+      if (!sheet && sheetName.indexOf("Ngày") === -1) sheet = ss.getSheetByName("Ngày " + sheetName);
+    }
+    if (!sheet) sheet = ss.getActiveSheet();
+    if (!sheet) return ContentService.createTextOutput(JSON.stringify({success:false, error:"Sheet not found: " + sheetName})).setMimeType(ContentService.MimeType.JSON);
+
     var lastRow = sheet.getLastRow();
     var targetRow = -1;
     if (row >= 2 && row <= lastRow) {
@@ -2996,14 +3013,15 @@ function handleRequest(e) {
       } else targetRow = row;
     }
     if (targetRow <= 0 && hs) {
-      var hsVals = sheet.getRange(1, 2, lastRow, 1).getValues();
+      var hsVals = sheet.getRange(1, 2, Math.max(lastRow, 2), 1).getValues();
       for (var i = 1; i < hsVals.length; i++) {
         if (String(hsVals[i][0]).split(".")[0].trim() === hs) { targetRow = i + 1; break; }
       }
     }
-    if (targetRow <= 1) return ContentService.createTextOutput(JSON.stringify({success:false, error:"Row not found for HS " + hs})).setMimeType(ContentService.MimeType.JSON);
+    if (targetRow <= 1) return ContentService.createTextOutput(JSON.stringify({success:false, error:"Không tìm thấy dòng cho HS: " + hs})).setMimeType(ContentService.MimeType.JSON);
+
     var lastCol = sheet.getLastColumn();
-    var headers = sheet.getRange(1, 1, 1, Math.max(lastCol, 15)).getValues()[0];
+    var headers = sheet.getRange(1, 1, 1, Math.max(lastCol, 20)).getValues()[0];
     var colIdx = -1;
     for (var j = 0; j < headers.length; j++) {
       var h = String(headers[j]).trim().toLowerCase();
@@ -3018,9 +3036,18 @@ function handleRequest(e) {
 }</textarea>
             </div>
 
-            <div style="margin-bottom:16px;">
+            <div style="margin-bottom:12px;">
               <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:6px;">Dán Link URL Web App (kết thúc bằng /exec):</label>
-              <input type="text" id="apps-script-url-input" class="tracker-input" placeholder="https://script.google.com/macros/s/AKfycb.../exec" style="width:100%; font-family:monospace; font-size:0.82rem;">
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="apps-script-url-input" class="tracker-input" placeholder="https://script.google.com/macros/s/AKfycb.../exec" style="flex:1; font-family:monospace; font-size:0.82rem;">
+                <button type="button" class="btn btn-secondary" onclick="testAppsScriptUrl()" id="btn-test-script" style="width:auto; padding:8px 14px; font-size:0.82rem; white-space:nowrap; background:#0ea5e9; color:#fff; border:none;" title="Kiểm tra xem link Web App đã hoạt động và có quyền ghi Google Sheet hay chưa">
+                  🔍 Thử Kết Nối
+                </button>
+              </div>
+              <div id="test-script-result" style="display:none; margin-top:8px; padding:10px; border-radius:6px; font-size:0.82rem; line-height:1.4;"></div>
+              <p style="font-size:0.75rem; color:#64748b; margin-top:4px; margin-bottom:0;">
+                ⚠️ <i>Lưu ý: Không dán link trình duyệt có đuôi <b>/edit</b> hoặc link file Google Sheets! Link chuẩn phải có đuôi <b>/exec</b>.</i>
+              </p>
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px;">
@@ -3953,10 +3980,11 @@ function handleRequest(e) {
         if (data && data.synced_to_sheet) {
           showMiniToast(`✅ Đã tự động điền 'OK' vào Google Sheet (Dòng ${sheetRow}, HS ${hs})!`);
         } else {
-          showMiniToast(`⚠️ Đã lưu trên Web! Google Sheet chưa cập nhật do chưa kết nối Webhook. Bấm nút tím "⚡ Cấu Hình" ở trên để kết nối 1 lần.`);
+          const detail = (data && (data.error_detail || data.error)) ? data.error_detail || data.error : 'Chưa thiết lập Webhook';
+          showMiniToast(`⚠️ Đã lưu trên Web! Google Sheet chưa cập nhật: ${detail}. Bấm nút "⚡ Cấu Hình" ở trên để kiểm tra.`);
         }
       } catch (err) {
-        showMiniToast(`⚠️ Đã lưu trạng thái trên Web!`);
+        showMiniToast(`⚠️ Đã lưu trạng thái trên Web! (Lỗi gửi: ${err.message})`);
       }
     }
 
@@ -3964,12 +3992,18 @@ function handleRequest(e) {
       const url = localStorage.getItem('tracker_apps_script_url') || '';
       const btn = document.getElementById('btn-apps-script-cfg');
       if (!btn) return;
-      if (url && url.startsWith('http')) {
-        btn.innerHTML = '⚡ Đã Kết Nối Google Sheet (Sẵn sàng ✅)';
-        btn.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
-      } else {
+      if (!url) {
         btn.innerHTML = '⚡ Cấu Hình Ghi Google Sheet (Chưa kết nối ⚠️)';
         btn.style.background = '#4338ca';
+      } else if (url.includes('/edit') || url.includes('docs.google.com/spreadsheets')) {
+        btn.innerHTML = '⚡ Link Sai (/edit) - Cần Link /exec ⚠️';
+        btn.style.background = '#b45309';
+      } else if (url.includes('/exec')) {
+        btn.innerHTML = '⚡ Webhook Sẵn Sàng (Bấm Thử Kết Nối 🔄)';
+        btn.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+      } else {
+        btn.innerHTML = '⚡ Cấu Hình Ghi Google Sheet (Kiểm tra lại ⚠️)';
+        btn.style.background = '#b45309';
       }
     }
 
@@ -3978,6 +4012,8 @@ function handleRequest(e) {
       if (modal) {
         const input = document.getElementById('apps-script-url-input');
         if (input) input.value = localStorage.getItem('tracker_apps_script_url') || '';
+        const resBox = document.getElementById('test-script-result');
+        if (resBox) resBox.style.display = 'none';
         modal.style.display = 'flex';
       }
     }
@@ -4002,6 +4038,64 @@ function handleRequest(e) {
       }
     }
 
+    async function testAppsScriptUrl() {
+      const input = document.getElementById('apps-script-url-input');
+      const resBox = document.getElementById('test-script-result');
+      const btn = document.getElementById('btn-test-script');
+      if (!input || !resBox || !btn) return;
+      const url = input.value.trim();
+      if (!url) {
+        resBox.style.display = 'block';
+        resBox.style.background = '#fef2f2';
+        resBox.style.color = '#991b1b';
+        resBox.style.border = '1px solid #fecaca';
+        resBox.innerHTML = '⚠️ Vui lòng dán link Web App vào ô trước khi bấm thử!';
+        return;
+      }
+      if (url.includes('/edit') || url.includes('docs.google.com/spreadsheets')) {
+        resBox.style.display = 'block';
+        resBox.style.background = '#fef2f2';
+        resBox.style.color = '#991b1b';
+        resBox.style.border = '1px solid #fecaca';
+        resBox.innerHTML = '❌ <b>Đường link không đúng:</b> Bạn đang dán link chỉnh sửa (/edit) hoặc link Google Sheet! Link hợp lệ bắt buộc phải lấy từ nút <b>Triển khai ➔ Triển khai mới ➔ Ứng dụng web</b> và kết thúc bằng <code>/exec</code>.';
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = '⏳ Đang kiểm tra...';
+      resBox.style.display = 'block';
+      resBox.style.background = '#f0f9ff';
+      resBox.style.color = '#0369a1';
+      resBox.style.border = '1px solid #bae6fd';
+      resBox.innerHTML = '⏳ Đang gửi yêu cầu ping tới Google Apps Script...';
+      try {
+        const resp = await fetch('/api/error-tracker/test-connection?action=error-tracker-test-connection', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ script_url: url })
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (data && data.success) {
+          resBox.style.background = '#ecfdf5';
+          resBox.style.color = '#065f46';
+          resBox.style.border = '1px solid #a7f3d0';
+          resBox.innerHTML = '<b>✅ KẾT NỐI THÀNH CÔNG 100%!</b><br>Google Apps Script đã sẵn sàng ghi dữ liệu vào Google Sheet. Hãy bấm nút <b>"💾 Lưu Cấu Hình"</b> bên dưới để áp dụng!';
+        } else {
+          resBox.style.background = '#fef2f2';
+          resBox.style.color = '#991b1b';
+          resBox.style.border = '1px solid #fecaca';
+          resBox.innerHTML = `<b>❌ KẾT NỐI THẤT BẠI:</b><br>${data.error || 'Google Apps Script không phản hồi hợp lệ.'}`;
+        }
+      } catch (err) {
+        resBox.style.background = '#fef2f2';
+        resBox.style.color = '#991b1b';
+        resBox.style.border = '1px solid #fecaca';
+        resBox.innerHTML = `<b>❌ Lỗi kết nối:</b> ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔍 Thử Kết Nối';
+      }
+    }
+
     async function saveAppsScriptUrl() {
       const input = document.getElementById('apps-script-url-input');
       if (!input) return;
@@ -4009,6 +4103,11 @@ function handleRequest(e) {
       if (val && !val.startsWith('http')) {
         alert('Vui lòng nhập đúng đường link Web App (bắt đầu bằng https://)!');
         return;
+      }
+      if (val.includes('/edit') || val.includes('docs.google.com/spreadsheets')) {
+        if (!confirm('Cảnh báo: Bạn đang dán link trình duyệt /edit hoặc link Google Sheet chứ không phải link Web App /exec! Bạn có chắc chắn muốn lưu không?')) {
+          return;
+        }
       }
       localStorage.setItem('tracker_apps_script_url', val);
       try {
@@ -4020,7 +4119,7 @@ function handleRequest(e) {
       } catch (_) {}
       updateAppsScriptBtnStatus();
       closeAppsScriptModal();
-      showMiniToast('✅ Đã kết nối thành công! Từ bây giờ ô tích sẽ tự động điền vào Google Sheet.');
+      showMiniToast('✅ Đã lưu cấu hình kết nối Google Sheet thành công!');
     }
 
     function showMiniToast(msg) {
@@ -4774,6 +4873,74 @@ def handle_error_tracker_export():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+def handle_error_tracker_test_connection():
+    try:
+        data = {}
+        if request.is_json:
+            data = request.get_json(silent=True) or {}
+        else:
+            data = request.form.to_dict() or request.args.to_dict()
+
+        script_url = data.get("script_url", "").strip() or get_tracker_apps_script_url()
+        if not script_url:
+            return jsonify({
+                "success": False,
+                "error": "Chưa có URL Apps Script. Vui lòng dán link Web App vào ô."
+            })
+
+        if not script_url.startswith("http"):
+            return jsonify({
+                "success": False,
+                "error": "Đường link không hợp lệ (phải bắt đầu bằng https://)."
+            })
+
+        if "/edit" in script_url or "docs.google.com/spreadsheets" in script_url:
+            return jsonify({
+                "success": False,
+                "error": "Bạn đang dán link trình duyệt (/edit) hoặc Google Sheet! Hãy bấm nút 'Triển khai (Deploy)' ➔ 'Triển khai mới' ➔ 'Ứng dụng web' và sao chép link kết thúc bằng '/exec'."
+            })
+
+        # Ping test to Apps Script
+        test_url = f"{script_url}{'&' if '?' in script_url else '?'}action=ping"
+        req = urllib.request.Request(test_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            content = resp.read().decode('utf-8', errors='ignore')
+
+        if "<!DOCTYPE html>" in content or "<html" in content:
+            if "accounts.google.com" in content or "Sign in" in content or "Đăng nhập" in content:
+                return jsonify({
+                    "success": False,
+                    "error": "Google chặn quyền truy cập (yêu cầu đăng nhập). Khi Triển khai (Deploy), tại mục 'Người có quyền truy cập (Who has access)' bạn bắt buộc phải chọn 'Bất kỳ ai (Anyone)'."
+                })
+            return jsonify({
+                "success": False,
+                "error": "Google trả về trang đăng nhập HTML thay vì JSON. Vui lòng kiểm tra lại quyền truy cập 'Bất kỳ ai (Anyone)'."
+            })
+
+        try:
+            res_json = json.loads(content)
+            if res_json.get("success") is True or "ping" in res_json:
+                return jsonify({
+                    "success": True,
+                    "message": "Kết nối thành công 100%! Google Sheet đã sẵn sàng tự động điền."
+                })
+            else:
+                return jsonify({
+                    "success": False,
+                    "error": res_json.get("error", "Apps Script trả về lỗi không xác định.")
+                })
+        except Exception:
+            return jsonify({
+                "success": False,
+                "error": f"Phản hồi không phải JSON: {content[:120]}"
+            })
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": f"Không thể kết nối tới Google Apps Script: {str(e)}"
+        })
+
 def handle_error_tracker_update_status():
     try:
         data = {}
@@ -4798,7 +4965,24 @@ def handle_error_tracker_update_status():
                 "synced_to_sheet": False,
                 "need_config": True,
                 "status": status,
+                "error_detail": "Chưa kết nối Webhook Google Apps Script",
                 "message": f"Đã lưu trạng thái '{status or 'Chưa xử lý'}' vào hệ thống."
+            })
+
+        if not script_url.startswith("http"):
+            return jsonify({
+                "success": True,
+                "synced_to_sheet": False,
+                "status": status,
+                "error_detail": "Link Web App không đúng định dạng (phải bắt đầu bằng https://)"
+            })
+
+        if "/edit" in script_url or "docs.google.com/spreadsheets" in script_url:
+            return jsonify({
+                "success": True,
+                "synced_to_sheet": False,
+                "status": status,
+                "error_detail": "Link đã lưu là link trang web/Google Sheet, không phải link Web App /exec! Bấm nút Cấu hình để chỉnh lại."
             })
 
         # Gửi cập nhật sang Google Apps Script Web App
@@ -4817,21 +5001,40 @@ def handle_error_tracker_update_status():
 
         try:
             res_json = json.loads(content)
-            res_json["synced_to_sheet"] = True
-            return jsonify(res_json)
+            if res_json.get("success") is True:
+                res_json["synced_to_sheet"] = True
+                return jsonify(res_json)
+            else:
+                err_msg = res_json.get("error", "Apps Script không tìm thấy dòng để ghi")
+                return jsonify({
+                    "success": True,
+                    "synced_to_sheet": False,
+                    "status": status,
+                    "error_detail": f"Google Apps Script báo: {err_msg}"
+                })
         except Exception:
+            if "<!DOCTYPE html>" in content or "<html" in content:
+                if "accounts.google.com" in content or "Sign in" in content or "Đăng nhập" in content:
+                    detail = "Google chặn quyền truy cập (cần chọn 'Bất kỳ ai / Anyone' khi Triển khai)"
+                elif not script_url.endswith("/exec"):
+                    detail = "Link Script phải kết thúc bằng '/exec', không được dùng link /edit"
+                else:
+                    detail = "Google yêu cầu xác thực hoặc đăng nhập"
+            else:
+                detail = f"Phản hồi từ Google không đúng JSON: {content[:80]}"
             return jsonify({
-                "success": True, 
-                "synced_to_sheet": True, 
+                "success": True,
+                "synced_to_sheet": False,
                 "status": status,
-                "message": "Đã gửi cập nhật thành công lên Google Sheet!"
+                "error_detail": detail
             })
 
     except Exception as e:
         return jsonify({
             "success": True, 
             "synced_to_sheet": False, 
-            "warning": str(e), 
+            "status": status,
+            "error_detail": f"Không thể kết nối đến Web App: {str(e)}", 
             "message": "Đã lưu nội bộ trên hệ thống."
         })
 
@@ -4866,6 +5069,8 @@ def dispatch_request(path=""):
         return handle_error_tracker_data()
     if "error-tracker/export" in matched or request.args.get("action") == "error-tracker-export":
         return handle_error_tracker_export()
+    if "error-tracker/test-connection" in matched or request.args.get("action") == "error-tracker-test-connection":
+        return handle_error_tracker_test_connection()
     if "error-tracker/update-status" in matched or request.args.get("action") == "error-tracker-update-status":
         return handle_error_tracker_update_status()
     if "error-tracker/config" in matched or request.args.get("action") == "error-tracker-config":
