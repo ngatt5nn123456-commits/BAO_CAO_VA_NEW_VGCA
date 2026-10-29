@@ -2162,7 +2162,612 @@ HTML_PAGE = """<!DOCTYPE html>
       .two-col-grid { grid-template-columns: 1fr; }
       .tracker-cols-2 { grid-template-columns: 1fr; }
     }
-  </style>
+  
+
+    /* ============================================================
+       BC SỬA CNTT (DASHBOARD TỔNG HỢP SHEET) STYLES
+       ============================================================ */
+    .cntt-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 12px 18px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    .cntt-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .cntt-btn-back {
+      padding: 7px 14px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #94a3b8;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .cntt-btn-back:hover {
+      background: rgba(51, 65, 85, 0.9);
+      color: #f1f5f9;
+      border-color: #38bdf8;
+    }
+    .cntt-header-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cntt-sync-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .cntt-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cntt-btn-action {
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .cntt-btn-sync {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: white;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+    }
+    .cntt-btn-sync:hover {
+      background: linear-gradient(135deg, #0369a1, #1d4ed8);
+      transform: translateY(-1px);
+    }
+    .cntt-btn-excel {
+      background: rgba(15, 23, 42, 0.8);
+      border-color: #0284c7;
+      color: #38bdf8;
+    }
+    .cntt-btn-excel:hover {
+      background: #0284c7;
+      color: white;
+    }
+    .cntt-btn-link {
+      background: transparent;
+      border-color: rgba(148, 163, 184, 0.3);
+      color: #94a3b8;
+    }
+    .cntt-btn-link:hover {
+      color: #e2e8f0;
+      border-color: #94a3b8;
+    }
+
+    /* Sub Tabs Nav */
+    .cntt-subnav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.7);
+      padding-bottom: 4px;
+      overflow-x: auto;
+    }
+    .cntt-tab-item {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-bottom: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .cntt-tab-item:hover {
+      color: #f1f5f9;
+      background: rgba(30, 41, 59, 0.5);
+    }
+    .cntt-tab-item.active {
+      color: #38bdf8;
+      background: rgba(30, 41, 59, 0.95);
+      border-color: rgba(59, 130, 246, 0.4);
+      border-bottom: 2px solid #38bdf8;
+    }
+
+    /* Suggestions & Month selectors */
+    .cntt-filter-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+    }
+    .cntt-quick-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+    }
+    .cntt-quick-left {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .cntt-quick-pill {
+      padding: 5px 12px;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      color: #e2e8f0;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+    .cntt-quick-pill:hover {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: white;
+    }
+    .cntt-quick-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cntt-btn-small {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: rgba(30, 41, 59, 0.6);
+      color: #cbd5e1;
+    }
+    .cntt-btn-small:hover {
+      background: #334155;
+      color: white;
+    }
+    .cntt-btn-small.btn-success {
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.3);
+    }
+    .cntt-btn-small.btn-danger {
+      color: #f87171;
+      border-color: rgba(248, 113, 113, 0.3);
+    }
+
+    /* Month Tabs */
+    .cntt-month-tabs {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .cntt-month-pill {
+      padding: 5px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      color: #94a3b8;
+      transition: all 0.2s;
+    }
+    .cntt-month-pill:hover {
+      background: rgba(51, 65, 85, 0.9);
+      color: #f1f5f9;
+    }
+    .cntt-month-pill.active {
+      background: #0284c7;
+      color: white;
+      border-color: #38bdf8;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4);
+    }
+
+    /* Sheet Grid */
+    .cntt-sheets-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 180px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .cntt-sheet-chip {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(71, 85, 105, 0.6);
+      color: #cbd5e1;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .cntt-sheet-chip input[type="checkbox"] {
+      accent-color: #0284c7;
+      cursor: pointer;
+    }
+    .cntt-sheet-chip:hover {
+      border-color: #38bdf8;
+      color: white;
+    }
+    .cntt-sheet-chip.selected {
+      background: linear-gradient(135deg, #0284c7, #1d4ed8);
+      border-color: #60a5fa;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+    }
+
+    /* Filter & Search Bar */
+    .cntt-action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding: 10px 16px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      border-radius: 10px;
+    }
+    .cntt-action-inputs {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      flex: 1;
+    }
+    .cntt-select-cb {
+      padding: 8px 14px;
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #f1f5f9;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      min-width: 220px;
+    }
+    .cntt-search-input {
+      padding: 8px 14px;
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #f1f5f9;
+      border-radius: 8px;
+      font-size: 13px;
+      flex: 1;
+      min-width: 200px;
+    }
+    .cntt-search-input:focus, .cntt-select-cb:focus {
+      outline: none;
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+    .cntt-success-pill {
+      font-size: 13px;
+      font-weight: 700;
+      color: #10b981;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 4 KPI Cards */
+    .cntt-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    .cntt-kpi-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      border-radius: 12px;
+      padding: 16px 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+    .cntt-kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+    }
+    .cntt-kpi-card.kpi-blue::before { background: linear-gradient(90deg, #38bdf8, #0284c7); }
+    .cntt-kpi-card.kpi-purple::before { background: linear-gradient(90deg, #a855f7, #6366f1); }
+    .cntt-kpi-card.kpi-emerald::before { background: linear-gradient(90deg, #34d399, #059669); }
+    .cntt-kpi-card.kpi-amber::before { background: linear-gradient(90deg, #fbbf24, #d97706); }
+    .cntt-kpi-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .cntt-kpi-value {
+      font-size: 32px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .cntt-kpi-sub {
+      font-size: 12px;
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Staff Aggregation Cards */
+    .cntt-staff-card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    }
+    .cntt-staff-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+      margin-bottom: 16px;
+    }
+    .cntt-staff-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .cntt-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: white;
+      font-size: 18px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+    }
+    .cntt-staff-name {
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .cntt-tag-badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .cntt-tag-blue { background: rgba(2, 132, 199, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .cntt-tag-slate { background: rgba(51, 65, 85, 0.5); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.25); }
+    .cntt-tag-cyan { background: rgba(6, 182, 212, 0.2); color: #22d3ee; border: 1px solid rgba(34, 211, 238, 0.3); }
+    .cntt-tag-amber { background: rgba(217, 119, 6, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+    
+    .cntt-btn-copy {
+      padding: 7px 14px;
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #e2e8f0;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .cntt-btn-copy:hover {
+      background: #0284c7;
+      color: white;
+      border-color: #38bdf8;
+    }
+
+    /* Categories Pills */
+    .cntt-sec-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #e2e8f0;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cntt-sec-title.accent-amber {
+      color: #fbbf24;
+      margin-top: 18px;
+    }
+    .cntt-cats-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .cntt-cat-pill {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(71, 85, 105, 0.5);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #e2e8f0;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cntt-cat-count {
+      background: #0284c7;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
+    /* Other items list */
+    .cntt-other-list {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      border-radius: 10px;
+      padding: 10px 14px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .cntt-other-row {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.35);
+      font-size: 13px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .cntt-other-row:last-child {
+      border-bottom: none;
+    }
+    .cntt-other-idx {
+      font-weight: 700;
+      color: #fbbf24;
+      min-width: 22px;
+    }
+    .badge-sheet {
+      background: rgba(2, 132, 199, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-dept {
+      background: rgba(168, 85, 247, 0.2);
+      color: #c084fc;
+      border: 1px solid rgba(192, 132, 252, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-meta {
+      color: #94a3b8;
+      font-size: 11px;
+    }
+    .badge-hs {
+      color: #38bdf8;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* Toast Notification */
+    .cntt-toast-popup {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #10b981;
+      border-radius: 10px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      z-index: 99999;
+      transform: translateY(120%);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cntt-toast-popup.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .cntt-toast-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #10b981;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .cntt-toast-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .cntt-toast-msg {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+</style>
 </head>
 <body>
 
@@ -2247,7 +2852,7 @@ HTML_PAGE = """<!DOCTYPE html>
             <div class="group-header-title">
               <span>📊 NHÓM BÁO CÁO & GIÁM ĐỊNH BHYT</span>
             </div>
-            <span class="group-header-badge">3 tác vụ</span>
+            <span class="group-header-badge">4 tác vụ</span>
           </div>
           <ul class="sidebar-menu">
             <li data-task="5" onclick="switchTask(5)">
@@ -2255,6 +2860,14 @@ HTML_PAGE = """<!DOCTYPE html>
               <div class="nav-text">
                 <span class="nav-title">Check Log MDINSIGHT</span>
                 <span class="nav-desc">Lọc người dùng & xuất Excel A4</span>
+              </div>
+              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
+            </li>
+            <li data-task="11" onclick="switchTask(11)">
+              <div class="nav-icon">🛠</div>
+              <div class="nav-text">
+                <span class="nav-title">BC Sửa CNTT</span>
+                <span class="nav-desc">Tổng hợp ca tiếp nhận & báo cáo cán bộ</span>
               </div>
               <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
             </li>
@@ -2977,6 +3590,210 @@ HTML_PAGE = """<!DOCTYPE html>
 
 
       <!-- MODAL BẢO VỆ MẬT KHẨU CHO CÁC CHỨC NĂNG -->
+      
+      <!-- ==========================================
+           TÁC VỤ 11: BC SỬA CNTT (DASHBOARD TỔNG HỢP SHEET)
+           ========================================== -->
+      <div class="page" id="page-task-11">
+        <!-- Top Bar -->
+        <div class="cntt-header-bar">
+          <div class="cntt-header-left">
+            <button class="cntt-btn-back" onclick="switchTask(10)">
+              ‹ Quay lại
+            </button>
+            <div class="cntt-header-title">
+              🛠 BC Sửa CNTT
+              <span class="cntt-sync-badge" id="cntt-sync-badge">
+                <span style="color:#10b981">●</span> Đã đồng bộ (<span id="cntt-sync-clock">11:07</span>)
+              </span>
+            </div>
+          </div>
+          <div class="cntt-header-actions">
+            <button class="cntt-btn-action cntt-btn-sync" onclick="refreshCnttLive()">
+              🔄 Đồng Bộ
+            </button>
+            <button class="cntt-btn-action cntt-btn-excel" onclick="exportCnttExcel()">
+              📄 Xuất Excel
+            </button>
+            <a href="https://docs.google.com/spreadsheets/d/1_I7qmDx7mtIOcCLkEkDz_PCaC8KPd_Po-pqEh7krdPA/edit?gid=1894058788#gid=1894058788" target="_blank" class="cntt-btn-action cntt-btn-link">
+              ↗ Mở Google Sheets
+            </a>
+          </div>
+        </div>
+
+        <!-- Sub Tabs Nav -->
+        <div class="cntt-subnav">
+          <div class="cntt-tab-item" onclick="switchCnttSubTab('diem-ca')">📋 Điểm Ca</div>
+          <div class="cntt-tab-item" onclick="switchCnttSubTab('google-sheet')">📂 Google Sheet</div>
+          <div class="cntt-tab-item" onclick="switchCnttSubTab('thong-ke')">📊 Thống Kê</div>
+          <div class="cntt-tab-item" onclick="switchCnttSubTab('danh-sach')">📑 Danh Sách (<span id="cntt-tab-rec-count">16</span>)</div>
+          <div class="cntt-tab-item active" onclick="switchCnttSubTab('tong-hop-sheet')">📑 Tổng Hợp Sheet</div>
+        </div>
+
+        <!-- TAB CONTENT: TỔNG HỢP SHEET -->
+        <div id="cntt-subtab-tong-hop-sheet">
+          <!-- Filter Card: Suggestions & Month Grid -->
+          <div class="cntt-filter-card">
+            <!-- Quick Suggestions -->
+            <div class="cntt-quick-row">
+              <div class="cntt-quick-left">
+                <span style="font-size:12px; font-weight:700; color:#94a3b8; margin-right:4px;">⚡ Gợi ý:</span>
+                <span class="cntt-quick-pill" onclick="selectCnttShortcut('today')">⚡ Hôm nay (29.10)</span>
+                <span class="cntt-quick-pill" onclick="selectCnttShortcut('week')">⚡ Tuần này</span>
+                <span class="cntt-quick-pill" onclick="selectCnttShortcut('m10')">⚡ Tháng 10</span>
+                <span class="cntt-quick-pill" onclick="selectCnttShortcut('m9')">⚡ Tháng 9</span>
+              </div>
+              <div class="cntt-quick-right">
+                <button class="cntt-btn-small" onclick="toggleSheetGridCollapse()">Thu gọn ▲</button>
+                <button class="cntt-btn-small btn-success" onclick="selectAllCurrentMonthSheets()">✓ Chọn tất cả</button>
+                <button class="cntt-btn-small btn-danger" onclick="clearSelectedSheets()">✗ Bỏ chọn</button>
+              </div>
+            </div>
+
+            <!-- Month Selection Tabs -->
+            <div class="cntt-month-tabs">
+              <span class="cntt-month-pill active" onclick="switchCnttMonth('m10', this)">★ Tháng 10 (Hiện tại)</span>
+              <span class="cntt-month-pill" onclick="switchCnttMonth('m9', this)">Tháng 9</span>
+              <span class="cntt-month-pill" onclick="switchCnttMonth('m8', this)">Tháng 8</span>
+              <span class="cntt-month-pill" onclick="switchCnttMonth('m7', this)">Tháng 7</span>
+              <span class="cntt-month-pill" onclick="switchCnttMonth('all', this)">Tất cả (67 sheet)</span>
+            </div>
+
+            <!-- Sheets Checkbox Grid -->
+            <div class="cntt-sheets-grid" id="cntt-sheets-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Action & Search Bar -->
+          <div class="cntt-action-bar">
+            <div class="cntt-action-inputs">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <label style="font-size:12px; font-weight:700; color:#94a3b8;">Lọc cán bộ:</label>
+                <select class="cntt-select-cb" id="cntt-filter-staff" onchange="renderCnttDashboard()">
+                  <option value="">-- Tất cả cán bộ (7) --</option>
+                  <option value="Chu Thị Dương">Chu Thị Dương</option>
+                  <option value="Nguyễn Lê Huyền Ly">Nguyễn Lê Huyền Ly</option>
+                  <option value="Đỗ Văn Hiệp">Đỗ Văn Hiệp</option>
+                  <option value="Nguyễn Thị Quyên">Nguyễn Thị Quyên</option>
+                  <option value="Nguyễn Thị Huyền">Nguyễn Thị Huyền</option>
+                  <option value="Vũ Phương">Vũ Phương</option>
+                  <option value="Chưa gán">Chưa gán</option>
+                </select>
+              </div>
+              <input type="text" id="cntt-search-keyword" class="cntt-search-input" placeholder="🔍 Tìm kiếm công việc, khoa, nội dung sửa..." oninput="renderCnttDashboard()">
+            </div>
+            <div class="cntt-success-pill" id="cntt-status-msg">
+              ✓ Đã tổng hợp thành công 128 ca từ 3 sheet!
+            </div>
+          </div>
+
+          <!-- 4 KPI Metrics Grid -->
+          <div class="cntt-kpi-grid">
+            <div class="cntt-kpi-card kpi-blue">
+              <div class="cntt-kpi-label">📖 SHEET ĐÃ CHỌN</div>
+              <div class="cntt-kpi-value" id="cntt-kpi-sheets">3</div>
+              <div class="cntt-kpi-sub" id="cntt-kpi-sheets-sub">29.10, 28.10, 27.10</div>
+            </div>
+            <div class="cntt-kpi-card kpi-purple">
+              <div class="cntt-kpi-label">🛠 TỔNG SỐ CA TIẾP NHẬN</div>
+              <div class="cntt-kpi-value" id="cntt-kpi-cases">128</div>
+              <div class="cntt-kpi-sub" id="cntt-kpi-cases-sub">Bao gồm 36 khoa/phòng</div>
+            </div>
+            <div class="cntt-kpi-card kpi-emerald">
+              <div class="cntt-kpi-label">👥 CÁN BỘ THỰC HIỆN</div>
+              <div class="cntt-kpi-value" id="cntt-kpi-staff">7</div>
+              <div class="cntt-kpi-sub">Cán bộ tham gia xử lý</div>
+            </div>
+            <div class="cntt-kpi-card kpi-amber">
+              <div class="cntt-kpi-label">📝 NỘI DUNG SỬA CHỮA KHÁC</div>
+              <div class="cntt-kpi-value" id="cntt-kpi-other">51</div>
+              <div class="cntt-kpi-sub">Nội dung ghi chi tiết</div>
+            </div>
+          </div>
+
+          <!-- Staff Cards Container -->
+          <div id="cntt-staff-cards-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: DANH SÁCH -->
+        <div id="cntt-subtab-danh-sach" style="display:none;">
+          <div class="card" style="padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <h3 style="color:#ffffff; margin:0;">📑 Danh Sách Chi Tiết Công Việc (<span id="cntt-table-total">128</span> ca)</h3>
+              <input type="text" id="cntt-table-search" placeholder="🔍 Lọc trong bảng..." oninput="filterCnttTable()" style="padding:6px 12px; background:#1e293b; border:1px solid #475569; color:white; border-radius:6px; font-size:12px;">
+            </div>
+            <div style="max-height:550px; overflow-y:auto;">
+              <table class="error-table" id="cntt-raw-table">
+                <thead>
+                  <tr>
+                    <th>STT</th>
+                    <th>Sheet</th>
+                    <th>Khoa / Phòng</th>
+                    <th>Số HS</th>
+                    <th>Cán Bộ Xử Lý</th>
+                    <th>Người Y/C</th>
+                    <th>Nội Dung Sửa Chữa Khác</th>
+                    <th>Các Mục Sửa Khác</th>
+                  </tr>
+                </thead>
+                <tbody id="cntt-table-body">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: THỐNG KÊ -->
+        <div id="cntt-subtab-thong-ke" style="display:none;">
+          <div class="tracker-charts-grid">
+            <div class="tracker-chart-card">
+              <div class="tracker-chart-header">
+                <h3>🏥 Xếp Hạng Khoa/Phòng Yêu Cầu Nhiều Nhất</h3>
+              </div>
+              <div id="cntt-stat-dept-list" style="padding:10px 0;"></div>
+            </div>
+            <div class="tracker-chart-card">
+              <div class="tracker-chart-header">
+                <h3>📊 Cơ Cấu Các Nhóm Sửa Chữa</h3>
+              </div>
+              <div id="cntt-stat-cat-list" style="padding:10px 0;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: GOOGLE SHEET -->
+        <div id="cntt-subtab-google-sheet" style="display:none;">
+          <div class="card" style="padding:16px; text-align:center;">
+            <h3 style="color:#ffffff; margin-bottom:10px;">📂 Trực Tiếp Xem & Thao Tác Trên Google Sheets</h3>
+            <p style="color:#94a3b8; font-size:13px; margin-bottom:14px;">Bấm nút bên dưới để mở file Google Sheets gốc của P.CNTT trong tab mới:</p>
+            <a href="https://docs.google.com/spreadsheets/d/1_I7qmDx7mtIOcCLkEkDz_PCaC8KPd_Po-pqEh7krdPA/edit?gid=1894058788#gid=1894058788" target="_blank" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:8px;">
+              ↗ Mở File Google Sheets Gốc (P.CNTT)
+            </a>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: ĐIỂM CA -->
+        <div id="cntt-subtab-diem-ca" style="display:none;">
+          <div class="card" style="padding:16px;">
+            <h3 style="color:#ffffff; margin-bottom:12px;">📋 Tổng Hợp Điểm Ca Theo Ngày</h3>
+            <div id="cntt-diem-ca-content"></div>
+          </div>
+        </div>
+
+        <!-- Floating Toast -->
+        <div class="cntt-toast-popup" id="cntt-toast">
+          <div class="cntt-toast-icon">✓</div>
+          <div>
+            <div class="cntt-toast-title" id="cntt-toast-title">THÀNH CÔNG</div>
+            <div class="cntt-toast-msg" id="cntt-toast-msg">Đã tổng hợp 128 ca công việc từ 3 sheet!</div>
+          </div>
+        </div>
+      </div>
+
       <div id="auth-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); backdrop-filter:blur(5px); z-index:999999; align-items:center; justify-content:center; padding:20px;">
         <div style="background:#ffffff; border-radius:14px; max-width:440px; width:100%; padding:26px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.35); border:1px solid #e2e8f0;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
@@ -3175,13 +3992,13 @@ function handleRequest(e) {
 
     function switchTask(taskId) {
       taskId = parseInt(taskId);
-      // Chỉ Tác vụ 10 là công khai, tất cả các tác vụ còn lại cần mật khẩu 8889
-      if (taskId !== 10 && !isAppUnlocked()) {
+      // Yêu cầu người dùng: Mỗi lần bấm vào bất kỳ menu nào (trừ Task 10) đều phải nhập mật khẩu 8889
+      if (taskId !== 10) {
         pendingTaskId = taskId;
         openAuthModal(taskId);
         return;
       }
-      executeSwitchTask(taskId);
+      executeSwitchTask(10);
     }
 
     function executeSwitchTask(taskId) {
@@ -4410,7 +5227,497 @@ function handleRequest(e) {
       updateAuthUI();
       executeSwitchTask(10);
     });
-  </script>
+  
+
+    /* ============================================================
+       BC SỬA CNTT JAVASCRIPT CONTROLLER
+       ============================================================ */
+    const CNTT_ALL_MONTHS = {
+      m10: [
+        '29.10', '28.10', '27.10', '26.10', '23-24-25.10', '22.10', '21.10', 
+        '20.10', '19.10', '16.10-18.10', '15.10', '14.10', '13.10', '12.10', 
+        '9.10-10.10-11.10', '8.10', '7.10', '6.10', '05.10', '3-4.10', '2.10', '1.10'
+      ],
+      m9: [
+        '30.9', '29.9', '28.9', '25-26-27.9', '24.9', '23.9', '22.9', '21.9',
+        '18-19-20.9', '17.9', '16.9', '15.9', '14.9', '11-12-13.09', '10.9', '9.9', '8.9', '7.9', '4.9', '3.9', '31.8-1.9-2.9'
+      ],
+      m8: [
+        '28-29-30.8', '27.8', '26.8', '25.8', '24.8', '21-22-23.8', '20.8', '19.8',
+        '18.8', '17.8', '14-15-16.8', '15.8', '13.8', '12.8', '11.8', '10.8', '7-8-9.8', '6.8', '5.8', '4.8', '3.8'
+      ],
+      m7: ['31.7-2.8', '30.7', '29.7']
+    };
+
+    let cnttSelectedMonth = 'm10';
+    let cnttSelectedSheets = new Set(['29.10', '28.10', '27.10']);
+    let cnttRawRecords = [];
+    let cnttAggregatedData = null;
+    let cnttIsGridCollapsed = false;
+
+    // Preloaded initial records from Python
+    const CNTT_INITIAL_DATA = {"29.10": [{"sheet": "29.10", "stt": "1", "khoa": "NGOẠI ƯB", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hồng", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1, "Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "29.10", "stt": "2", "khoa": "TMH", "hs": "26228514", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hoa", "sua_khac": "Sửa mức hưởng BH", "categories": {}}, {"sheet": "29.10", "stt": "3", "khoa": "KB", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Sơn PK UB 219", "sua_khac": "", "categories": {"Hỗ trợ ký số PM, QLVBĐH": 1}}, {"sheet": "29.10", "stt": "4", "khoa": "NHH", "hs": "26221694", "phieu": "8043555", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Thùy", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "29.10", "stt": "5", "khoa": "NGOẠI XT", "hs": "26209471", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Huệ", "sua_khac": "", "categories": {"Huỷ CKS": 1}}, {"sheet": "29.10", "stt": "6", "khoa": "MẮT", "hs": "26228870", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Thu", "sua_khac": "Sửa mức hưởng BH", "categories": {}}, {"sheet": "29.10", "stt": "7", "khoa": "NGOẠI TKLN", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Huyền", "sua_khac": "Nhập BH cùng chi trả", "categories": {"Sửa xoá giường, cập nhật giường, thêm giường": 7}}, {"sheet": "29.10", "stt": "8", "khoa": "PHỤ SẢN", "hs": "", "phieu": "TL0109518", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Hiền", "sua_khac": "", "categories": {"Huỷ CKS": 1}}, {"sheet": "29.10", "stt": "9", "khoa": "DA LIỄU", "hs": "26229792", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Thủy", "sua_khac": "Sủa mức hưởng BH", "categories": {}}, {"sheet": "29.10", "stt": "10", "khoa": "TRUYỀN NHIỄM", "hs": "26225431", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Vui", "sua_khac": "Chuyển trạng thái phiếu", "categories": {}}, {"sheet": "29.10", "stt": "11", "khoa": "LKTK", "hs": "26227036", "phieu": "804444", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Loan", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "29.10", "stt": "12", "khoa": "NHI", "hs": "26224147", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Thu Hiền", "sua_khac": "", "categories": {}}, {"sheet": "29.10", "stt": "13", "khoa": "TTTM", "hs": "26225561", "phieu": "8028816", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Nga", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "29.10", "stt": "14", "khoa": "NGOẠI TH", "hs": "26223088", "phieu": "8019001", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Dung", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "29.10", "stt": "15", "khoa": "KHTH", "hs": "26229981", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Kim Nội", "sua_khac": "", "categories": {"Huỷ B/án": 1}}, {"sheet": "29.10", "stt": "16", "khoa": "KHTH", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Kim Nội", "sua_khac": "sửa tên CSKCBBĐ 30122", "categories": {}}], "28.10": [{"sheet": "28.10", "stt": "1", "khoa": "THẬN", "hs": "26225416", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Quy", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "28.10", "stt": "2", "khoa": "KHTH", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Kim Nội", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 4}}, {"sheet": "28.10", "stt": "3", "khoa": "KB", "hs": "26228486", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Nhung PK N3", "sua_khac": "", "categories": {"Huỷ B/án": 1}}, {"sheet": "28.10", "stt": "4", "khoa": "THẬN", "hs": "26204563", "phieu": "2572041", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Sơn", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "5", "khoa": "MẮT", "hs": "26228137", "phieu": "8039270", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Hằng", "sua_khac": "Thêm diễn giải", "categories": {}}, {"sheet": "28.10", "stt": "6", "khoa": "NGOẠI CT", "hs": "26228161", "phieu": "8039422", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Chinh", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "28.10", "stt": "7", "khoa": "NGOẠI TKLN", "hs": "26226732", "phieu": "8033865", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Huyền Trang", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "28.10", "stt": "8", "khoa": "CTXH", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Nga", "sua_khac": "", "categories": {"Đăng bài trên website": 2}}, {"sheet": "28.10", "stt": "9", "khoa": "TTTM", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Máy trực", "sua_khac": "Kết nối in qua Lan", "categories": {}}, {"sheet": "28.10", "stt": "10", "khoa": "KHTH", "hs": "26228722", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Kim Nội", "sua_khac": "", "categories": {"Ép thẻ BH": 1}}, {"sheet": "28.10", "stt": "11", "khoa": "DƯỢC", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bích Hạnh", "sua_khac": "Hạ thuốc treo kho chính", "categories": {}}, {"sheet": "28.10", "stt": "12", "khoa": "LKTK", "hs": "26222801", "phieu": "8027542", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Vân", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "28.10", "stt": "13", "khoa": "TRUYỀN NHIỄM", "hs": "26221141", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Vui", "sua_khac": "Sửa giờ kết thúc công khám ngoại TH", "categories": {}}, {"sheet": "28.10", "stt": "14", "khoa": "NGOẠI TKLN", "hs": "26220268", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Huyền", "sua_khac": "", "categories": {"Sửa xoá giường, cập nhật giường, thêm giường": 1}}, {"sheet": "28.10", "stt": "15", "khoa": "NHH", "hs": "26222373", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Liễu", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "28.10", "stt": "16", "khoa": "NỘI TH", "hs": "26228205", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Huế", "sua_khac": "", "categories": {"Huỷ CKS": 1}}, {"sheet": "28.10", "stt": "17", "khoa": "NGOẠI TN", "hs": "26223185", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hương", "sua_khac": "Sửa nơi ĐK KCB BĐ", "categories": {}}, {"sheet": "28.10", "stt": "18", "khoa": "NỘI TH", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Mai", "sua_khac": "Sửa lỗi không in được P866", "categories": {}}, {"sheet": "28.10", "stt": "19", "khoa": "ĐIỀU DƯỠNG", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Kiều", "sua_khac": "Kết nối máy in cho 2 máy tính", "categories": {}}, {"sheet": "28.10", "stt": "20", "khoa": "DƯỢC", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "E Thảo Quầy thuốc BH", "sua_khac": "Lỗi đơn thuốc trả về O ( 02 HS)", "categories": {}}, {"sheet": "28.10", "stt": "21", "khoa": "NGOẠI TN", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Sâm", "sua_khac": "Sửa lỗi máy in bị in liên tục", "categories": {}}, {"sheet": "28.10", "stt": "22", "khoa": "NHH", "hs": "26218168", "phieu": "2572984", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Phương", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "23", "khoa": "HSTC", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Loan", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 2}}, {"sheet": "28.10", "stt": "24", "khoa": "NGOẠI CT", "hs": "26217179", "phieu": "2556472", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "25", "khoa": "TRUYỀN NHIỄM", "hs": "26228936", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Vui", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "28.10", "stt": "26", "khoa": "NHH", "hs": "26219481", "phieu": "2571206", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Thuận", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "27", "khoa": "NGOẠI CT", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Thảnh", "sua_khac": "Sửa nơi KCB BĐ 22370, 93078", "categories": {}}, {"sheet": "28.10", "stt": "28", "khoa": "NGOẠI ƯB", "hs": "26222162", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hồng", "sua_khac": "Sửa mức hưởng BH", "categories": {}}, {"sheet": "28.10", "stt": "29", "khoa": "KB", "hs": "26228417", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Huyền PK N5", "sua_khac": "", "categories": {"Sửa mã bệnh kèm theo, bệnh chính": 1}}, {"sheet": "28.10", "stt": "30", "khoa": "NGOẠI TKLN", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Huyền", "sua_khac": "Sửa mức hưởng BH; Sửa giờ khám bệnh", "categories": {}}, {"sheet": "28.10", "stt": "31", "khoa": "HTL", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Xâm", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 5}}, {"sheet": "28.10", "stt": "32", "khoa": "TCKT", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hoa", "sua_khac": "Sửa ngày phiếu tạm ứng sang ngày 27/10", "categories": {}}, {"sheet": "28.10", "stt": "33", "khoa": "CC115", "hs": "26228212", "phieu": "8039654", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bảo Anh", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "34", "khoa": "NHI", "hs": "26225394", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Loan", "sua_khac": "", "categories": {"Mở HS ký số bổ sung": 1}}, {"sheet": "28.10", "stt": "35", "khoa": "VT", "hs": "", "phieu": "(645', '657', '658', '356', 383 ,335\n'274', '659', '648', '671',\n '672', '727', '729','250',\n '710', '285', '728', '142', \n'448', '25', '60', '730', \n'746','284', '536', '1128', \n'748', '59', '712', '275', \n'157', '270','287', '446', \n'447', '731', '732', '243',\n '244', '450','47', '49', '48')", "can_bo": "Nguyễn Thị Quyên", "cb_raw": "Quyên", "yeu_cau": "Thái", "sua_khac": "ẩn hoạt động máy", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 43}}, {"sheet": "28.10", "stt": "36", "khoa": "NHI", "hs": "26225395", "phieu": "8028283", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bích", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "37", "khoa": "CĐHA", "hs": "26229136", "phieu": "8043108", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Sen", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "38", "khoa": "CC115", "hs": "", "phieu": "8043459\n8043461\n8043614", "can_bo": "Vũ Phương", "cb_raw": "V Phương", "yeu_cau": "Sơn\nHướng\nChinh", "sua_khac": "Sửa mạch huyết áp", "categories": {"Xoá CLS, PTTT": 3}}, {"sheet": "28.10", "stt": "39", "khoa": "HSTC", "hs": "26229146", "phieu": "2573795", "can_bo": "Vũ Phương", "cb_raw": "V Phương", "yeu_cau": "Thái", "sua_khac": "Cập nhật TT sang S", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "40", "khoa": "NGOẠI TN", "hs": "26225247", "phieu": "2571469", "can_bo": "Vũ Phương", "cb_raw": "V Phương", "yeu_cau": "Khải", "sua_khac": "Cập nhật TT sang S", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "41", "khoa": "PTGMHS", "hs": "26229204", "phieu": "8043541\n8043549\n8043717,8043719,8043720,8043729,8043730", "can_bo": "Vũ Phương", "cb_raw": "V Phương", "yeu_cau": "Dư, Khánh Linh", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 5, "Sửa ngày giờ, sửa xoá phiếu xuất khác": 2}}], "27.10": [{"sheet": "27.10", "stt": "1", "khoa": "KB", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Luyên", "sua_khac": "Sửa địa chỉ TP BN", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 40}}, {"sheet": "27.10", "stt": "2", "khoa": "RHM", "hs": "26225404", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "E An", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "27.10", "stt": "3", "khoa": "PHCN", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Nguyệt", "sua_khac": "Sửa mức hưởng BH ( 02 HS)", "categories": {}}, {"sheet": "27.10", "stt": "4", "khoa": "KHTH", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Kim Nội", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 2}}, {"sheet": "27.10", "stt": "5", "khoa": "NGOẠI TH", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Dương Nga", "sua_khac": "Bỏ xác nhận phiếu TLT0227181", "categories": {}}, {"sheet": "27.10", "stt": "6", "khoa": "LKTK", "hs": "26223173", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Quỳnh", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "27.10", "stt": "7", "khoa": "TRUYỀN NHIỄM", "hs": "26216584", "phieu": "15102819; 15104940", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Vui", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "27.10", "stt": "8", "khoa": "TTTM", "hs": "", "phieu": "7999113; 7978582", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Phúc", "sua_khac": "Thêm mã máy vào CTM ( 02 HS)", "categories": {}}, {"sheet": "27.10", "stt": "9", "khoa": "TTTM", "hs": "26223944", "phieu": "8033549", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Linh", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "27.10", "stt": "10", "khoa": "TRUYỀN NHIỄM", "hs": "26219362", "phieu": "8003942", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Vui", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "27.10", "stt": "11", "khoa": "NHI", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hiền", "sua_khac": "Sửa phí công khám", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1, "Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "27.10", "stt": "12", "khoa": "NGOẠI TKLN", "hs": "26224191", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Bảo", "sua_khac": "", "categories": {"Huỷ CKS": 1}}, {"sheet": "27.10", "stt": "13", "khoa": "CXK", "hs": "26214158", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "E Thảo", "sua_khac": "Thêm ngày hẹn khám lại", "categories": {}}, {"sheet": "27.10", "stt": "14", "khoa": "NHH", "hs": "26219530", "phieu": "2569009", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Linh", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "27.10", "stt": "15", "khoa": "NGOẠI CT", "hs": "26049982", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Chinh", "sua_khac": "", "categories": {"Huỷ CKS": 1}}, {"sheet": "27.10", "stt": "16", "khoa": "NỘI TH", "hs": "26223944", "phieu": "8034907", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Đoàn Thảo", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "27.10", "stt": "17", "khoa": "CĐHA", "hs": "26223019", "phieu": "8021771", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Dung", "sua_khac": "thêm mã máy", "categories": {}}, {"sheet": "27.10", "stt": "18", "khoa": "KB", "hs": "26227352", "phieu": "8036310", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Nhung PK N3", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "27.10", "stt": "19", "khoa": "KHTH", "hs": "26225307", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Kim Nội", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "27.10", "stt": "20", "khoa": "NGOẠI TN", "hs": "26227593", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Cuộc", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "27.10", "stt": "21", "khoa": "NGOẠI TKLN", "hs": "26222375", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Huyền", "sua_khac": "", "categories": {"Sửa xoá giường, cập nhật giường, thêm giường": 1}}, {"sheet": "27.10", "stt": "22", "khoa": "NHH", "hs": "26224992", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Duyên", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "27.10", "stt": "23", "khoa": "TMH", "hs": "26225643", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hoa", "sua_khac": "", "categories": {"Huỷ B/án": 1}}, {"sheet": "27.10", "stt": "24", "khoa": "TRUYỀN NHIỄM", "hs": "26216846", "phieu": "8018954", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Vui", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "27.10", "stt": "25", "khoa": "CĐT", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "C Dương", "sua_khac": "Hỗ trợ phần mềm WPS", "categories": {}}, {"sheet": "27.10", "stt": "26", "khoa": "HSTC", "hs": "26219281", "phieu": "6608562, 6612828, 6612829, 6612830", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hiền", "sua_khac": "", "categories": {"Huỷ CKS": 4}}, {"sheet": "27.10", "stt": "27", "khoa": "KB", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Hạnh PK Nội tiết", "sua_khac": "", "categories": {"Sửa cách dùng thuốc, ngày giờ thuốc, vật tư": 2}}, {"sheet": "27.10", "stt": "28", "khoa": "HSTC", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Loan", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 2}}, {"sheet": "27.10", "stt": "29", "khoa": "TRUYỀN NHIỄM", "hs": "26216846", "phieu": "15104937", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Vui", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "27.10", "stt": "30", "khoa": "KB", "hs": "26227560", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Huệ PK CXK", "sua_khac": "Sửa mức hưởng BH", "categories": {}}, {"sheet": "27.10", "stt": "31", "khoa": "NGOẠI XT", "hs": "26218981", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Huệ", "sua_khac": "Thêm ngày hẹn khám lại", "categories": {}}, {"sheet": "27.10", "stt": "32", "khoa": "PTGMHS", "hs": "26223148", "phieu": "2564613", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Hảo", "sua_khac": "Chuyển trạng thái PT từ S về T", "categories": {}}, {"sheet": "27.10", "stt": "33", "khoa": "TDCN", "hs": "", "phieu": "8035656; 8037315; 8037493; 8037514; 8037853", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Hách", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 5}}, {"sheet": "27.10", "stt": "34", "khoa": "KB", "hs": "26227976", "phieu": "8038638", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Thanh PK TMH", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "27.10", "stt": "35", "khoa": "THẬN", "hs": "26209627", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Quy", "sua_khac": "Kiểm tra lỗi MDinsight", "categories": {}}, {"sheet": "27.10", "stt": "36", "khoa": "ĐIỀU DƯỠNG", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Kiều", "sua_khac": "Lỗi kẹt giấy, kết nối máy in", "categories": {}}, {"sheet": "27.10", "stt": "37", "khoa": "TRUYỀN NHIỄM", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "", "sua_khac": "Kéo dây mạng cho tòa B2, B3", "categories": {}}, {"sheet": "27.10", "stt": "38", "khoa": "KB", "hs": "26228051", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Khuyên", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "27.10", "stt": "39", "khoa": "QLCL", "hs": "", "phieu": "", "can_bo": "Chưa gán", "cb_raw": "", "yeu_cau": "", "sua_khac": "Biên bản góp ý", "categories": {}}, {"sheet": "27.10", "stt": "40", "khoa": "PHỤ SẢN", "hs": "26226630", "phieu": "8033367", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Hiền", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "27.10", "stt": "41", "khoa": "KB", "hs": "26226307", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Thủy PK LKTK", "sua_khac": "", "categories": {"Sửa cách dùng thuốc, ngày giờ thuốc, vật tư": 1}}, {"sheet": "27.10", "stt": "42", "khoa": "TCKT", "hs": "26217377", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Vân", "sua_khac": "BN để quá hạn thanh toán k đẩy đc cổng yêu cầu sửa ngày kết thúc sang ngày 27/10/2026", "categories": {}}, {"sheet": "27.10", "stt": "43", "khoa": "NHI", "hs": "26226312", "phieu": "8034470", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Hiền", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "27.10", "stt": "44", "khoa": "HSTC", "hs": "26213465", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Loan", "sua_khac": "Sửa giờ kết thúc hố sơ", "categories": {}}, {"sheet": "27.10", "stt": "45", "khoa": "KB", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Quyền PK TM", "sua_khac": "", "categories": {"Sửa cách dùng thuốc, ngày giờ thuốc, vật tư": 2}}, {"sheet": "27.10", "stt": "46", "khoa": "TCKT", "hs": "26223747", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "A Trường", "sua_khac": "", "categories": {"Sửa phí, mã QR sang TM và ngược lại": 1}}, {"sheet": "27.10", "stt": "48", "khoa": "PHỤ SẢN", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Hiền", "sua_khac": "Hủy CKS số ra viện, giấy chứng nhận PTTT", "categories": {"Huỷ CKS": 2}}, {"sheet": "27.10", "stt": "49", "khoa": "NHI", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Hiền", "sua_khac": "Tách chứng từ ( 02 HS)", "categories": {}}, {"sheet": "27.10", "stt": "50", "khoa": "NGOẠI TN", "hs": "26213939", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Sâm", "sua_khac": "", "categories": {"Huỷ CKS": 1, "Sửa giấy RV, kết thúc ra viện, chuyển tuyến": 1}}, {"sheet": "27.10", "stt": "52", "khoa": "HTL", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Xâm", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 2}}, {"sheet": "27.10", "stt": "53", "khoa": "CC115", "hs": "26220933", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hoa", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "27.10", "stt": "56", "khoa": "NHH", "hs": "", "phieu": "2480147; 2478660", "can_bo": "Nguyễn Thị Quyên", "cb_raw": "Quyên", "yeu_cau": "Duyên", "sua_khac": "kiểm tra người thực hiện PTTT", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 2}}, {"sheet": "27.10", "stt": "57", "khoa": "KB", "hs": "", "phieu": "", "can_bo": "Nguyễn Thị Quyên", "cb_raw": "Quyên", "yeu_cau": "Sang", "sua_khac": "sửa 1.14\nmã bệnh thành L40.1", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 2}}, {"sheet": "27.10", "stt": "58", "khoa": "LKTK", "hs": "26227954", "phieu": "", "can_bo": "Nguyễn Thị Quyên", "cb_raw": "Quyên", "yeu_cau": "Nơi", "sua_khac": "Ép thẻ cls", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "27.10", "stt": "59", "khoa": "BAN BVSK", "hs": "", "phieu": "", "can_bo": "Nguyễn Thị Quyên", "cb_raw": "Quyên", "yeu_cau": "Liên", "sua_khac": "", "categories": {"Sửa xoá giường, cập nhật giường, thêm giường": 1}}, {"sheet": "27.10", "stt": "60", "khoa": "PTGMHS", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Toại", "sua_khac": "Sửa lỗi chữ ký số USB không ký được", "categories": {}}, {"sheet": "27.10", "stt": "61", "khoa": "TDCN", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hồng Liên", "sua_khac": "", "categories": {"Phân quyền USER, đổi nick user": 1}}, {"sheet": "27.10", "stt": "62", "khoa": "TMH", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hoa", "sua_khac": "Sửa mức hưởng BH ( 02 HS)", "categories": {}}, {"sheet": "27.10", "stt": "63", "khoa": "NGOẠI TH", "hs": "26208107", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Dung", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "27.10", "stt": "64", "khoa": "KB", "hs": "26227241", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Huệ PK CXK", "sua_khac": "", "categories": {"Sửa cách dùng thuốc, ngày giờ thuốc, vật tư": 1}}, {"sheet": "27.10", "stt": "65", "khoa": "PHỤ SẢN", "hs": "26210980", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "E Ngọc", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "27.10", "stt": "66", "khoa": "CC115", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hoa", "sua_khac": "Sửa mã ĐT KCB: cấp cứu ( 02 HS)", "categories": {}}, {"sheet": "27.10", "stt": "67", "khoa": "KB", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "BS Lan Anh PK Mắt", "sua_khac": "Sửa giờ khám bệnh ( 03 HS); sửa mã máy", "categories": {}}, {"sheet": "27.10", "stt": "68", "khoa": "TCKT", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Thuy, Trang", "sua_khac": "", "categories": {"Đăng bài trên website": 3}}, {"sheet": "27.10", "stt": "69", "khoa": "CTXH", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Nga, Tùng, Hà", "sua_khac": "", "categories": {"Đăng bài trên website": 11}}, {"sheet": "27.10", "stt": "70", "khoa": "PTGMHS", "hs": "26221979", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "A Tú", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "27.10", "stt": "71", "khoa": "NGOẠI TKLN", "hs": "26220268", "phieu": "", "can_bo": "Nguyễn Thị Huyền", "cb_raw": "Huyền", "yeu_cau": "Thắm", "sua_khac": "", "categories": {"Ép thẻ BH": 1}}, {"sheet": "27.10", "stt": "72", "khoa": "NHI", "hs": "26227433", "phieu": "", "can_bo": "Nguyễn Thị Huyền", "cb_raw": "Huyền", "yeu_cau": "Bích", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "27.10", "stt": "73", "khoa": "HSTC", "hs": "", "phieu": "", "can_bo": "Nguyễn Thị Huyền", "cb_raw": "Huyền", "yeu_cau": "c Hiền", "sua_khac": "Cài lại vimes", "categories": {}}, {"sheet": "27.10", "stt": "74", "khoa": "NGOẠI TKLN", "hs": "", "phieu": "", "can_bo": "Nguyễn Thị Huyền", "cb_raw": "Huyền", "yeu_cau": "Thắm", "sua_khac": "", "categories": {"Sửa xoá giường, cập nhật giường, thêm giường": 4}}, {"sheet": "27.10", "stt": "75", "khoa": "HSTC", "hs": "", "phieu": "", "can_bo": "Nguyễn Thị Huyền", "cb_raw": "Huyền", "yeu_cau": "c Loan", "sua_khac": "Cài lại vimes", "categories": {}}]};
+
+    function initCnttDashboard() {
+      renderCnttMonthPills();
+      renderCnttSheetGrid();
+      
+      // Load bundled records immediately
+      cnttRawRecords = [];
+      cnttSelectedSheets.forEach(s => {
+        if (CNTT_INITIAL_DATA[s]) {
+          cnttRawRecords = cnttRawRecords.concat(CNTT_INITIAL_DATA[s]);
+        }
+      });
+      
+      recomputeCnttAggregation();
+      renderCnttDashboard();
+      
+      // Show sync time
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const clockEl = document.getElementById('cntt-sync-clock');
+      if (clockEl) clockEl.textContent = `${h}:${m}`;
+    }
+
+    function renderCnttMonthPills() {
+      // Setup click handlers for month buttons
+    }
+
+    function switchCnttMonth(monthKey, el) {
+      cnttSelectedMonth = monthKey;
+      document.querySelectorAll('.cntt-month-pill').forEach(p => p.classList.remove('active'));
+      if (el) el.classList.add('active');
+      renderCnttSheetGrid();
+    }
+
+    function renderCnttSheetGrid() {
+      const grid = document.getElementById('cntt-sheets-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      let list = [];
+      if (cnttSelectedMonth === 'all') {
+        list = [...CNTT_ALL_MONTHS.m10, ...CNTT_ALL_MONTHS.m9, ...CNTT_ALL_MONTHS.m8, ...CNTT_ALL_MONTHS.m7];
+      } else {
+        list = CNTT_ALL_MONTHS[cnttSelectedMonth] || CNTT_ALL_MONTHS.m10;
+      }
+
+      list.forEach(sheetName => {
+        const chip = document.createElement('label');
+        const isSelected = cnttSelectedSheets.has(sheetName);
+        chip.className = 'cntt-sheet-chip' + (isSelected ? ' selected' : '');
+        chip.innerHTML = `
+          <input type="checkbox" value="${sheetName}" ${isSelected ? 'checked' : ''} onchange="toggleCnttSheet('${sheetName}', this)">
+          ${sheetName}
+        `;
+        grid.appendChild(chip);
+      });
+    }
+
+    async function toggleCnttSheet(sheetName, checkbox) {
+      if (checkbox.checked) {
+        cnttSelectedSheets.add(sheetName);
+      } else {
+        cnttSelectedSheets.delete(sheetName);
+      }
+      renderCnttSheetGrid();
+      await fetchOrAggregateCnttSheets();
+    }
+
+    function selectAllCurrentMonthSheets() {
+      const list = CNTT_ALL_MONTHS[cnttSelectedMonth] || CNTT_ALL_MONTHS.m10;
+      list.forEach(s => cnttSelectedSheets.add(s));
+      renderCnttSheetGrid();
+      fetchOrAggregateCnttSheets();
+    }
+
+    function clearSelectedSheets() {
+      cnttSelectedSheets.clear();
+      renderCnttSheetGrid();
+      fetchOrAggregateCnttSheets();
+    }
+
+    function selectCnttShortcut(type) {
+      cnttSelectedSheets.clear();
+      if (type === 'today') {
+        cnttSelectedSheets.add('29.10');
+      } else if (type === 'week') {
+        ['29.10', '28.10', '27.10', '26.10', '23-24-25.10'].forEach(s => cnttSelectedSheets.add(s));
+      } else if (type === 'm10') {
+        CNTT_ALL_MONTHS.m10.forEach(s => cnttSelectedSheets.add(s));
+      } else if (type === 'm9') {
+        CNTT_ALL_MONTHS.m9.forEach(s => cnttSelectedSheets.add(s));
+      }
+      renderCnttSheetGrid();
+      fetchOrAggregateCnttSheets();
+    }
+
+    function toggleSheetGridCollapse() {
+      const grid = document.getElementById('cntt-sheets-grid');
+      cnttIsGridCollapsed = !cnttIsGridCollapsed;
+      if (grid) {
+        grid.style.display = cnttIsGridCollapsed ? 'none' : 'flex';
+      }
+    }
+
+    async function fetchOrAggregateCnttSheets(forceSync = false) {
+      const sheetsArr = Array.from(cnttSelectedSheets);
+      if (sheetsArr.length === 0) {
+        cnttRawRecords = [];
+        recomputeCnttAggregation();
+        renderCnttDashboard();
+        return;
+      }
+
+      // Check if all selected sheets are already in local cache
+      const missingSheets = sheetsArr.filter(s => !CNTT_INITIAL_DATA[s]);
+      if (missingSheets.length === 0 && !forceSync) {
+        cnttRawRecords = [];
+        sheetsArr.forEach(s => {
+          if (CNTT_INITIAL_DATA[s]) cnttRawRecords = cnttRawRecords.concat(CNTT_INITIAL_DATA[s]);
+        });
+        recomputeCnttAggregation();
+        renderCnttDashboard();
+        showCnttToast('✓ THÀNH CÔNG', `Đã tổng hợp ${cnttRawRecords.length} ca từ ${sheetsArr.length} sheet!`);
+        return;
+      }
+
+      // Fetch from API
+      try {
+        const url = `/api/cntt-summary?action=cntt-summary&sheets=${encodeURIComponent(sheetsArr.join(','))}${forceSync ? '&sync=1' : ''}`;
+        const resp = await fetch(url, { headers: { 'X-App-Password': '8889' } });
+        if (resp.ok) {
+          const res = await resp.json();
+          if (res.records) {
+            cnttRawRecords = res.records;
+            recomputeCnttAggregation();
+            renderCnttDashboard();
+            showCnttToast('✓ THÀNH CÔNG', `Đã tổng hợp ${cnttRawRecords.length} ca từ ${sheetsArr.length} sheet!`);
+          }
+        }
+      } catch (err) {
+        console.error('Lỗi tải dữ liệu CNTT:', err);
+      }
+    }
+
+    function recomputeCnttAggregation() {
+      const staffMap = {};
+      const depts = new Set();
+      let otherCount = 0;
+
+      cnttRawRecords.forEach(r => {
+        const cb = r.can_bo || 'Chưa gán';
+        if (!staffMap[cb]) {
+          staffMap[cb] = {
+            name: cb,
+            cases: 0,
+            sheets: new Set(),
+            departments: new Set(),
+            other_count: 0,
+            categories: {},
+            other_items: []
+          };
+        }
+        const st = staffMap[cb];
+        st.cases++;
+        st.sheets.add(r.sheet);
+        if (r.khoa) {
+          st.departments.add(r.khoa);
+          depts.add(r.khoa);
+        }
+        if (r.sua_khac) {
+          st.other_count++;
+          otherCount++;
+          st.other_items.push({
+            sheet: r.sheet,
+            khoa: r.khoa,
+            content: r.sua_khac,
+            yc: r.yeu_cau,
+            hs: r.hs
+          });
+        }
+        if (r.categories) {
+          Object.entries(r.categories).forEach(([k, v]) => {
+            st.categories[k] = (st.categories[k] || 0) + v;
+          });
+        }
+      });
+
+      const staffList = Object.values(staffMap).map(st => {
+        const sortedCats = Object.entries(st.categories).sort((a, b) => b[1] - a[1]);
+        return {
+          ...st,
+          sheets_count: st.sheets.size,
+          sheets_list: Array.from(st.sheets).sort().reverse(),
+          departments_count: st.departments.size,
+          categories: sortedCats.map(([name, count]) => ({ name, count }))
+        };
+      });
+      staffList.sort((a, b) => b.cases - a.cases);
+
+      cnttAggregatedData = {
+        total_cases: cnttRawRecords.length,
+        selected_sheets_count: cnttSelectedSheets.size,
+        departments_count: depts.size,
+        staff_count: staffList.length,
+        other_count: otherCount,
+        staff_list: staffList
+      };
+    }
+
+    function renderCnttDashboard() {
+      if (!cnttAggregatedData) recomputeCnttAggregation();
+      const d = cnttAggregatedData;
+
+      // Update KPI cards
+      const kpiSheets = document.getElementById('cntt-kpi-sheets');
+      const kpiSheetsSub = document.getElementById('cntt-kpi-sheets-sub');
+      const kpiCases = document.getElementById('cntt-kpi-cases');
+      const kpiCasesSub = document.getElementById('cntt-kpi-cases-sub');
+      const kpiStaff = document.getElementById('cntt-kpi-staff');
+      const kpiOther = document.getElementById('cntt-kpi-other');
+      const statusMsg = document.getElementById('cntt-status-msg');
+      const tabRecCount = document.getElementById('cntt-tab-rec-count');
+
+      const sheetsListText = Array.from(cnttSelectedSheets).join(', ') || 'Chưa chọn';
+      if (kpiSheets) kpiSheets.textContent = d.selected_sheets_count;
+      if (kpiSheetsSub) kpiSheetsSub.textContent = sheetsListText;
+      if (kpiCases) kpiCases.textContent = d.total_cases;
+      if (kpiCasesSub) kpiCasesSub.textContent = `Bao gồm ${d.departments_count} khoa/phòng`;
+      if (kpiStaff) kpiStaff.textContent = d.staff_count;
+      if (kpiOther) kpiOther.textContent = d.other_count;
+      if (statusMsg) statusMsg.textContent = `✓ Đã tổng hợp thành công ${d.total_cases} ca từ ${d.selected_sheets_count} sheet!`;
+      if (tabRecCount) tabRecCount.textContent = (cnttRawRecords.filter(r => r.sheet === '29.10').length) || d.total_cases;
+
+      // Filters
+      const filterCb = (document.getElementById('cntt-filter-staff')?.value || '').trim();
+      const searchKw = (document.getElementById('cntt-search-keyword')?.value || '').trim().toLowerCase();
+
+      // Render Staff Cards
+      const container = document.getElementById('cntt-staff-cards-list');
+      if (!container) return;
+      container.innerHTML = '';
+
+      d.staff_list.forEach(st => {
+        if (filterCb && st.name !== filterCb) return;
+
+        // Filter other items by keyword
+        const filteredOtherItems = st.other_items.filter(it => {
+          if (!searchKw) return true;
+          return it.content.toLowerCase().includes(searchKw) || 
+                 it.khoa.toLowerCase().includes(searchKw) || 
+                 (it.hs && it.hs.includes(searchKw));
+        });
+
+        // Filter categories by keyword
+        const filteredCats = st.categories.filter(c => {
+          if (!searchKw) return true;
+          return c.name.toLowerCase().includes(searchKw);
+        });
+
+        if (searchKw && filteredOtherItems.length === 0 && filteredCats.length === 0 && !st.name.toLowerCase().includes(searchKw)) {
+          return;
+        }
+
+        const initial = st.name.charAt(0).toUpperCase();
+        const card = document.createElement('div');
+        card.className = 'cntt-staff-card';
+
+        // Badges
+        const sheetsBadgeText = `${st.sheets_count} sheet (${st.sheets_list.join(', ')})`;
+
+        // Build HTML
+        card.innerHTML = `
+          <div class="cntt-staff-header">
+            <div class="cntt-staff-left">
+              <div class="cntt-avatar">${initial}</div>
+              <div class="cntt-staff-name">${st.name}</div>
+              <span class="cntt-tag-badge cntt-tag-blue">${st.cases} ca</span>
+              <span class="cntt-tag-badge cntt-tag-slate">${sheetsBadgeText}</span>
+              <span class="cntt-tag-badge cntt-tag-cyan">${st.departments_count} khoa/phòng</span>
+              <span class="cntt-tag-badge cntt-tag-amber">${st.other_count} sửa chữa khác</span>
+            </div>
+            <button class="cntt-btn-copy" onclick="copyStaffReport('${st.name}')">
+              📋 Copy Báo Cáo Cán Bộ
+            </button>
+          </div>
+
+          <!-- Section Categories -->
+          <div class="cntt-sec-title">📌 SỐ LƯỢNG CÁC MỤC ĐÃ THỰC HIỆN:</div>
+          <div class="cntt-cats-container">
+            ${filteredCats.map(c => `
+              <div class="cntt-cat-pill">
+                <span>${c.name}</span>
+                <span class="cntt-cat-count">${c.count}</span>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Section Other Items -->
+          ${filteredOtherItems.length > 0 ? `
+            <div class="cntt-sec-title accent-amber">🛠 Chi Tiết Sửa Chữa Khác (${filteredOtherItems.length} nội dung cụ thể):</div>
+            <div class="cntt-other-list">
+              ${filteredOtherItems.map((it, idx) => `
+                <div class="cntt-other-row">
+                  <span class="cntt-other-idx">${idx + 1}.</span>
+                  <span class="badge-sheet">Sheet ${it.sheet}</span>
+                  <span class="badge-dept">${it.khoa}</span>
+                  <span style="color:#ffffff; font-weight:600;">${it.content}</span>
+                  ${it.yc ? `<span class="badge-meta">Y/C: ${it.yc}</span>` : ''}
+                  ${it.hs ? `<span class="badge-hs">HS: ${it.hs}</span>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        `;
+        container.appendChild(card);
+      });
+
+      renderCnttRawTable();
+      renderCnttStats();
+    }
+
+    function copyStaffReport(staffName) {
+      if (!cnttAggregatedData) return;
+      const st = cnttAggregatedData.staff_list.find(s => s.name === staffName);
+      if (!st) return;
+
+      const lines = [
+        `BÁO CÁO CÔNG VIỆC CÁN BỘ: ${st.name.toUpperCase()}`,
+        `- Sheets tổng hợp: ${st.sheets_list.join(', ')}`,
+        `- Tổng số ca tiếp nhận: ${st.cases} ca (${st.departments_count} khoa/phòng)`,
+        `- Sửa chữa khác: ${st.other_count} ca`,
+        '',
+        '📌 NỘI DUNG CÁC MỤC ĐÃ THỰC HIỆN:'
+      ];
+
+      st.categories.forEach((c, idx) => {
+        lines.push(`${idx + 1}. ${c.name}: ${c.count}`);
+      });
+
+      if (st.other_items.length > 0) {
+        lines.push('');
+        lines.push(`🛠 CHI TIẾT SỬA CHỮA KHÁC (${st.other_items.length} nội dung):`);
+        st.other_items.forEach((it, idx) => {
+          const metaYc = it.yc ? ` | Y/C: ${it.yc}` : '';
+          const metaHs = it.hs ? ` | HS: ${it.hs}` : '';
+          lines.push(`${idx + 1}. Sheet ${it.sheet} | ${it.khoa} | ${it.content}${metaYc}${metaHs}`);
+        });
+      }
+
+      const reportText = lines.join('\n');
+      navigator.clipboard.writeText(reportText).then(() => {
+        showCnttToast('✓ ĐÃ SAO CHÉP', `Đã sao chép báo cáo của cán bộ ${st.name} vào bộ nhớ tạm!`);
+      }).catch(() => {
+        showCnttToast('✓ THÔNG BÁO', `Báo cáo: ${st.cases} ca của ${st.name}`);
+      });
+    }
+
+    function renderCnttRawTable() {
+      const tbody = document.getElementById('cntt-table-body');
+      const totalEl = document.getElementById('cntt-table-total');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (totalEl) totalEl.textContent = cnttRawRecords.length;
+
+      cnttRawRecords.slice(0, 150).forEach((r, idx) => {
+        const catSummary = Object.entries(r.categories || {}).map(([k, v]) => `${k} (${v})`).join(', ');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td><b>${r.sheet}</b></td>
+          <td><span class="badge-dept">${r.khoa}</span></td>
+          <td><code>${r.hs || '-'}</code></td>
+          <td><b>${r.can_bo}</b></td>
+          <td>${r.yeu_cau || '-'}</td>
+          <td style="color:#fbbf24;">${r.sua_khac || '-'}</td>
+          <td style="font-size:11px; color:#94a3b8;">${catSummary || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderCnttStats() {
+      const deptContainer = document.getElementById('cntt-stat-dept-list');
+      const catContainer = document.getElementById('cntt-stat-cat-list');
+      if (!deptContainer || !catContainer) return;
+
+      const deptMap = {};
+      const catMap = {};
+      cnttRawRecords.forEach(r => {
+        if (r.khoa) deptMap[r.khoa] = (deptMap[r.khoa] || 0) + 1;
+        if (r.categories) {
+          Object.entries(r.categories).forEach(([k, v]) => {
+            catMap[k] = (catMap[k] || 0) + v;
+          });
+        }
+      });
+
+      const sortedDepts = Object.entries(deptMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      deptContainer.innerHTML = sortedDepts.map(([name, count], i) => `
+        <div style="display:flex; justify-content:space-between; padding:6px 10px; border-bottom:1px solid #334155; font-size:12px;">
+          <span>#${i + 1}. <b>${name}</b></span>
+          <span class="badge" style="background:#0284c7; color:white;">${count} ca</span>
+        </div>
+      `).join('');
+
+      const sortedCats = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      catContainer.innerHTML = sortedCats.map(([name, count], i) => `
+        <div style="display:flex; justify-content:space-between; padding:6px 10px; border-bottom:1px solid #334155; font-size:12px;">
+          <span>#${i + 1}. ${name}</span>
+          <span class="badge" style="background:#a855f7; color:white;">${count}</span>
+        </div>
+      `).join('');
+    }
+
+    function switchCnttSubTab(tabId) {
+      document.querySelectorAll('.cntt-subnav .cntt-tab-item').forEach(el => {
+        el.classList.remove('active');
+      });
+      event.currentTarget.classList.add('active');
+
+      const tabs = ['tong-hop-sheet', 'danh-sach', 'thong-ke', 'google-sheet', 'diem-ca'];
+      tabs.forEach(t => {
+        const pane = document.getElementById(`cntt-subtab-${t}`);
+        if (pane) pane.style.display = (t === tabId) ? 'block' : 'none';
+      });
+    }
+
+    async function refreshCnttLive() {
+      showCnttToast('⏳ ĐỒNG BỘ', 'Đang nạp dữ liệu mới nhất từ Google Sheets...');
+      await fetchOrAggregateCnttSheets(true);
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const clockEl = document.getElementById('cntt-sync-clock');
+      if (clockEl) clockEl.textContent = `${h}:${m}`;
+    }
+
+    function exportCnttExcel() {
+      // Trigger download for current active sheets
+      const sheets = Array.from(cnttSelectedSheets).join(',');
+      window.open(`/api/process-cntt?sheet=${encodeURIComponent(sheets)}`, '_blank');
+      showCnttToast('📄 XUẤT EXCEL', 'Đang tạo file Excel Báo Cáo P.CNTT...');
+    }
+
+    function showCnttToast(title, msg) {
+      const toast = document.getElementById('cntt-toast');
+      const tTitle = document.getElementById('cntt-toast-title');
+      const tMsg = document.getElementById('cntt-toast-msg');
+      if (!toast) return;
+
+      if (tTitle) tTitle.textContent = title;
+      if (tMsg) tMsg.textContent = msg;
+
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3500);
+    }
+
+</script>
 </body>
 </html>
 """
@@ -5260,6 +6567,199 @@ def handle_error_tracker_config():
 # ============================================================
 # MASTER DISPATCH ROUTER (TƯƠNG THÍCH MỌI CẤU HÌNH REWRITE VERCEL)
 # ============================================================
+
+# ============================================================
+# LOGIC BC SỬA CNTT (TỔNG HỢP SHEET & BÁO CÁO CÁN BỘ)
+# ============================================================
+CNTT_SPREADSHEET_ID = "1_I7qmDx7mtIOcCLkEkDz_PCaC8KPd_Po-pqEh7krdPA"
+
+CNTT_STAFF_MAP = {
+    "dương": "Chu Thị Dương",
+    "chu thị dương": "Chu Thị Dương",
+    "ly": "Nguyễn Lê Huyền Ly",
+    "huyền ly": "Nguyễn Lê Huyền Ly",
+    "nguyễn lê huyền ly": "Nguyễn Lê Huyền Ly",
+    "hiệp": "Đỗ Văn Hiệp",
+    "đỗ văn hiệp": "Đỗ Văn Hiệp",
+    "quyen": "Nguyễn Thị Quyên",
+    "quyên": "Nguyễn Thị Quyên",
+    "nguyễn thị quyên": "Nguyễn Thị Quyên",
+    "huyền": "Nguyễn Thị Huyền",
+    "nguyễn thị huyền": "Nguyễn Thị Huyền",
+    "v phương": "Vũ Phương",
+    "vũ phương": "Vũ Phương",
+    "vũ thị phương": "Vũ Phương",
+    "nhân": "Nguyễn Trọng Nhân",
+    "nguyễn trọng nhân": "Nguyễn Trọng Nhân"
+}
+
+def normalize_cntt_staff(raw):
+    if not raw or not str(raw).strip():
+        return "Chưa gán"
+    clean = str(raw).strip().lower()
+    return CNTT_STAFF_MAP.get(clean, str(raw).strip())
+
+CNTT_CAT_COLUMNS = [
+    (4, "Xoá CLS, PTTT"),
+    (5, "Ép thẻ BH"),
+    (6, "Sửa phí, mã QR sang TM và ngược lại"),
+    (7, "Huỷ CKS"),
+    (8, "Huỷ B/án"),
+    (9, "Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám"),
+    (10, "Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS"),
+    (11, "Sửa mã bệnh kèm theo, bệnh chính"),
+    (12, "Hỗ trợ ký số PM, QLVBĐH"),
+    (13, "Sửa giấy RV, kết thúc ra viện, chuyển tuyến"),
+    (14, "Đăng bài trên website"),
+    (15, "Sửa cách dùng thuốc, ngày giờ thuốc, vật tư"),
+    (16, "Phân quyền USER, đổi nick user"),
+    (17, "Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)"),
+    (18, "Sửa ngày giờ, sửa xoá phiếu xuất khác"),
+    (19, "Sửa, xoá ảnh trên PACS"),
+    (20, "Mở HS ký số bổ sung"),
+    (21, "Sửa xoá giường, cập nhật giường, thêm giường"),
+    (22, "Chuyển thuốc CP-DG"),
+    (23, "Sửa lỗi xuất toán tự động"),
+    (24, "VIMES Xử Lý"),
+    (25, "Đổ mực"),
+    (26, "Cài Win"),
+    (27, "Sửa lỗi mạng"),
+    (28, "Sửa máy tính (Main, chip)"),
+    (29, "Nguồn"),
+    (30, "Ổ cứng"),
+    (31, "Sửa máy in (Vỏ lụa)"),
+    (32, "Lô ép"),
+    (33, "Cảm biến"),
+]
+
+INITIAL_CNTT_RECORDS_CACHE = {"29.10": [{"sheet": "29.10", "stt": "1", "khoa": "NGOẠI ƯB", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hồng", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1, "Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "29.10", "stt": "2", "khoa": "TMH", "hs": "26228514", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hoa", "sua_khac": "Sửa mức hưởng BH", "categories": {}}, {"sheet": "29.10", "stt": "3", "khoa": "KB", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Sơn PK UB 219", "sua_khac": "", "categories": {"Hỗ trợ ký số PM, QLVBĐH": 1}}, {"sheet": "29.10", "stt": "4", "khoa": "NHH", "hs": "26221694", "phieu": "8043555", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Thùy", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "29.10", "stt": "5", "khoa": "NGOẠI XT", "hs": "26209471", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Huệ", "sua_khac": "", "categories": {"Huỷ CKS": 1}}, {"sheet": "29.10", "stt": "6", "khoa": "MẮT", "hs": "26228870", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Thu", "sua_khac": "Sửa mức hưởng BH", "categories": {}}, {"sheet": "29.10", "stt": "7", "khoa": "NGOẠI TKLN", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Huyền", "sua_khac": "Nhập BH cùng chi trả", "categories": {"Sửa xoá giường, cập nhật giường, thêm giường": 7}}, {"sheet": "29.10", "stt": "8", "khoa": "PHỤ SẢN", "hs": "", "phieu": "TL0109518", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Hiền", "sua_khac": "", "categories": {"Huỷ CKS": 1}}, {"sheet": "29.10", "stt": "9", "khoa": "DA LIỄU", "hs": "26229792", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Thủy", "sua_khac": "Sủa mức hưởng BH", "categories": {}}, {"sheet": "29.10", "stt": "10", "khoa": "TRUYỀN NHIỄM", "hs": "26225431", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Vui", "sua_khac": "Chuyển trạng thái phiếu", "categories": {}}, {"sheet": "29.10", "stt": "11", "khoa": "LKTK", "hs": "26227036", "phieu": "804444", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Loan", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "29.10", "stt": "12", "khoa": "NHI", "hs": "26224147", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Thu Hiền", "sua_khac": "", "categories": {}}, {"sheet": "29.10", "stt": "13", "khoa": "TTTM", "hs": "26225561", "phieu": "8028816", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Nga", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "29.10", "stt": "14", "khoa": "NGOẠI TH", "hs": "26223088", "phieu": "8019001", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Dung", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "29.10", "stt": "15", "khoa": "KHTH", "hs": "26229981", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Kim Nội", "sua_khac": "", "categories": {"Huỷ B/án": 1}}, {"sheet": "29.10", "stt": "16", "khoa": "KHTH", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Kim Nội", "sua_khac": "sửa tên CSKCBBĐ 30122", "categories": {}}], "28.10": [{"sheet": "28.10", "stt": "1", "khoa": "THẬN", "hs": "26225416", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Quy", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "28.10", "stt": "2", "khoa": "KHTH", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Kim Nội", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 4}}, {"sheet": "28.10", "stt": "3", "khoa": "KB", "hs": "26228486", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Nhung PK N3", "sua_khac": "", "categories": {"Huỷ B/án": 1}}, {"sheet": "28.10", "stt": "4", "khoa": "THẬN", "hs": "26204563", "phieu": "2572041", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Sơn", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "5", "khoa": "MẮT", "hs": "26228137", "phieu": "8039270", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Hằng", "sua_khac": "Thêm diễn giải", "categories": {}}, {"sheet": "28.10", "stt": "6", "khoa": "NGOẠI CT", "hs": "26228161", "phieu": "8039422", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Chinh", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "28.10", "stt": "7", "khoa": "NGOẠI TKLN", "hs": "26226732", "phieu": "8033865", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Huyền Trang", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "28.10", "stt": "8", "khoa": "CTXH", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Nga", "sua_khac": "", "categories": {"Đăng bài trên website": 2}}, {"sheet": "28.10", "stt": "9", "khoa": "TTTM", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Máy trực", "sua_khac": "Kết nối in qua Lan", "categories": {}}, {"sheet": "28.10", "stt": "10", "khoa": "KHTH", "hs": "26228722", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Kim Nội", "sua_khac": "", "categories": {"Ép thẻ BH": 1}}, {"sheet": "28.10", "stt": "11", "khoa": "DƯỢC", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bích Hạnh", "sua_khac": "Hạ thuốc treo kho chính", "categories": {}}, {"sheet": "28.10", "stt": "12", "khoa": "LKTK", "hs": "26222801", "phieu": "8027542", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Vân", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "28.10", "stt": "13", "khoa": "TRUYỀN NHIỄM", "hs": "26221141", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Vui", "sua_khac": "Sửa giờ kết thúc công khám ngoại TH", "categories": {}}, {"sheet": "28.10", "stt": "14", "khoa": "NGOẠI TKLN", "hs": "26220268", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Huyền", "sua_khac": "", "categories": {"Sửa xoá giường, cập nhật giường, thêm giường": 1}}, {"sheet": "28.10", "stt": "15", "khoa": "NHH", "hs": "26222373", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Liễu", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "28.10", "stt": "16", "khoa": "NỘI TH", "hs": "26228205", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Huế", "sua_khac": "", "categories": {"Huỷ CKS": 1}}, {"sheet": "28.10", "stt": "17", "khoa": "NGOẠI TN", "hs": "26223185", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hương", "sua_khac": "Sửa nơi ĐK KCB BĐ", "categories": {}}, {"sheet": "28.10", "stt": "18", "khoa": "NỘI TH", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Mai", "sua_khac": "Sửa lỗi không in được P866", "categories": {}}, {"sheet": "28.10", "stt": "19", "khoa": "ĐIỀU DƯỠNG", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Kiều", "sua_khac": "Kết nối máy in cho 2 máy tính", "categories": {}}, {"sheet": "28.10", "stt": "20", "khoa": "DƯỢC", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "E Thảo Quầy thuốc BH", "sua_khac": "Lỗi đơn thuốc trả về O ( 02 HS)", "categories": {}}, {"sheet": "28.10", "stt": "21", "khoa": "NGOẠI TN", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Sâm", "sua_khac": "Sửa lỗi máy in bị in liên tục", "categories": {}}, {"sheet": "28.10", "stt": "22", "khoa": "NHH", "hs": "26218168", "phieu": "2572984", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Phương", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "23", "khoa": "HSTC", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Loan", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 2}}, {"sheet": "28.10", "stt": "24", "khoa": "NGOẠI CT", "hs": "26217179", "phieu": "2556472", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "25", "khoa": "TRUYỀN NHIỄM", "hs": "26228936", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Vui", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "28.10", "stt": "26", "khoa": "NHH", "hs": "26219481", "phieu": "2571206", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Thuận", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "27", "khoa": "NGOẠI CT", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Thảnh", "sua_khac": "Sửa nơi KCB BĐ 22370, 93078", "categories": {}}, {"sheet": "28.10", "stt": "28", "khoa": "NGOẠI ƯB", "hs": "26222162", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hồng", "sua_khac": "Sửa mức hưởng BH", "categories": {}}, {"sheet": "28.10", "stt": "29", "khoa": "KB", "hs": "26228417", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Huyền PK N5", "sua_khac": "", "categories": {"Sửa mã bệnh kèm theo, bệnh chính": 1}}, {"sheet": "28.10", "stt": "30", "khoa": "NGOẠI TKLN", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Huyền", "sua_khac": "Sửa mức hưởng BH; Sửa giờ khám bệnh", "categories": {}}, {"sheet": "28.10", "stt": "31", "khoa": "HTL", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Xâm", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 5}}, {"sheet": "28.10", "stt": "32", "khoa": "TCKT", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hoa", "sua_khac": "Sửa ngày phiếu tạm ứng sang ngày 27/10", "categories": {}}, {"sheet": "28.10", "stt": "33", "khoa": "CC115", "hs": "26228212", "phieu": "8039654", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bảo Anh", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "34", "khoa": "NHI", "hs": "26225394", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Loan", "sua_khac": "", "categories": {"Mở HS ký số bổ sung": 1}}, {"sheet": "28.10", "stt": "35", "khoa": "VT", "hs": "", "phieu": "(645', '657', '658', '356', 383 ,335\n'274', '659', '648', '671',\n '672', '727', '729','250',\n '710', '285', '728', '142', \n'448', '25', '60', '730', \n'746','284', '536', '1128', \n'748', '59', '712', '275', \n'157', '270','287', '446', \n'447', '731', '732', '243',\n '244', '450','47', '49', '48')", "can_bo": "Nguyễn Thị Quyên", "cb_raw": "Quyên", "yeu_cau": "Thái", "sua_khac": "ẩn hoạt động máy", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 43}}, {"sheet": "28.10", "stt": "36", "khoa": "NHI", "hs": "26225395", "phieu": "8028283", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bích", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "37", "khoa": "CĐHA", "hs": "26229136", "phieu": "8043108", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Sen", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "38", "khoa": "CC115", "hs": "", "phieu": "8043459\n8043461\n8043614", "can_bo": "Vũ Phương", "cb_raw": "V Phương", "yeu_cau": "Sơn\nHướng\nChinh", "sua_khac": "Sửa mạch huyết áp", "categories": {"Xoá CLS, PTTT": 3}}, {"sheet": "28.10", "stt": "39", "khoa": "HSTC", "hs": "26229146", "phieu": "2573795", "can_bo": "Vũ Phương", "cb_raw": "V Phương", "yeu_cau": "Thái", "sua_khac": "Cập nhật TT sang S", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "40", "khoa": "NGOẠI TN", "hs": "26225247", "phieu": "2571469", "can_bo": "Vũ Phương", "cb_raw": "V Phương", "yeu_cau": "Khải", "sua_khac": "Cập nhật TT sang S", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "28.10", "stt": "41", "khoa": "PTGMHS", "hs": "26229204", "phieu": "8043541\n8043549\n8043717,8043719,8043720,8043729,8043730", "can_bo": "Vũ Phương", "cb_raw": "V Phương", "yeu_cau": "Dư, Khánh Linh", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 5, "Sửa ngày giờ, sửa xoá phiếu xuất khác": 2}}], "27.10": [{"sheet": "27.10", "stt": "1", "khoa": "KB", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Luyên", "sua_khac": "Sửa địa chỉ TP BN", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 40}}, {"sheet": "27.10", "stt": "2", "khoa": "RHM", "hs": "26225404", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "E An", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "27.10", "stt": "3", "khoa": "PHCN", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Nguyệt", "sua_khac": "Sửa mức hưởng BH ( 02 HS)", "categories": {}}, {"sheet": "27.10", "stt": "4", "khoa": "KHTH", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Kim Nội", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 2}}, {"sheet": "27.10", "stt": "5", "khoa": "NGOẠI TH", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Dương Nga", "sua_khac": "Bỏ xác nhận phiếu TLT0227181", "categories": {}}, {"sheet": "27.10", "stt": "6", "khoa": "LKTK", "hs": "26223173", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Quỳnh", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "27.10", "stt": "7", "khoa": "TRUYỀN NHIỄM", "hs": "26216584", "phieu": "15102819; 15104940", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Vui", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "27.10", "stt": "8", "khoa": "TTTM", "hs": "", "phieu": "7999113; 7978582", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Phúc", "sua_khac": "Thêm mã máy vào CTM ( 02 HS)", "categories": {}}, {"sheet": "27.10", "stt": "9", "khoa": "TTTM", "hs": "26223944", "phieu": "8033549", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Linh", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "27.10", "stt": "10", "khoa": "TRUYỀN NHIỄM", "hs": "26219362", "phieu": "8003942", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Vui", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "27.10", "stt": "11", "khoa": "NHI", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hiền", "sua_khac": "Sửa phí công khám", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1, "Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "27.10", "stt": "12", "khoa": "NGOẠI TKLN", "hs": "26224191", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Bảo", "sua_khac": "", "categories": {"Huỷ CKS": 1}}, {"sheet": "27.10", "stt": "13", "khoa": "CXK", "hs": "26214158", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "E Thảo", "sua_khac": "Thêm ngày hẹn khám lại", "categories": {}}, {"sheet": "27.10", "stt": "14", "khoa": "NHH", "hs": "26219530", "phieu": "2569009", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Linh", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "27.10", "stt": "15", "khoa": "NGOẠI CT", "hs": "26049982", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Chinh", "sua_khac": "", "categories": {"Huỷ CKS": 1}}, {"sheet": "27.10", "stt": "16", "khoa": "NỘI TH", "hs": "26223944", "phieu": "8034907", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Đoàn Thảo", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "27.10", "stt": "17", "khoa": "CĐHA", "hs": "26223019", "phieu": "8021771", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Dung", "sua_khac": "thêm mã máy", "categories": {}}, {"sheet": "27.10", "stt": "18", "khoa": "KB", "hs": "26227352", "phieu": "8036310", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Nhung PK N3", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "27.10", "stt": "19", "khoa": "KHTH", "hs": "26225307", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Kim Nội", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "27.10", "stt": "20", "khoa": "NGOẠI TN", "hs": "26227593", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Cuộc", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "27.10", "stt": "21", "khoa": "NGOẠI TKLN", "hs": "26222375", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Huyền", "sua_khac": "", "categories": {"Sửa xoá giường, cập nhật giường, thêm giường": 1}}, {"sheet": "27.10", "stt": "22", "khoa": "NHH", "hs": "26224992", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Duyên", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "27.10", "stt": "23", "khoa": "TMH", "hs": "26225643", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hoa", "sua_khac": "", "categories": {"Huỷ B/án": 1}}, {"sheet": "27.10", "stt": "24", "khoa": "TRUYỀN NHIỄM", "hs": "26216846", "phieu": "8018954", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Vui", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "27.10", "stt": "25", "khoa": "CĐT", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "C Dương", "sua_khac": "Hỗ trợ phần mềm WPS", "categories": {}}, {"sheet": "27.10", "stt": "26", "khoa": "HSTC", "hs": "26219281", "phieu": "6608562, 6612828, 6612829, 6612830", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hiền", "sua_khac": "", "categories": {"Huỷ CKS": 4}}, {"sheet": "27.10", "stt": "27", "khoa": "KB", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Hạnh PK Nội tiết", "sua_khac": "", "categories": {"Sửa cách dùng thuốc, ngày giờ thuốc, vật tư": 2}}, {"sheet": "27.10", "stt": "28", "khoa": "HSTC", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Loan", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 2}}, {"sheet": "27.10", "stt": "29", "khoa": "TRUYỀN NHIỄM", "hs": "26216846", "phieu": "15104937", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Vui", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "27.10", "stt": "30", "khoa": "KB", "hs": "26227560", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Huệ PK CXK", "sua_khac": "Sửa mức hưởng BH", "categories": {}}, {"sheet": "27.10", "stt": "31", "khoa": "NGOẠI XT", "hs": "26218981", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Huệ", "sua_khac": "Thêm ngày hẹn khám lại", "categories": {}}, {"sheet": "27.10", "stt": "32", "khoa": "PTGMHS", "hs": "26223148", "phieu": "2564613", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Hảo", "sua_khac": "Chuyển trạng thái PT từ S về T", "categories": {}}, {"sheet": "27.10", "stt": "33", "khoa": "TDCN", "hs": "", "phieu": "8035656; 8037315; 8037493; 8037514; 8037853", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Hách", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 5}}, {"sheet": "27.10", "stt": "34", "khoa": "KB", "hs": "26227976", "phieu": "8038638", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Thanh PK TMH", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "27.10", "stt": "35", "khoa": "THẬN", "hs": "26209627", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Quy", "sua_khac": "Kiểm tra lỗi MDinsight", "categories": {}}, {"sheet": "27.10", "stt": "36", "khoa": "ĐIỀU DƯỠNG", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Kiều", "sua_khac": "Lỗi kẹt giấy, kết nối máy in", "categories": {}}, {"sheet": "27.10", "stt": "37", "khoa": "TRUYỀN NHIỄM", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "", "sua_khac": "Kéo dây mạng cho tòa B2, B3", "categories": {}}, {"sheet": "27.10", "stt": "38", "khoa": "KB", "hs": "26228051", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Khuyên", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "27.10", "stt": "39", "khoa": "QLCL", "hs": "", "phieu": "", "can_bo": "Chưa gán", "cb_raw": "", "yeu_cau": "", "sua_khac": "Biên bản góp ý", "categories": {}}, {"sheet": "27.10", "stt": "40", "khoa": "PHỤ SẢN", "hs": "26226630", "phieu": "8033367", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Hiền", "sua_khac": "", "categories": {"Xoá CLS, PTTT": 1}}, {"sheet": "27.10", "stt": "41", "khoa": "KB", "hs": "26226307", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Thủy PK LKTK", "sua_khac": "", "categories": {"Sửa cách dùng thuốc, ngày giờ thuốc, vật tư": 1}}, {"sheet": "27.10", "stt": "42", "khoa": "TCKT", "hs": "26217377", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Vân", "sua_khac": "BN để quá hạn thanh toán k đẩy đc cổng yêu cầu sửa ngày kết thúc sang ngày 27/10/2026", "categories": {}}, {"sheet": "27.10", "stt": "43", "khoa": "NHI", "hs": "26226312", "phieu": "8034470", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Hiền", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "27.10", "stt": "44", "khoa": "HSTC", "hs": "26213465", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Loan", "sua_khac": "Sửa giờ kết thúc hố sơ", "categories": {}}, {"sheet": "27.10", "stt": "45", "khoa": "KB", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Quyền PK TM", "sua_khac": "", "categories": {"Sửa cách dùng thuốc, ngày giờ thuốc, vật tư": 2}}, {"sheet": "27.10", "stt": "46", "khoa": "TCKT", "hs": "26223747", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "A Trường", "sua_khac": "", "categories": {"Sửa phí, mã QR sang TM và ngược lại": 1}}, {"sheet": "27.10", "stt": "48", "khoa": "PHỤ SẢN", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Hiền", "sua_khac": "Hủy CKS số ra viện, giấy chứng nhận PTTT", "categories": {"Huỷ CKS": 2}}, {"sheet": "27.10", "stt": "49", "khoa": "NHI", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "C Hiền", "sua_khac": "Tách chứng từ ( 02 HS)", "categories": {}}, {"sheet": "27.10", "stt": "50", "khoa": "NGOẠI TN", "hs": "26213939", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Sâm", "sua_khac": "", "categories": {"Huỷ CKS": 1, "Sửa giấy RV, kết thúc ra viện, chuyển tuyến": 1}}, {"sheet": "27.10", "stt": "52", "khoa": "HTL", "hs": "", "phieu": "", "can_bo": "Nguyễn Lê Huyền Ly", "cb_raw": "Ly", "yeu_cau": "Xâm", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 2}}, {"sheet": "27.10", "stt": "53", "khoa": "CC115", "hs": "26220933", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hoa", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "27.10", "stt": "56", "khoa": "NHH", "hs": "", "phieu": "2480147; 2478660", "can_bo": "Nguyễn Thị Quyên", "cb_raw": "Quyên", "yeu_cau": "Duyên", "sua_khac": "kiểm tra người thực hiện PTTT", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 2}}, {"sheet": "27.10", "stt": "57", "khoa": "KB", "hs": "", "phieu": "", "can_bo": "Nguyễn Thị Quyên", "cb_raw": "Quyên", "yeu_cau": "Sang", "sua_khac": "sửa 1.14\nmã bệnh thành L40.1", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 2}}, {"sheet": "27.10", "stt": "58", "khoa": "LKTK", "hs": "26227954", "phieu": "", "can_bo": "Nguyễn Thị Quyên", "cb_raw": "Quyên", "yeu_cau": "Nơi", "sua_khac": "Ép thẻ cls", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "27.10", "stt": "59", "khoa": "BAN BVSK", "hs": "", "phieu": "", "can_bo": "Nguyễn Thị Quyên", "cb_raw": "Quyên", "yeu_cau": "Liên", "sua_khac": "", "categories": {"Sửa xoá giường, cập nhật giường, thêm giường": 1}}, {"sheet": "27.10", "stt": "60", "khoa": "PTGMHS", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Toại", "sua_khac": "Sửa lỗi chữ ký số USB không ký được", "categories": {}}, {"sheet": "27.10", "stt": "61", "khoa": "TDCN", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hồng Liên", "sua_khac": "", "categories": {"Phân quyền USER, đổi nick user": 1}}, {"sheet": "27.10", "stt": "62", "khoa": "TMH", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hoa", "sua_khac": "Sửa mức hưởng BH ( 02 HS)", "categories": {}}, {"sheet": "27.10", "stt": "63", "khoa": "NGOẠI TH", "hs": "26208107", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Dung", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "27.10", "stt": "64", "khoa": "KB", "hs": "26227241", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Bs Huệ PK CXK", "sua_khac": "", "categories": {"Sửa cách dùng thuốc, ngày giờ thuốc, vật tư": 1}}, {"sheet": "27.10", "stt": "65", "khoa": "PHỤ SẢN", "hs": "26210980", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "E Ngọc", "sua_khac": "", "categories": {"Lỗi không kết thúc hồ sơ (tồn thuốc, thuốc chưa cấp)": 1}}, {"sheet": "27.10", "stt": "66", "khoa": "CC115", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "Hoa", "sua_khac": "Sửa mã ĐT KCB: cấp cứu ( 02 HS)", "categories": {}}, {"sheet": "27.10", "stt": "67", "khoa": "KB", "hs": "", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "BS Lan Anh PK Mắt", "sua_khac": "Sửa giờ khám bệnh ( 03 HS); sửa mã máy", "categories": {}}, {"sheet": "27.10", "stt": "68", "khoa": "TCKT", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Thuy, Trang", "sua_khac": "", "categories": {"Đăng bài trên website": 3}}, {"sheet": "27.10", "stt": "69", "khoa": "CTXH", "hs": "", "phieu": "", "can_bo": "Đỗ Văn Hiệp", "cb_raw": "Hiệp", "yeu_cau": "Nga, Tùng, Hà", "sua_khac": "", "categories": {"Đăng bài trên website": 11}}, {"sheet": "27.10", "stt": "70", "khoa": "PTGMHS", "hs": "26221979", "phieu": "", "can_bo": "Chu Thị Dương", "cb_raw": "Dương", "yeu_cau": "A Tú", "sua_khac": "", "categories": {"Sửa ngày giờ CLS/PTTT, giờ đọc KQ, người TH, máy CLS": 1}}, {"sheet": "27.10", "stt": "71", "khoa": "NGOẠI TKLN", "hs": "26220268", "phieu": "", "can_bo": "Nguyễn Thị Huyền", "cb_raw": "Huyền", "yeu_cau": "Thắm", "sua_khac": "", "categories": {"Ép thẻ BH": 1}}, {"sheet": "27.10", "stt": "72", "khoa": "NHI", "hs": "26227433", "phieu": "", "can_bo": "Nguyễn Thị Huyền", "cb_raw": "Huyền", "yeu_cau": "Bích", "sua_khac": "", "categories": {"Sửa TT bệnh nhân (NN, Đ/chỉ, tuổi, CCCD...) & công khám, kiểu khám": 1}}, {"sheet": "27.10", "stt": "73", "khoa": "HSTC", "hs": "", "phieu": "", "can_bo": "Nguyễn Thị Huyền", "cb_raw": "Huyền", "yeu_cau": "c Hiền", "sua_khac": "Cài lại vimes", "categories": {}}, {"sheet": "27.10", "stt": "74", "khoa": "NGOẠI TKLN", "hs": "", "phieu": "", "can_bo": "Nguyễn Thị Huyền", "cb_raw": "Huyền", "yeu_cau": "Thắm", "sua_khac": "", "categories": {"Sửa xoá giường, cập nhật giường, thêm giường": 4}}, {"sheet": "27.10", "stt": "75", "khoa": "HSTC", "hs": "", "phieu": "", "can_bo": "Nguyễn Thị Huyền", "cb_raw": "Huyền", "yeu_cau": "c Loan", "sua_khac": "Cài lại vimes", "categories": {}}]}
+
+CNTT_MEMORY_CACHE = dict(INITIAL_CNTT_RECORDS_CACHE)
+
+def fetch_cntt_sheet_live(sheet_name):
+    if sheet_name in CNTT_MEMORY_CACHE:
+        return CNTT_MEMORY_CACHE[sheet_name]
+    try:
+        encoded_sheet = urllib.parse.quote(sheet_name)
+        url = f"https://docs.google.com/spreadsheets/d/{CNTT_SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet={encoded_sheet}"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            raw_text = resp.read().decode("utf-8")
+        rows = list(csv.reader(io.StringIO(raw_text)))
+        recs = []
+        for r_idx, row in enumerate(rows[1:], 1):
+            stt = row[0].strip() if len(row) > 0 else ""
+            khoa = row[1].strip() if len(row) > 1 else ""
+            hs = row[2].strip() if len(row) > 2 else ""
+            phieu = row[3].strip() if len(row) > 3 else ""
+            other = row[34].strip() if len(row) > 34 else ""
+            yc = row[35].strip() if len(row) > 35 else ""
+            cb_raw = row[36].strip() if len(row) > 36 else ""
+            cb = normalize_cntt_staff(cb_raw)
+            cats = {}
+            for col_idx, cat_name in CNTT_CAT_COLUMNS:
+                if col_idx < len(row):
+                    val = row[col_idx].strip()
+                    if val:
+                        try:
+                            cnt = int(float(val))
+                        except:
+                            cnt = 1
+                        cats[cat_name] = cnt
+            has_content = bool(cats) or bool(other) or bool(cb_raw)
+            if (stt or khoa) and has_content:
+                recs.append({
+                    "sheet": sheet_name,
+                    "stt": stt or str(r_idx),
+                    "khoa": khoa,
+                    "hs": hs,
+                    "phieu": phieu,
+                    "can_bo": cb,
+                    "cb_raw": cb_raw,
+                    "yeu_cau": yc,
+                    "sua_khac": other,
+                    "categories": cats
+                })
+        CNTT_MEMORY_CACHE[sheet_name] = recs
+        return recs
+    except Exception as e:
+        print(f"Error fetching live CNTT sheet {sheet_name}: {e}")
+        return []
+
+def aggregate_cntt_data(sheets_list):
+    all_records = []
+    for s in sheets_list:
+        recs = fetch_cntt_sheet_live(s)
+        all_records.extend(recs)
+
+    total_cases = len(all_records)
+    khoa_set = set(r["khoa"] for r in all_records if r["khoa"])
+    other_count = sum(1 for r in all_records if r["sua_khac"])
+
+    staff_dict = {}
+    dept_counts = {}
+    cat_counts = {}
+
+    for r in all_records:
+        cb = r["can_bo"]
+        if cb not in staff_dict:
+            staff_dict[cb] = {
+                "name": cb,
+                "cases": 0,
+                "sheets": set(),
+                "departments": set(),
+                "other_count": 0,
+                "categories": {},
+                "other_items": []
+            }
+        st = staff_dict[cb]
+        st["cases"] += 1
+        st["sheets"].add(r["sheet"])
+        if r["khoa"]:
+            st["departments"].add(r["khoa"])
+            dept_counts[r["khoa"]] = dept_counts.get(r["khoa"], 0) + 1
+        if r["sua_khac"]:
+            st["other_count"] += 1
+            st["other_items"].append({
+                "sheet": r["sheet"],
+                "khoa": r["khoa"],
+                "content": r["sua_khac"],
+                "yeu_cau": r["yeu_cau"],
+                "hs": r["hs"]
+            })
+        for cat_name, cnt in r["categories"].items():
+            st["categories"][cat_name] = st["categories"].get(cat_name, 0) + cnt
+            cat_counts[cat_name] = cat_counts.get(cat_name, 0) + cnt
+
+    staff_list = []
+    for cb, data in staff_dict.items():
+        sorted_cats = sorted(data["categories"].items(), key=lambda x: -x[1])
+        staff_list.append({
+            "name": cb,
+            "cases": data["cases"],
+            "sheets_count": len(data["sheets"]),
+            "sheets_list": sorted(list(data["sheets"]), reverse=True),
+            "departments_count": len(data["departments"]),
+            "other_count": data["other_count"],
+            "categories": [{"name": k, "count": v} for k, v in sorted_cats],
+            "other_items": data["other_items"]
+        })
+    staff_list.sort(key=lambda x: -x["cases"])
+
+    return {
+        "success": True,
+        "selected_sheets": sheets_list,
+        "selected_sheets_count": len(sheets_list),
+        "total_cases": total_cases,
+        "departments_count": len(khoa_set),
+        "staff_count": len(staff_list),
+        "other_count": other_count,
+        "staff_list": staff_list,
+        "records": all_records,
+        "dept_rankings": sorted(dept_counts.items(), key=lambda x: -x[1])[:20],
+        "cat_rankings": sorted(cat_counts.items(), key=lambda x: -x[1])
+    }
+
 def dispatch_request(path=""):
     matched = (
         (path or "") + " " +
@@ -5282,6 +6782,17 @@ def dispatch_request(path=""):
         return handle_error_tracker_update_status()
     if "error-tracker/config" in matched or request.args.get("action") == "error-tracker-config":
         return handle_error_tracker_config()
+
+    if "cntt-summary" in matched or request.args.get("action") == "cntt-summary" or request.args.get("action") == "cntt-data":
+        sheets_param = request.args.get("sheets", "29.10,28.10,27.10")
+        force_sync = request.args.get("sync", "0") == "1"
+        if force_sync:
+            CNTT_MEMORY_CACHE.clear()
+        sheets_list = [s.strip() for s in sheets_param.split(",") if s.strip()]
+        if not sheets_list:
+            sheets_list = ["29.10", "28.10", "27.10"]
+        data = aggregate_cntt_data(sheets_list)
+        return jsonify(data)
 
     # Xác thực mật khẩu nhanh qua endpoint API nếu cần
     if "verify-auth" in matched or request.args.get("action") == "verify-auth":
