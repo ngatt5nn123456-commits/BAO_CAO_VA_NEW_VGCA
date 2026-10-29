@@ -2869,7 +2869,6 @@ HTML_PAGE = """<!DOCTYPE html>
                 <span class="nav-title">BC Sửa CNTT</span>
                 <span class="nav-desc">Tổng hợp ca tiếp nhận & báo cáo cán bộ</span>
               </div>
-              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
             </li>
             <li data-task="8" onclick="switchTask(8)">
               <div class="nav-icon">⚡</div>
@@ -3955,7 +3954,8 @@ function handleRequest(e) {
       7: { badge: 'VGCA (WORD)', title: '📄 VGCA (Từ File Word)  ─  Đọc nhiều file Word không cần SSO' },
       8: { badge: 'P.CNTT', title: '⚡ P.CNTT (Sheet Cố Định)  ─  Tự động tải Google Sheets của viện' },
       9: { badge: 'EMAIL CÔNG VỤ', title: '📧 Cấp Email Công Vụ  ─  Tổng hợp danh sách xin cấp Email' },
-      10: { badge: 'LỖI XML BHYT', title: '📊 Thống Kê & Lọc Lỗi XML BHYT (Google Sheets) ─ Đọc & Tra Cứu Lỗi Đẩy Cổng BHYT' }
+      10: { badge: 'LỖI XML BHYT', title: '📊 Thống Kê & Lọc Lỗi XML BHYT (Google Sheets) ─ Đọc & Tra Cứu Lỗi Đẩy Cổng BHYT' },
+      11: { badge: 'BC SỬA CNTT', title: '🛠 BC Sửa CNTT ─ Tổng Hợp Sheet & Báo Cáo Cán Bộ P.CNTT' }
     };
 
     const UNLOCK_PASSWORD = "8889";
@@ -3992,13 +3992,14 @@ function handleRequest(e) {
 
     function switchTask(taskId) {
       taskId = parseInt(taskId);
-      // Yêu cầu người dùng: Mỗi lần bấm vào bất kỳ menu nào (trừ Task 10) đều phải nhập mật khẩu 8889
-      if (taskId !== 10) {
-        pendingTaskId = taskId;
-        openAuthModal(taskId);
+      // Task 10 (Thống Kê Lỗi XML) và Task 11 (BC Sửa CNTT) là 2 dashboard Google Sheets mở trực tiếp
+      if (taskId === 10 || taskId === 11) {
+        executeSwitchTask(taskId);
         return;
       }
-      executeSwitchTask(10);
+      // Các tác vụ quản trị, xuất file (1, 2, 3, 5, 7, 8, 9) yêu cầu mật khẩu 8889 mỗi lần chọn
+      pendingTaskId = taskId;
+      openAuthModal(taskId);
     }
 
     function executeSwitchTask(taskId) {
@@ -4017,6 +4018,9 @@ function handleRequest(e) {
       }
       if (taskId === 10) {
         initErrorTracker();
+      }
+      if (taskId === 11) {
+        initCnttDashboard();
       }
     }
 
@@ -4064,6 +4068,9 @@ function handleRequest(e) {
         const target = pendingTaskId || 1;
         pendingTaskId = null;
         executeSwitchTask(target);
+        if (target === 11) {
+          initCnttDashboard();
+        }
         showMiniToast('🔓 Mở khóa thành công! Bạn có thể sử dụng tất cả các chức năng.');
       } else {
         if (errEl) {
