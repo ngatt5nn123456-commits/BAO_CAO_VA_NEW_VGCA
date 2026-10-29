@@ -5443,7 +5443,7 @@ function handleRequest(e) {
       if (t.includes('pacs') || t.includes('ảnh')) {
         return 'Xử lý hình ảnh / Hệ thống PACS';
       }
-      return text.replace(/[\r\n\t]+/g, ' ').trim().substring(0, 45);
+      return text.split(String.fromCharCode(10)).join(" ").split(String.fromCharCode(13)).join(" ").trim().substring(0, 45);
     }
 
     function recomputeCnttAggregation() {
