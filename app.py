@@ -4010,6 +4010,7 @@ function handleRequest(e) {
     }
 
     function openAuthModal(taskId) {
+      pendingTaskId = taskId;
       const modal = document.getElementById('auth-modal');
       const input = document.getElementById('auth-password-input');
       const nameEl = document.getElementById('auth-task-name');
@@ -4045,18 +4046,17 @@ function handleRequest(e) {
       if (!input) return;
       const val = input.value.trim();
       if (val === UNLOCK_PASSWORD) {
+        const target = pendingTaskId || 1;
         sessionStorage.setItem('app_unlocked_8889', 'true');
         localStorage.setItem('app_unlocked_8889', 'true');
         document.cookie = "app_auth_pass=" + UNLOCK_PASSWORD + "; path=/; max-age=864000; SameSite=Lax";
         updateAuthUI();
         closeAuthModal();
-        const target = pendingTaskId || 1;
-        pendingTaskId = null;
         executeSwitchTask(target);
         if (target === 11) {
           initCnttDashboard();
         }
-        showMiniToast('🔓 Mở khóa thành công! Bạn có thể sử dụng tất cả các chức năng.');
+        showMiniToast('🔓 Mở khóa thành công!');
       } else {
         if (errEl) {
           errEl.textContent = '❌ Mật khẩu không chính xác! Vui lòng thử lại.';
