@@ -1707,7 +1707,7 @@ HTML_PAGE = """<!DOCTYPE html>
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hệ Thống Tổng Hợp CKS, Email, P.CNTT & Giám Định BHYT - BVĐK Bắc Ninh Số 2</title>
+  <title>HỆ THỐNG TỔNG HỢP THÔNG TIN - BVĐK BẮC NINH SỐ 2</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -2775,7 +2775,7 @@ HTML_PAGE = """<!DOCTYPE html>
   <div class="header">
     <div>
       <div class="brand">🏥 BỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2</div>
-      <div class="title">HỆ THỐNG TỔNG HỢP CẤP CKS, EMAIL, P.CNTT & GIÁM ĐỊNH BẢO HIỂM</div>
+      <div class="title">HỆ THỐNG TỔNG HỢP THÔNG TIN</div>
     </div>
     <div class="status">
       <span class="status-dot"></span>
@@ -2869,6 +2869,7 @@ HTML_PAGE = """<!DOCTYPE html>
                 <span class="nav-title">BC Sửa CNTT</span>
                 <span class="nav-desc">Tổng hợp ca tiếp nhận & báo cáo cán bộ</span>
               </div>
+              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
             </li>
             <li data-task="8" onclick="switchTask(8)">
               <div class="nav-icon">⚡</div>
@@ -2893,7 +2894,7 @@ HTML_PAGE = """<!DOCTYPE html>
         <b>Phòng CNTT • BVĐK Bắc Ninh số 2</b><br>
         Phiên bản Web v2.8 • Phân Quyền Bảo Mật
         <div id="auth-status-bar" style="margin-top: 8px; padding: 6px 10px; border-radius: 6px; font-size: 0.72rem; display: flex; align-items: center; justify-content: space-between; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.08);">
-          <span id="auth-status-text">🔒 7 tác vụ có khóa (8889)</span>
+          <span id="auth-status-text">🔒 8 tác vụ có khóa (8889)</span>
           <button type="button" id="btn-relock" onclick="lockApp()" style="display:none; background: #ef4444; color: #fff; border: none; border-radius: 4px; padding: 2px 7px; font-size: 0.7rem; cursor: pointer; font-weight:600;">Khóa lại</button>
         </div>
       </div>
@@ -3693,29 +3694,7 @@ HTML_PAGE = """<!DOCTYPE html>
             </div>
           </div>
 
-          <!-- 4 KPI Metrics Grid -->
-          <div class="cntt-kpi-grid">
-            <div class="cntt-kpi-card kpi-blue">
-              <div class="cntt-kpi-label">📖 SHEET ĐÃ CHỌN</div>
-              <div class="cntt-kpi-value" id="cntt-kpi-sheets">3</div>
-              <div class="cntt-kpi-sub" id="cntt-kpi-sheets-sub">29.10, 28.10, 27.10</div>
-            </div>
-            <div class="cntt-kpi-card kpi-purple">
-              <div class="cntt-kpi-label">🛠 TỔNG SỐ CA TIẾP NHẬN</div>
-              <div class="cntt-kpi-value" id="cntt-kpi-cases">128</div>
-              <div class="cntt-kpi-sub" id="cntt-kpi-cases-sub">Bao gồm 36 khoa/phòng</div>
-            </div>
-            <div class="cntt-kpi-card kpi-emerald">
-              <div class="cntt-kpi-label">👥 CÁN BỘ THỰC HIỆN</div>
-              <div class="cntt-kpi-value" id="cntt-kpi-staff">7</div>
-              <div class="cntt-kpi-sub">Cán bộ tham gia xử lý</div>
-            </div>
-            <div class="cntt-kpi-card kpi-amber">
-              <div class="cntt-kpi-label">📝 NỘI DUNG SỬA CHỮA KHÁC</div>
-              <div class="cntt-kpi-value" id="cntt-kpi-other">51</div>
-              <div class="cntt-kpi-sub">Nội dung ghi chi tiết</div>
-            </div>
-          </div>
+          <!-- 4 KPI Metrics Grid removed as requested -->
 
           <!-- Staff Cards Container -->
           <div id="cntt-staff-cards-list">
@@ -3988,7 +3967,7 @@ function handleRequest(e) {
       const statusText = document.getElementById('auth-status-text');
       const btnRelock = document.getElementById('btn-relock');
       if (statusText) {
-        statusText.innerHTML = unlocked ? '🔓 Đã mở khóa đầy đủ' : '🔒 7 tác vụ có khóa (8889)';
+        statusText.innerHTML = unlocked ? '🔓 Đã mở khóa đầy đủ' : '🔒 8 tác vụ có khóa (8889)';
         statusText.style.color = unlocked ? '#34d399' : '#94a3b8';
       }
       if (btnRelock) {
@@ -3998,12 +3977,12 @@ function handleRequest(e) {
 
     function switchTask(taskId) {
       taskId = parseInt(taskId);
-      // Task 10 (Thống Kê Lỗi XML) và Task 11 (BC Sửa CNTT) là 2 dashboard Google Sheets mở trực tiếp
-      if (taskId === 10 || taskId === 11) {
-        executeSwitchTask(taskId);
+      // Chỉ duy nhất Task 10 (Thống Kê Lỗi XML) mở trực tiếp không cần mật khẩu
+      if (taskId === 10) {
+        executeSwitchTask(10);
         return;
       }
-      // Các tác vụ quản trị, xuất file (1, 2, 3, 5, 7, 8, 9) yêu cầu mật khẩu 8889 mỗi lần chọn
+      // Các tác vụ khác (1, 2, 3, 5, 7, 8, 9, 11) yêu cầu mật khẩu 8889 mỗi lần chọn
       pendingTaskId = taskId;
       openAuthModal(taskId);
     }
