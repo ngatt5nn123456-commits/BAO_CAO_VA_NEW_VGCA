@@ -5606,7 +5606,7 @@ function handleRequest(e) {
         });
       }
 
-      const reportText = lines.join('\n');
+      const reportText = lines.join(String.fromCharCode(10));
       navigator.clipboard.writeText(reportText).then(() => {
         showCnttToast('✓ ĐÃ SAO CHÉP', `Đã sao chép báo cáo của cán bộ ${st.name} vào bộ nhớ tạm!`);
       }).catch(() => {
