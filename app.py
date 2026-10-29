@@ -1710,7 +1710,7 @@ HTML_PAGE = """<!DOCTYPE html>
   <title>HỆ THỐNG TỔNG HỢP THÔNG TIN - BVĐK BẮC NINH SỐ 2</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #2563eb;
@@ -1730,7 +1730,7 @@ HTML_PAGE = """<!DOCTYPE html>
       --radius: 12px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
     body { background-color: var(--content-bg); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
     /* TOP HEADER */
@@ -1898,21 +1898,23 @@ HTML_PAGE = """<!DOCTYPE html>
       overflow-y: auto;
     }
     .breadcrumb-bar {
-      background: white;
+      background: #0f172a;
       padding: 12px 24px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #1e293b;
       display: flex;
       align-items: center;
       gap: 12px;
       flex-shrink: 0;
     }
     .badge {
-      background: #dbeafe; color: #1d4ed8;
-      font-size: 0.75rem; font-weight: 700;
+      background: rgba(37, 99, 235, 0.15); color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      font-size: 0.72rem; font-weight: 700;
       padding: 4px 10px; border-radius: 6px;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    .breadcrumb-title { font-size: 1rem; font-weight: 700; color: #0f172a; }
+    .breadcrumb-title { font-size: 0.95rem; font-weight: 600; color: #f1f5f9; }
 
     /* TASK PAGES */
     .page { display: none; padding: 24px; }
@@ -2164,7 +2166,7 @@ HTML_PAGE = """<!DOCTYPE html>
     }
   
 
-    /* ============================================================
+        /* ============================================================
        BC SỬA CNTT (DASHBOARD TỔNG HỢP SHEET) STYLES
        ============================================================ */
     .cntt-header-bar {
@@ -2172,13 +2174,13 @@ HTML_PAGE = """<!DOCTYPE html>
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 16px;
-      padding: 12px 18px;
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
-      border: 1px solid rgba(59, 130, 246, 0.25);
+      gap: 14px;
+      margin-bottom: 18px;
+      padding: 14px 20px;
+      background: #0f172a;
+      border: 1px solid #1e293b;
       border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
     }
     .cntt-header-left {
       display: flex;
@@ -2187,8 +2189,8 @@ HTML_PAGE = """<!DOCTYPE html>
     }
     .cntt-btn-back {
       padding: 7px 14px;
-      background: rgba(30, 41, 59, 0.8);
-      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: #1e293b;
+      border: 1px solid #334155;
       color: #94a3b8;
       border-radius: 8px;
       font-size: 13px;
@@ -2197,18 +2199,18 @@ HTML_PAGE = """<!DOCTYPE html>
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: all 0.2s;
+      transition: all 0.15s ease;
     }
     .cntt-btn-back:hover {
-      background: rgba(51, 65, 85, 0.9);
-      color: #f1f5f9;
-      border-color: #38bdf8;
+      background: #334155;
+      color: #ffffff;
+      border-color: #475569;
     }
     .cntt-header-title {
-      font-size: 20px;
-      font-weight: 800;
-      color: #ffffff;
-      letter-spacing: -0.3px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: -0.01em;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -2219,19 +2221,19 @@ HTML_PAGE = """<!DOCTYPE html>
       gap: 6px;
       font-size: 12px;
       font-weight: 600;
-      color: #10b981;
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
       padding: 3px 10px;
-      border-radius: 20px;
+      border-radius: 9999px;
     }
     .cntt-header-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .cntt-btn-action {
-      padding: 8px 14px;
+      padding: 8px 16px;
       font-size: 13px;
       font-weight: 600;
       border-radius: 8px;
@@ -2240,89 +2242,59 @@ HTML_PAGE = """<!DOCTYPE html>
       align-items: center;
       gap: 6px;
       border: 1px solid transparent;
-      transition: all 0.2s;
+      transition: all 0.15s ease;
+      text-decoration: none;
     }
     .cntt-btn-sync {
-      background: linear-gradient(135deg, #0284c7, #2563eb);
-      color: white;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #3b82f6;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);
     }
     .cntt-btn-sync:hover {
-      background: linear-gradient(135deg, #0369a1, #1d4ed8);
+      background: #1d4ed8;
+      border-color: #2563eb;
       transform: translateY(-1px);
     }
     .cntt-btn-excel {
-      background: rgba(15, 23, 42, 0.8);
-      border-color: #0284c7;
-      color: #38bdf8;
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
     }
     .cntt-btn-excel:hover {
-      background: #0284c7;
-      color: white;
+      background: rgba(16, 185, 129, 0.22);
+      color: #6ee7b7;
+      transform: translateY(-1px);
     }
     .cntt-btn-link {
-      background: transparent;
-      border-color: rgba(148, 163, 184, 0.3);
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.1);
       color: #94a3b8;
     }
     .cntt-btn-link:hover {
       color: #e2e8f0;
-      border-color: #94a3b8;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
     }
 
-    /* Sub Tabs Nav */
-    .cntt-subnav {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 16px;
-      border-bottom: 1px solid rgba(51, 65, 85, 0.7);
-      padding-bottom: 4px;
-      overflow-x: auto;
-    }
-    .cntt-tab-item {
-      padding: 8px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #94a3b8;
-      border-radius: 8px 8px 0 0;
-      cursor: pointer;
-      border: 1px solid transparent;
-      border-bottom: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    .cntt-tab-item:hover {
-      color: #f1f5f9;
-      background: rgba(30, 41, 59, 0.5);
-    }
-    .cntt-tab-item.active {
-      color: #38bdf8;
-      background: rgba(30, 41, 59, 0.95);
-      border-color: rgba(59, 130, 246, 0.4);
-      border-bottom: 2px solid #38bdf8;
-    }
-
-    /* Suggestions & Month selectors */
+    /* Filter Card & Sheet Selectors */
     .cntt-filter-card {
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(51, 65, 85, 0.6);
+      background: #0f172a;
+      border: 1px solid #1e293b;
       border-radius: 12px;
-      padding: 14px 18px;
-      margin-bottom: 16px;
+      padding: 16px 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     }
     .cntt-quick-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 12px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #1e293b;
     }
     .cntt-quick-left {
       display: flex;
@@ -2332,22 +2304,22 @@ HTML_PAGE = """<!DOCTYPE html>
     }
     .cntt-quick-pill {
       padding: 5px 12px;
-      background: rgba(30, 41, 59, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.25);
-      color: #e2e8f0;
-      border-radius: 20px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      border-radius: 8px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 500;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      transition: all 0.2s;
+      transition: all 0.15s ease;
     }
     .cntt-quick-pill:hover {
-      background: #0284c7;
-      border-color: #38bdf8;
-      color: white;
+      background: #2563eb;
+      border-color: #3b82f6;
+      color: #ffffff;
     }
     .cntt-quick-right {
       display: flex;
@@ -2355,26 +2327,35 @@ HTML_PAGE = """<!DOCTYPE html>
       gap: 8px;
     }
     .cntt-btn-small {
-      padding: 4px 10px;
-      font-size: 11px;
-      font-weight: 600;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 500;
       border-radius: 6px;
       cursor: pointer;
-      border: 1px solid rgba(148, 163, 184, 0.3);
-      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid #334155;
+      background: #1e293b;
       color: #cbd5e1;
+      transition: all 0.15s ease;
     }
     .cntt-btn-small:hover {
       background: #334155;
-      color: white;
+      color: #ffffff;
     }
     .cntt-btn-small.btn-success {
       color: #34d399;
       border-color: rgba(52, 211, 153, 0.3);
+      background: rgba(16, 185, 129, 0.08);
+    }
+    .cntt-btn-small.btn-success:hover {
+      background: rgba(16, 185, 129, 0.2);
     }
     .cntt-btn-small.btn-danger {
       color: #f87171;
       border-color: rgba(248, 113, 113, 0.3);
+      background: rgba(239, 68, 68, 0.08);
+    }
+    .cntt-btn-small.btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2);
     }
 
     /* Month Tabs */
@@ -2386,25 +2367,25 @@ HTML_PAGE = """<!DOCTYPE html>
       margin-bottom: 12px;
     }
     .cntt-month-pill {
-      padding: 5px 14px;
+      padding: 6px 14px;
       border-radius: 8px;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
-      background: rgba(30, 41, 59, 0.7);
-      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: #1e293b;
+      border: 1px solid #334155;
       color: #94a3b8;
-      transition: all 0.2s;
+      transition: all 0.15s ease;
     }
     .cntt-month-pill:hover {
-      background: rgba(51, 65, 85, 0.9);
-      color: #f1f5f9;
+      background: #334155;
+      color: #f8fafc;
     }
     .cntt-month-pill.active {
-      background: #0284c7;
-      color: white;
-      border-color: #38bdf8;
-      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4);
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #3b82f6;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
     }
 
     /* Sheet Grid */
@@ -2420,10 +2401,10 @@ HTML_PAGE = """<!DOCTYPE html>
       padding: 6px 12px;
       border-radius: 8px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 500;
       cursor: pointer;
-      background: rgba(30, 41, 59, 0.85);
-      border: 1px solid rgba(71, 85, 105, 0.6);
+      background: #1a2438;
+      border: 1px solid rgba(71, 85, 105, 0.45);
       color: #cbd5e1;
       display: inline-flex;
       align-items: center;
@@ -2432,18 +2413,18 @@ HTML_PAGE = """<!DOCTYPE html>
       user-select: none;
     }
     .cntt-sheet-chip input[type="checkbox"] {
-      accent-color: #0284c7;
+      accent-color: #2563eb;
       cursor: pointer;
     }
     .cntt-sheet-chip:hover {
-      border-color: #38bdf8;
-      color: white;
+      border-color: #3b82f6;
+      color: #ffffff;
     }
     .cntt-sheet-chip.selected {
-      background: linear-gradient(135deg, #0284c7, #1d4ed8);
-      border-color: #60a5fa;
-      color: #ffffff;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+      background: rgba(37, 99, 235, 0.18);
+      border-color: #3b82f6;
+      color: #93c5fd;
+      font-weight: 600;
     }
 
     /* Filter & Search Bar */
@@ -2452,12 +2433,13 @@ HTML_PAGE = """<!DOCTYPE html>
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 18px;
-      padding: 10px 16px;
-      background: rgba(15, 23, 42, 0.7);
-      border: 1px solid rgba(51, 65, 85, 0.5);
+      gap: 14px;
+      margin-bottom: 20px;
+      padding: 12px 18px;
+      background: #0f172a;
+      border: 1px solid #1e293b;
       border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
     .cntt-action-inputs {
       display: flex;
@@ -2467,88 +2449,268 @@ HTML_PAGE = """<!DOCTYPE html>
       flex: 1;
     }
     .cntt-select-cb {
-      padding: 8px 14px;
+      padding: 9px 14px;
       background: #1e293b;
-      border: 1px solid #475569;
-      color: #f1f5f9;
+      border: 1px solid #334155;
+      color: #f8fafc;
       border-radius: 8px;
       font-size: 13px;
-      font-weight: 600;
-      min-width: 220px;
+      font-weight: 500;
+      min-width: 230px;
     }
     .cntt-search-input {
-      padding: 8px 14px;
+      padding: 9px 14px;
       background: #1e293b;
-      border: 1px solid #475569;
-      color: #f1f5f9;
+      border: 1px solid #334155;
+      color: #f8fafc;
       border-radius: 8px;
       font-size: 13px;
       flex: 1;
-      min-width: 200px;
+      min-width: 220px;
     }
     .cntt-search-input:focus, .cntt-select-cb:focus {
       outline: none;
-      border-color: #38bdf8;
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
     }
     .cntt-success-pill {
       font-size: 13px;
-      font-weight: 700;
-      color: #10b981;
+      font-weight: 600;
+      color: #34d399;
       display: inline-flex;
       align-items: center;
       gap: 6px;
     }
 
-    /* 4 KPI Cards */
-    .cntt-kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 14px;
+    /* Staff Aggregation Cards */
+    .cntt-staff-card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 22px 24px;
       margin-bottom: 22px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
     }
-    .cntt-kpi-card {
-      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
-      border: 1px solid rgba(51, 65, 85, 0.8);
-      border-radius: 12px;
-      padding: 16px 20px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    .cntt-staff-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #1e293b;
+      margin-bottom: 18px;
     }
-    .cntt-kpi-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0; height: 3px;
+    .cntt-staff-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
-    .cntt-kpi-card.kpi-blue::before { background: linear-gradient(90deg, #38bdf8, #0284c7); }
-    .cntt-kpi-card.kpi-purple::before { background: linear-gradient(90deg, #a855f7, #6366f1); }
-    .cntt-kpi-card.kpi-emerald::before { background: linear-gradient(90deg, #34d399, #059669); }
-    .cntt-kpi-card.kpi-amber::before { background: linear-gradient(90deg, #fbbf24, #d97706); }
-    .cntt-kpi-label {
-      font-size: 11px;
+    .cntt-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35);
+    }
+    .cntt-staff-name {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .cntt-tag-badge {
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .cntt-tag-blue { background: rgba(37, 99, 235, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .cntt-tag-slate { background: rgba(148, 163, 184, 0.12); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.25); font-weight: 500; }
+    .cntt-tag-cyan { background: rgba(6, 182, 212, 0.14); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.28); font-weight: 500; }
+    .cntt-tag-amber { background: rgba(245, 158, 11, 0.14); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    
+    .cntt-btn-copy {
+      padding: 8px 16px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .cntt-btn-copy:hover {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #3b82f6;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    }
+
+    /* Categories Pills */
+    .cntt-sec-title {
+      font-size: 12px;
       font-weight: 700;
       color: #94a3b8;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       gap: 6px;
-      margin-bottom: 6px;
     }
-    .cntt-kpi-value {
-      font-size: 32px;
-      font-weight: 900;
+    .cntt-sec-title.accent-amber {
+      color: #fbbf24;
+      margin-top: 20px;
+    }
+    .cntt-cats-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .cntt-cat-pill {
+      background: #1a2438;
+      border: 1px solid rgba(71, 85, 105, 0.45);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 12px;
+      color: #e2e8f0;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+    .cntt-cat-count {
+      background: #2563eb;
       color: #ffffff;
-      line-height: 1.1;
-      margin-bottom: 4px;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 6px;
     }
-    .cntt-kpi-sub {
+
+    /* Other items list */
+    .cntt-other-list {
+      background: #090e1a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 10px 14px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .cntt-other-row {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.35);
+      font-size: 13px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .cntt-other-row:last-child {
+      border-bottom: none;
+    }
+    .cntt-other-idx {
+      font-weight: 700;
+      color: #fbbf24;
+      min-width: 22px;
+    }
+    .badge-sheet {
+      background: rgba(37, 99, 235, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-dept {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(192, 132, 252, 0.25);
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-meta {
+      color: #94a3b8;
+      font-size: 11px;
+    }
+    .badge-hs {
+      background: rgba(245, 158, 11, 0.12);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-family: monospace;
+      font-weight: 600;
+    }
+
+    /* Toast Notification */
+    .cntt-toast-popup {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      border-radius: 12px;
+      padding: 14px 20px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 999999;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+    .cntt-toast-popup.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .cntt-toast-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .cntt-toast-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 2px;
+    }
+    .cntt-toast-msg {
       font-size: 12px;
       color: #94a3b8;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     /* Staff Aggregation Cards */
@@ -3621,14 +3783,7 @@ HTML_PAGE = """<!DOCTYPE html>
           </div>
         </div>
 
-        <!-- Sub Tabs Nav -->
-        <div class="cntt-subnav">
-          <div class="cntt-tab-item" onclick="switchCnttSubTab('diem-ca')">📋 Điểm Ca</div>
-          <div class="cntt-tab-item" onclick="switchCnttSubTab('google-sheet')">📂 Google Sheet</div>
-          <div class="cntt-tab-item" onclick="switchCnttSubTab('thong-ke')">📊 Thống Kê</div>
-          <div class="cntt-tab-item" onclick="switchCnttSubTab('danh-sach')">📑 Danh Sách (<span id="cntt-tab-rec-count">16</span>)</div>
-          <div class="cntt-tab-item active" onclick="switchCnttSubTab('tong-hop-sheet')">📑 Tổng Hợp Sheet</div>
-        </div>
+        <!-- Sub Tabs Nav removed as requested -->
 
         <!-- TAB CONTENT: TỔNG HỢP SHEET -->
         <div id="cntt-subtab-tong-hop-sheet">
@@ -3699,72 +3854,6 @@ HTML_PAGE = """<!DOCTYPE html>
           <!-- Staff Cards Container -->
           <div id="cntt-staff-cards-list">
             <!-- Dynamically populated -->
-          </div>
-        </div>
-
-        <!-- TAB CONTENT: DANH SÁCH -->
-        <div id="cntt-subtab-danh-sach" style="display:none;">
-          <div class="card" style="padding:16px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-              <h3 style="color:#ffffff; margin:0;">📑 Danh Sách Chi Tiết Công Việc (<span id="cntt-table-total">128</span> ca)</h3>
-              <input type="text" id="cntt-table-search" placeholder="🔍 Lọc trong bảng..." oninput="filterCnttTable()" style="padding:6px 12px; background:#1e293b; border:1px solid #475569; color:white; border-radius:6px; font-size:12px;">
-            </div>
-            <div style="max-height:550px; overflow-y:auto;">
-              <table class="error-table" id="cntt-raw-table">
-                <thead>
-                  <tr>
-                    <th>STT</th>
-                    <th>Sheet</th>
-                    <th>Khoa / Phòng</th>
-                    <th>Số HS</th>
-                    <th>Cán Bộ Xử Lý</th>
-                    <th>Người Y/C</th>
-                    <th>Nội Dung Sửa Chữa Khác</th>
-                    <th>Các Mục Sửa Khác</th>
-                  </tr>
-                </thead>
-                <tbody id="cntt-table-body">
-                  <!-- Populated via JS -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB CONTENT: THỐNG KÊ -->
-        <div id="cntt-subtab-thong-ke" style="display:none;">
-          <div class="tracker-charts-grid">
-            <div class="tracker-chart-card">
-              <div class="tracker-chart-header">
-                <h3>🏥 Xếp Hạng Khoa/Phòng Yêu Cầu Nhiều Nhất</h3>
-              </div>
-              <div id="cntt-stat-dept-list" style="padding:10px 0;"></div>
-            </div>
-            <div class="tracker-chart-card">
-              <div class="tracker-chart-header">
-                <h3>📊 Cơ Cấu Các Nhóm Sửa Chữa</h3>
-              </div>
-              <div id="cntt-stat-cat-list" style="padding:10px 0;"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB CONTENT: GOOGLE SHEET -->
-        <div id="cntt-subtab-google-sheet" style="display:none;">
-          <div class="card" style="padding:16px; text-align:center;">
-            <h3 style="color:#ffffff; margin-bottom:10px;">📂 Trực Tiếp Xem & Thao Tác Trên Google Sheets</h3>
-            <p style="color:#94a3b8; font-size:13px; margin-bottom:14px;">Bấm nút bên dưới để mở file Google Sheets gốc của P.CNTT trong tab mới:</p>
-            <a href="https://docs.google.com/spreadsheets/d/1_I7qmDx7mtIOcCLkEkDz_PCaC8KPd_Po-pqEh7krdPA/edit?gid=1894058788#gid=1894058788" target="_blank" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:8px;">
-              ↗ Mở File Google Sheets Gốc (P.CNTT)
-            </a>
-          </div>
-        </div>
-
-        <!-- TAB CONTENT: ĐIỂM CA -->
-        <div id="cntt-subtab-diem-ca" style="display:none;">
-          <div class="card" style="padding:16px;">
-            <h3 style="color:#ffffff; margin-bottom:12px;">📋 Tổng Hợp Điểm Ca Theo Ngày</h3>
-            <div id="cntt-diem-ca-content"></div>
           </div>
         </div>
 
