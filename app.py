@@ -4587,11 +4587,10 @@ function handleRequest(e) {
     }
 
     function isAppUnlocked() {
-      return safeStorageGet('app_unlocked_8889') === 'true';
+      return false; // Mặc định tất cả các menu bảo mật luôn luôn có khóa 🔒
     }
 
     function updateAuthUI() {
-      const unlocked = isAppUnlocked();
       document.querySelectorAll('.sidebar-menu li[data-task]').forEach(li => {
         const id = parseInt(li.getAttribute('data-task'));
         const lockEl = li.querySelector('.nav-lock');
@@ -4599,24 +4598,25 @@ function handleRequest(e) {
           if (id === 10) {
             lockEl.style.display = 'none';
           } else {
-            lockEl.textContent = unlocked ? '🔓' : '🔒';
-            lockEl.title = unlocked ? 'Đã mở khóa' : 'Cần mật khẩu (8889)';
+            lockEl.style.display = 'inline-block';
+            lockEl.textContent = '🔒';
+            lockEl.title = 'Yêu cầu mật khẩu (8889)';
           }
         }
       });
       const statusText = document.getElementById('auth-status-text');
       const btnRelock = document.getElementById('btn-relock');
       if (statusText) {
-        statusText.innerHTML = unlocked ? '🔓 Đã mở khóa đầy đủ' : '🔒 10 tác vụ có khóa (8889)';
-        statusText.style.color = unlocked ? '#34d399' : '#94a3b8';
+        statusText.innerHTML = '🔒 10 tác vụ có khóa bảo vệ (PIN: 8889)';
+        statusText.style.color = '#f59e0b';
       }
       if (btnRelock) {
-        btnRelock.style.display = unlocked ? 'inline-block' : 'none';
+        btnRelock.style.display = 'none';
       }
       const btnHeaderUnlock = document.getElementById('btn-header-unlock');
       const badgeHeaderUnlocked = document.getElementById('badge-header-unlocked');
-      if (btnHeaderUnlock) btnHeaderUnlock.style.display = unlocked ? 'none' : 'inline-flex';
-      if (badgeHeaderUnlocked) badgeHeaderUnlocked.style.display = unlocked ? 'inline-block' : 'none';
+      if (btnHeaderUnlock) btnHeaderUnlock.style.display = 'inline-flex';
+      if (badgeHeaderUnlocked) badgeHeaderUnlocked.style.display = 'none';
     }
 
     function switchTask(taskId) {
@@ -4626,12 +4626,8 @@ function handleRequest(e) {
         executeSwitchTask(10);
         return;
       }
-      // Nếu đã mở khóa bằng mật khẩu 8889 trước đó trong phiên làm việc, chuyển thẳng tới tác vụ luôn
-      if (isAppUnlocked()) {
-        executeSwitchTask(taskId);
-        return;
-      }
-      // Nếu chưa mở khóa, hiển thị popup yêu cầu nhập mã PIN 8889
+      // Tất cả 10 module còn lại (1, 2, 3, 5, 7, 8, 9, 11, 12, 13) yêu cầu mã PIN 8889 để truy cập
+      pendingTaskId = taskId;
       openAuthModal(taskId);
     }
 
@@ -4713,25 +4709,15 @@ function handleRequest(e) {
       if (!input) return;
       const val = input.value.trim();
       if (val === UNLOCK_PASSWORD) {
-        const target = pendingTaskId || 1;
-        safeStorageSet('app_unlocked_8889', 'true');
-        document.cookie = "app_auth_pass=" + UNLOCK_PASSWORD + "; path=/; max-age=864000; SameSite=Lax";
-        updateAuthUI();
+        const target = pendingTaskId || 10;
+        pendingTaskId = null;
         closeAuthModal();
         executeSwitchTask(target);
-        if (target === 11) {
-          initCnttDashboard();
-        }
-        if (target === 12) {
-          initMonthlyErrorDashboard();
-        }
-        if (target === 13) {
-          initCheckKhoaPhongSql();
-        }
+        showCnttToast('✓ MỞ KHÓA THÀNH CÔNG', 'Đã xác thực mã PIN 8889 và mở chức năng ' + (taskMeta[target] ? taskMeta[target].badge : ''));
         showMiniToast('🔓 Mở khóa thành công!');
       } else {
         if (errEl) {
-          errEl.textContent = '❌ Mật khẩu không chính xác! Vui lòng thử lại.';
+          errEl.textContent = '❌ Mật khẩu không chính xác! Vui lòng nhập mã PIN: 8889.';
           errEl.style.display = 'block';
         }
         input.classList.remove('auth-shake');
@@ -5913,32 +5899,43 @@ function handleRequest(e) {
     }
 
     function initPageRouter() {
+      // Xóa sạch mọi session / local cache cũ để đảm bảo các module luôn có khóa 🔒
+      try {
+        localStorage.removeItem('app_unlocked_8889');
+        sessionStorage.removeItem('app_unlocked_8889');
+        document.cookie = "app_auth_pass=; path=/; max-age=0; SameSite=Lax";
+      } catch (e) {}
+
       try { updateAuthUI(); } catch (e) {}
+
       const targetTask = getTaskFromUrl();
-      if (targetTask !== 10 && !isAppUnlocked()) {
-        // Module yêu cầu bảo mật nhưng chưa mở khóa PIN 8889
+      if (targetTask !== 10) {
+        // Mặc định về trang 10 và bật modal yêu cầu nhập mã PIN 8889 cho tác vụ được chọn
         executeSwitchTask(10);
+        pendingTaskId = targetTask;
         openAuthModal(targetTask);
       } else {
-        executeSwitchTask(targetTask);
+        executeSwitchTask(10);
       }
     }
 
     window.addEventListener('DOMContentLoaded', initPageRouter);
     window.addEventListener('hashchange', () => {
       const targetTask = getTaskFromUrl();
-      if (targetTask !== 10 && !isAppUnlocked()) {
+      if (targetTask !== 10) {
+        pendingTaskId = targetTask;
         openAuthModal(targetTask);
       } else {
-        executeSwitchTask(targetTask);
+        executeSwitchTask(10);
       }
     });
     window.addEventListener('popstate', () => {
       const targetTask = getTaskFromUrl();
-      if (targetTask !== 10 && !isAppUnlocked()) {
+      if (targetTask !== 10) {
+        pendingTaskId = targetTask;
         openAuthModal(targetTask);
       } else {
-        executeSwitchTask(targetTask);
+        executeSwitchTask(10);
       }
     });
   
