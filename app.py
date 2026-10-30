@@ -3263,7 +3263,7 @@ HTML_PAGE = """<!DOCTYPE html>
             <div class="group-header-title">
               <span>📊 NHÓM BÁO CÁO & GIÁM ĐỊNH BHYT</span>
             </div>
-            <span class="group-header-badge">5 tác vụ</span>
+            <span class="group-header-badge">6 tác vụ</span>
           </div>
           <ul class="sidebar-menu">
             <li data-task="5" onclick="switchTask(5)">
@@ -3290,6 +3290,14 @@ HTML_PAGE = """<!DOCTYPE html>
               </div>
               <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
             </li>
+            <li data-task="13" onclick="switchTask(13)">
+              <div class="nav-icon">⚡</div>
+              <div class="nav-text">
+                <span class="nav-title">Check Khoa, Phòng BHYT</span>
+                <span class="nav-desc">Câu lệnh check khoa, phòng bảo hiểm</span>
+              </div>
+              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
+            </li>
             <li data-task="8" onclick="switchTask(8)">
               <div class="nav-icon">⚡</div>
               <div class="nav-text">
@@ -3313,7 +3321,7 @@ HTML_PAGE = """<!DOCTYPE html>
         <b>Phòng CNTT • BVĐK Bắc Ninh số 2</b><br>
         Phiên bản Web v2.8 • Phân Quyền Bảo Mật
         <div id="auth-status-bar" style="margin-top: 8px; padding: 6px 10px; border-radius: 6px; font-size: 0.72rem; display: flex; align-items: center; justify-content: space-between; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.08);">
-          <span id="auth-status-text">🔒 9 tác vụ có khóa (8889)</span>
+          <span id="auth-status-text">🔒 10 tác vụ có khóa (8889)</span>
           <button type="button" id="btn-relock" onclick="lockApp()" style="display:none; background: #ef4444; color: #fff; border: none; border-radius: 4px; padding: 2px 7px; font-size: 0.7rem; cursor: pointer; font-weight:600;">Khóa lại</button>
         </div>
       </div>
@@ -4270,6 +4278,110 @@ HTML_PAGE = """<!DOCTYPE html>
       </div>
 
 
+      <!-- ============================================================== -->
+      <!-- TÁC VỤ 13: CÂU LỆNH CHECK KHOA, PHÒNG BẢO HIỂM                  -->
+      <!-- ============================================================== -->
+      <div class="page" id="page-task-13">
+        <!-- Top Header Bar -->
+        <div class="month-header-bar" style="background:#1e293b; border:1px solid #334155; border-radius:12px; padding:16px 20px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div class="month-header-left" style="display:flex; align-items:center; gap:14px;">
+            <button class="cntt-btn-back" onclick="switchTask(10)">
+              ‹ Quay lại
+            </button>
+            <div>
+              <div class="month-header-title" style="font-size:1.25rem; font-weight:700; color:#f8fafc; display:flex; align-items:center; gap:8px;">
+                ⚡ Câu Lệnh Check Khoa, Phòng Bảo Hiểm
+                <span class="cntt-badge-live" id="sql-badge-status" style="background:#047857; color:#ecfdf5; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:600;">Sẵn sàng</span>
+              </div>
+              <div style="font-size:0.8rem; color:#94a3b8; margin-top:3px;">
+                Tự động thêm dấu phẩy từng hồ sơ & trừ hồ sơ cuối để điền vào cấu trúc ARRAY[...] của PostgreSQL
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="cntt-btn-action" style="background:#0284c7; color:#fff;" onclick="loadSampleSqlInput()">
+              💡 Dữ Liệu Mẫu
+            </button>
+            <button type="button" class="cntt-btn-action" style="background:#475569; color:#fff;" onclick="clearSqlInput()">
+              🧹 Xóa Trắng
+            </button>
+            <button type="button" class="cntt-btn-action" style="background:#6366f1; color:#fff;" onclick="copyArrayOnly()">
+              📑 Copy Mảng ARRAY
+            </button>
+            <button type="button" class="cntt-btn-action" style="background:#10b981; color:#fff; font-weight:700;" onclick="copySqlOutput()">
+              📋 Sao Chép SQL (1-Click)
+            </button>
+          </div>
+        </div>
+
+        <!-- Layout 2 Cột: Nhập liệu bên trái & Kết quả SQL bên phải -->
+        <div style="display:grid; grid-template-columns: 1fr 1.35fr; gap:20px; align-items:stretch;">
+          <!-- CỘT TRÁI: NHẬP DANH SÁCH HỒ SƠ -->
+          <div style="background:#1e293b; border:1px solid #334155; border-radius:12px; padding:18px; display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div style="font-weight:700; font-size:0.95rem; color:#f8fafc; display:flex; align-items:center; gap:8px;">
+                📝 Dán Danh Sách Số Hồ Sơ
+              </div>
+              <div style="font-size:0.8rem; background:#0f172a; padding:4px 10px; border-radius:6px; border:1px solid #334155; color:#94a3b8;">
+                Tổng: <b id="sql-doc-count" style="color:#38bdf8; font-size:0.95rem;">0</b> hồ sơ
+              </div>
+            </div>
+
+            <div style="font-size:0.78rem; color:#94a3b8; margin-bottom:10px; line-height:1.4;">
+              Dán danh sách mã hồ sơ vào ô bên dưới (mỗi dòng 1 mã, hoặc copy trực tiếp từ cột Excel/Google Sheets). Hệ thống sẽ tự thêm dấu phẩy và loại bỏ dấu phẩy ở hồ sơ cuối cùng.
+            </div>
+
+            <textarea 
+              id="sql-input-docs" 
+              oninput="onSqlDocInput()" 
+              placeholder="Dán danh sách số hồ sơ tại đây...&#10;&#10;Ví dụ:&#10;26213969&#10;26216846&#10;26224204&#10;26219939&#10;26217376&#10;26225521&#10;26227695&#10;26226782&#10;26228961"
+              style="width:100%; flex:1; min-height:440px; font-family:'Fira Code', 'Consolas', 'Courier New', monospace; font-size:13px; line-height:1.6; background:#0f172a; color:#38bdf8; border:1px solid #334155; border-radius:8px; padding:12px; resize:vertical; outline:none; box-sizing:border-box;"
+            ></textarea>
+
+            <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#cbd5e1; flex-wrap:wrap; gap:10px;">
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="sql-dedup-check" onchange="onSqlDocInput()" style="accent-color:#3b82f6;">
+                  <span>Loại bỏ trùng lặp</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="sql-strip-text-check" checked onchange="onSqlDocInput()" style="accent-color:#3b82f6;">
+                  <span>Tự lọc chỉ lấy số (Bỏ ký tự thừa)</span>
+                </label>
+              </div>
+              <button type="button" class="cntt-btn-action" style="background:#2563eb; color:#fff; width:100%; justify-content:center; padding:10px; font-weight:600; margin-top:4px;" onclick="onSqlDocInput()">
+                ⚡ Cập Nhật Câu Lệnh SQL Ngay
+              </button>
+            </div>
+          </div>
+
+          <!-- CỘT PHẢI: KẾT QUẢ CÂU LỆNH SQL -->
+          <div style="background:#1e293b; border:1px solid #334155; border-radius:12px; padding:18px; display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div style="font-weight:700; font-size:0.95rem; color:#f8fafc; display:flex; align-items:center; gap:8px;">
+                💻 Cú Pháp SQL Đã Điền Mảng Hồ Sơ
+              </div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <span id="sql-status-pill" style="font-size:0.75rem; background:#1e1b4b; color:#a5b4fc; border:1px solid #4338ca; padding:3px 9px; border-radius:6px; font-weight:600;">
+                  PostgreSQL WITH clause
+                </span>
+                <button type="button" class="cntt-btn-action" style="background:#10b981; color:#fff; padding:4px 10px; font-size:12px; font-weight:600;" onclick="copySqlOutput()">
+                  📋 Copy SQL
+                </button>
+              </div>
+            </div>
+
+            <div style="font-size:0.78rem; color:#94a3b8; margin-bottom:10px;">
+              Cú pháp tra cứu Khoa ra viện (Nội trú), Phòng khám cuối cùng (Ngoại trú) & Khoa cấp cứu:
+            </div>
+
+            <div style="position:relative; flex:1; display:flex; flex-direction:column;">
+              <pre id="sql-output-code" style="margin:0; width:100%; flex:1; min-height:480px; max-height:600px; background:#0b1120; border:1px solid #334155; border-radius:8px; padding:16px; color:#e2e8f0; font-family:'Fira Code', 'Consolas', monospace; font-size:12px; line-height:1.55; overflow:auto; white-space:pre; user-select:text; box-sizing:border-box;"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="auth-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); backdrop-filter:blur(5px); z-index:999999; align-items:center; justify-content:center; padding:20px;">
         <div style="background:#ffffff; border-radius:14px; max-width:440px; width:100%; padding:26px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.35); border:1px solid #e2e8f0;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
@@ -4433,7 +4545,8 @@ function handleRequest(e) {
       9: { badge: 'EMAIL CÔNG VỤ', title: '📧 Cấp Email Công Vụ  ─  Tổng hợp danh sách xin cấp Email' },
       10: { badge: 'LỖI XML BHYT', title: '📊 Thống Kê & Lọc Lỗi XML BHYT (Google Sheets) ─ Đọc & Tra Cứu Lỗi Đẩy Cổng BHYT' },
       11: { badge: 'BC SỬA CNTT', title: '🛠 BC Sửa CNTT ─ Tổng Hợp Sheet & Báo Cáo Cán Bộ P.CNTT' },
-      12: { badge: 'THỐNG KÊ LỖI THÁNG', title: '📈 Thống Kê Lỗi XML BHYT Theo Tháng ─ Tần Suất & Hồ Sơ Gần Nhất' }
+      12: { badge: 'THỐNG KÊ LỖI THÁNG', title: '📈 Thống Kê Lỗi XML BHYT Theo Tháng ─ Tần Suất & Hồ Sơ Gần Nhất' },
+      13: { badge: 'CHECK KHOA PHÒNG BHYT', title: '⚡ Câu Lệnh Check Khoa, Phòng Bảo Hiểm ─ Tự Động Thêm Dấu Phẩy & Điền Mảng Hồ Sơ SQL' }
     };
 
     const UNLOCK_PASSWORD = "8889";
@@ -4460,7 +4573,7 @@ function handleRequest(e) {
       const statusText = document.getElementById('auth-status-text');
       const btnRelock = document.getElementById('btn-relock');
       if (statusText) {
-        statusText.innerHTML = unlocked ? '🔓 Đã mở khóa đầy đủ' : '🔒 9 tác vụ có khóa (8889)';
+        statusText.innerHTML = unlocked ? '🔓 Đã mở khóa đầy đủ' : '🔒 10 tác vụ có khóa (8889)';
         statusText.style.color = unlocked ? '#34d399' : '#94a3b8';
       }
       if (btnRelock) {
@@ -4502,6 +4615,9 @@ function handleRequest(e) {
       }
       if (taskId === 12) {
         initMonthlyErrorDashboard();
+      }
+      if (taskId === 13) {
+        initCheckKhoaPhongSql();
       }
     }
 
@@ -4554,6 +4670,9 @@ function handleRequest(e) {
         }
         if (target === 12) {
           initMonthlyErrorDashboard();
+        }
+        if (target === 13) {
+          initCheckKhoaPhongSql();
         }
         showMiniToast('🔓 Mở khóa thành công!');
       } else {
@@ -6574,6 +6693,257 @@ function handleRequest(e) {
       window.open(`/api/export-monthly-errors?action=export-monthly-errors&month=${encodeURIComponent(monthlyErrorsData.month)}`, '_blank');
     }
 
+    // ==============================================================
+    // TÁC VỤ 13: CÂU LỆNH CHECK KHOA, PHÒNG BẢO HIỂM
+    // ==============================================================
+    const SQL_KHOA_PHONG_TEMPLATE = `WITH target_doc AS (
+    -- Dán danh sách các số hồ sơ cần kiểm tra vào đây:
+    SELECT docno, ord
+    FROM unnest(ARRAY[
+{DOCNO_ARRAY}
+    ]) WITH ORDINALITY AS t(docno, ord)
+),
+last_exam AS (
+    -- Lấy thông tin phòng khám cuối cùng cho từng hồ sơ ngoại trú
+    SELECT DISTINCT ON (e.he_docno)
+        e.he_docno,
+        e.he_deptid,      -- Mã khoa khám bệnh
+        e.he_roomid,      -- Mã phòng khám
+        e.he_emergency,   -- Cờ cấp cứu ('Y' / 'N')
+        r.hrl_name AS ten_phong_kham,
+        r.hrl_deptid,     -- Mã khoa của phòng
+        e.he_examdate AS thoi_gian_kham,
+        e.he_diagnostic AS chan_doan_kham
+    FROM hms_exam e
+    JOIN target_doc t ON e.he_docno = t.docno
+    LEFT JOIN hms_roomlist r 
+        ON e.he_deptid = r.hrl_deptid AND e.he_roomid = r.hrl_id
+    ORDER BY e.he_docno, e.he_receptidx DESC, e.he_examdate DESC
+)
+SELECT 
+    d.hd_docno AS so_ho_so,
+    p.hp_patientno AS ma_benh_nhan,
+    TRIM(CONCAT_WS(' ', p.hp_surname, p.hp_midname, p.hp_firstname)) AS ho_ten_benh_nhan,
+    p.hp_birthdate AS ngay_sinh,
+    CASE 
+        WHEN d.hd_isinpatient = 'Y' THEN 'Nội trú'
+        ELSE 'Ngoại trú'
+    END AS loai_dieu_tri,
+    
+    -- 1. CỘT PHÒNG:
+    -- - Nội trú: để NULL theo đúng yêu cầu
+    -- - Ngoại trú Cấp cứu: để NULL (vì đã hiển thị mã khoa ở cột khoa)
+    -- - Ngoại trú thường: Tên phòng khám cuối cùng
+    CASE 
+        WHEN d.hd_isinpatient = 'Y' THEN NULL
+        WHEN (le.ten_phong_kham ILIKE '%cấp cứu%' 
+              OR le.ten_phong_kham ILIKE '% CC %' 
+              OR le.ten_phong_kham ILIKE 'Phòng Khám CC%'
+              OR le.he_emergency = 'Y') THEN NULL
+        ELSE 
+            le.ten_phong_kham
+    END AS phong,
+    
+    -- 2. CỘT KHOA:
+    -- - Nội trú: Khoa ra viện
+    -- - Ngoại trú Cấp cứu: Lấy Mã khoa cấp cứu (he_deptid)
+    -- - Ngoại trú thường: Tên khoa quản lý phòng khám (hoặc mã khoa)
+    CASE 
+        WHEN d.hd_isinpatient = 'Y' THEN 
+            COALESCE(sd_in.sd_name, d.hd_enddept, 'Chưa xác định khoa ra viện')
+        WHEN (le.ten_phong_kham ILIKE '%cấp cứu%' 
+              OR le.ten_phong_kham ILIKE '% CC %' 
+              OR le.ten_phong_kham ILIKE 'Phòng Khám CC%'
+              OR le.he_emergency = 'Y') THEN
+            COALESCE(le.he_deptid, le.hrl_deptid)
+        ELSE 
+            COALESCE(sd_out.sd_name, le.he_deptid)
+    END AS khoa,
+
+    -- Thời gian ra viện hoặc thời gian khám cuối
+    CASE 
+        WHEN d.hd_isinpatient = 'Y' THEN cr.hcr_dischargedate
+        ELSE le.thoi_gian_kham
+    END AS thoi_gian_ra_vien_hoac_kham_cuoi,
+
+    -- Chẩn đoán kết thúc (ra viện hoặc phòng khám cuối)
+    CASE 
+        WHEN d.hd_isinpatient = 'Y' THEN cr.hcr_maindisease
+        ELSE le.chan_doan_kham
+    END AS chan_doan_ket_thuc
+
+FROM target_doc t
+JOIN hms_doc d ON d.hd_docno = t.docno
+JOIN hms_patient p ON d.hd_patientno = p.hp_patientno
+
+-- Nối bệnh án nội trú để lấy tên khoa ra viện
+LEFT JOIN hms_clinical_record cr ON d.hd_docno = cr.hcr_docno
+LEFT JOIN sys_dept sd_in ON COALESCE(cr.hcr_dischargedept, d.hd_enddept) = sd_in.sd_id
+
+-- Nối thông tin khám ngoại trú cuối cùng & khoa phòng khám
+LEFT JOIN last_exam le ON d.hd_docno = le.he_docno
+LEFT JOIN sys_dept sd_out ON le.he_deptid = sd_out.sd_id
+
+-- Giữ nguyên thứ tự danh sách hồ sơ bạn nhập vào:
+ORDER BY t.ord;`;
+
+    const SAMPLE_DOCS_LIST = [
+      "26213969",
+      "26216846",
+      "26224204",
+      "26219939",
+      "26217376",
+      "26225521",
+      "26227695",
+      "26226782",
+      "26228961"
+    ];
+
+    let currentParsedDocs = [];
+
+    function initCheckKhoaPhongSql() {
+      const input = document.getElementById('sql-input-docs');
+      if (input && !input.value.trim()) {
+        input.value = SAMPLE_DOCS_LIST.join('\n');
+      }
+      onSqlDocInput();
+    }
+
+    function parseDocsFromInput(text) {
+      if (!text) return [];
+      const stripNonDigits = document.getElementById('sql-strip-text-check')?.checked !== false;
+      const deduplicate = document.getElementById('sql-dedup-check')?.checked === true;
+
+      let items = [];
+      if (stripNonDigits) {
+        const matches = text.match(/\\b\\d{4,14}\\b/g);
+        if (matches) {
+          items = matches;
+        } else {
+          const raw = text.split(/[\r\n,;\t]+/);
+          items = raw.map(s => s.trim()).filter(s => s.length > 0);
+        }
+      } else {
+        const raw = text.split(/[\r\n,;\t]+/);
+        items = raw.map(s => s.trim().replace(/^,+|,+$/g, '')).filter(s => s.length > 0);
+      }
+
+      if (deduplicate) {
+        const seen = new Set();
+        const unique = [];
+        for (const item of items) {
+          if (!seen.has(item)) {
+            seen.add(item);
+            unique.push(item);
+          }
+        }
+        return unique;
+      }
+      return items;
+    }
+
+    function onSqlDocInput() {
+      const input = document.getElementById('sql-input-docs');
+      const text = input ? input.value : '';
+      currentParsedDocs = parseDocsFromInput(text);
+
+      const countEl = document.getElementById('sql-doc-count');
+      if (countEl) countEl.textContent = currentParsedDocs.length;
+
+      const badgeStatus = document.getElementById('sql-badge-status');
+      if (badgeStatus) {
+        if (currentParsedDocs.length > 0) {
+          badgeStatus.textContent = `Đã nhận diện ${currentParsedDocs.length} hồ sơ`;
+          badgeStatus.style.background = '#047857';
+        } else {
+          badgeStatus.textContent = 'Chưa có hồ sơ';
+          badgeStatus.style.background = '#b91c1c';
+        }
+      }
+
+      let arrayBody = '';
+      if (currentParsedDocs.length === 0) {
+        arrayBody = '    -- Vui lòng dán danh sách số hồ sơ vào ô bên trái...';
+      } else {
+        // TỰ ĐỘNG THÊM DẤU PHẨY TỪNG HỒ SƠ, TRỪ HỒ SƠ CUỐI CÙNG
+        const n = currentParsedDocs.length;
+        arrayBody = currentParsedDocs.map((doc, idx) => {
+          const isLast = (idx === n - 1);
+          return `    ${doc}${isLast ? '' : ','}`;
+        }).join('\n');
+      }
+
+      const fullSql = SQL_KHOA_PHONG_TEMPLATE.replace('{DOCNO_ARRAY}', arrayBody);
+      const codeEl = document.getElementById('sql-output-code');
+      if (codeEl) {
+        codeEl.textContent = fullSql;
+      }
+    }
+
+    function loadSampleSqlInput() {
+      const input = document.getElementById('sql-input-docs');
+      if (input) {
+        input.value = SAMPLE_DOCS_LIST.join('\n');
+        onSqlDocInput();
+        showCnttToast("💡 DỮ LIỆU MẪU", "Đã nạp 9 số hồ sơ mẫu kiểm tra!");
+      }
+    }
+
+    function clearSqlInput() {
+      const input = document.getElementById('sql-input-docs');
+      if (input) {
+        input.value = '';
+        onSqlDocInput();
+        showCnttToast("🧹 ĐÃ XÓA", "Đã xóa toàn bộ nội dung ô nhập hồ sơ.");
+      }
+    }
+
+    async function copySqlOutput() {
+      const codeEl = document.getElementById('sql-output-code');
+      if (!codeEl || !codeEl.textContent.trim()) {
+        showCnttToast("⚠️ CẢNH BÁO", "Không có câu lệnh SQL nào để sao chép!");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(codeEl.textContent);
+        showCnttToast("✓ ĐÃ SAO CHÉP", `Đã copy toàn bộ câu lệnh SQL (${currentParsedDocs.length} hồ sơ) vào bộ nhớ tạm!`);
+      } catch (err) {
+        const ta = document.createElement('textarea');
+        ta.value = codeEl.textContent;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showCnttToast("✓ ĐÃ SAO CHÉP", `Đã copy toàn bộ câu lệnh SQL (${currentParsedDocs.length} hồ sơ)!`);
+      }
+    }
+
+    async function copyArrayOnly() {
+      if (!currentParsedDocs || currentParsedDocs.length === 0) {
+        showCnttToast("⚠️ CẢNH BÁO", "Chưa có danh sách số hồ sơ để sao chép mảng!");
+        return;
+      }
+      const n = currentParsedDocs.length;
+      const arrayText = currentParsedDocs.map((doc, idx) => {
+        const isLast = (idx === n - 1);
+        return `    ${doc}${isLast ? '' : ','}`;
+      }).join('\n');
+
+      try {
+        await navigator.clipboard.writeText(arrayText);
+        showCnttToast("✓ ĐÃ SAO CHÉP MẢNG", `Đã copy ${n} hồ sơ (đã thêm phẩy & trừ hồ sơ cuối)!`);
+      } catch (err) {
+        const ta = document.createElement('textarea');
+        ta.value = arrayText;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showCnttToast("✓ ĐÃ SAO CHÉP MẢNG", `Đã copy ${n} hồ sơ!`);
+      }
+    }
+
+
 </script>
 </body>
 </html>
@@ -8038,6 +8408,146 @@ def handle_monthly_error_stats():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+def handle_format_sql_check_khoa_phong():
+    try:
+        raw_text = ""
+        dedup = False
+        strip_digits = True
+        if request.is_json:
+            j = request.get_json(silent=True) or {}
+            raw_text = j.get("text", "")
+            dedup = j.get("deduplicate", False)
+            strip_digits = j.get("strip_digits", True)
+        else:
+            raw_text = request.form.get("text") or request.args.get("text") or ""
+            dedup = (request.form.get("deduplicate") or request.args.get("deduplicate") or "0") in ["1", "true", "True"]
+            strip_digits = (request.form.get("strip_digits") or request.args.get("strip_digits") or "1") not in ["0", "false", "False"]
+
+        if strip_digits:
+            matches = re.findall(r"\b\d{4,14}\b", raw_text)
+            items = matches if matches else [x.strip() for x in re.split(r"[\r\n,;\t]+", raw_text) if x.strip()]
+        else:
+            items = [x.strip().strip(",") for x in re.split(r"[\r\n,;\t]+", raw_text) if x.strip()]
+
+        if dedup:
+            seen = set()
+            unique = []
+            for it in items:
+                if it not in seen:
+                    seen.add(it)
+                    unique.append(it)
+            items = unique
+
+        n = len(items)
+        if n == 0:
+            array_body = "    -- Vui lòng dán danh sách số hồ sơ vào ô bên trái..."
+        else:
+            array_lines = [f"    {doc}{',' if i < n - 1 else ''}" for i, doc in enumerate(items)]
+            array_body = "\n".join(array_lines)
+
+        sql_template = '''WITH target_doc AS (
+    -- Dán danh sách các số hồ sơ cần kiểm tra vào đây:
+    SELECT docno, ord
+    FROM unnest(ARRAY[
+{DOCNO_ARRAY}
+    ]) WITH ORDINALITY AS t(docno, ord)
+),
+last_exam AS (
+    -- Lấy thông tin phòng khám cuối cùng cho từng hồ sơ ngoại trú
+    SELECT DISTINCT ON (e.he_docno)
+        e.he_docno,
+        e.he_deptid,      -- Mã khoa khám bệnh
+        e.he_roomid,      -- Mã phòng khám
+        e.he_emergency,   -- Cờ cấp cứu ('Y' / 'N')
+        r.hrl_name AS ten_phong_kham,
+        r.hrl_deptid,     -- Mã khoa của phòng
+        e.he_examdate AS thoi_gian_kham,
+        e.he_diagnostic AS chan_doan_kham
+    FROM hms_exam e
+    JOIN target_doc t ON e.he_docno = t.docno
+    LEFT JOIN hms_roomlist r 
+        ON e.he_deptid = r.hrl_deptid AND e.he_roomid = r.hrl_id
+    ORDER BY e.he_docno, e.he_receptidx DESC, e.he_examdate DESC
+)
+SELECT 
+    d.hd_docno AS so_ho_so,
+    p.hp_patientno AS ma_benh_nhan,
+    TRIM(CONCAT_WS(' ', p.hp_surname, p.hp_midname, p.hp_firstname)) AS ho_ten_benh_nhan,
+    p.hp_birthdate AS ngay_sinh,
+    CASE 
+        WHEN d.hd_isinpatient = 'Y' THEN 'Nội trú'
+        ELSE 'Ngoại trú'
+    END AS loai_dieu_tri,
+    
+    -- 1. CỘT PHÒNG:
+    -- - Nội trú: để NULL theo đúng yêu cầu
+    -- - Ngoại trú Cấp cứu: để NULL (vì đã hiển thị mã khoa ở cột khoa)
+    -- - Ngoại trú thường: Tên phòng khám cuối cùng
+    CASE 
+        WHEN d.hd_isinpatient = 'Y' THEN NULL
+        WHEN (le.ten_phong_kham ILIKE '%cấp cứu%' 
+              OR le.ten_phong_kham ILIKE '% CC %' 
+              OR le.ten_phong_kham ILIKE 'Phòng Khám CC%'
+              OR le.he_emergency = 'Y') THEN NULL
+        ELSE 
+            le.ten_phong_kham
+    END AS phong,
+    
+    -- 2. CỘT KHOA:
+    -- - Nội trú: Khoa ra viện
+    -- - Ngoại trú Cấp cứu: Lấy Mã khoa cấp cứu (he_deptid)
+    -- - Ngoại trú thường: Tên khoa quản lý phòng khám (hoặc mã khoa)
+    CASE 
+        WHEN d.hd_isinpatient = 'Y' THEN 
+            COALESCE(sd_in.sd_name, d.hd_enddept, 'Chưa xác định khoa ra viện')
+        WHEN (le.ten_phong_kham ILIKE '%cấp cứu%' 
+              OR le.ten_phong_kham ILIKE '% CC %' 
+              OR le.ten_phong_kham ILIKE 'Phòng Khám CC%'
+              OR le.he_emergency = 'Y') THEN
+            COALESCE(le.he_deptid, le.hrl_deptid)
+        ELSE 
+            COALESCE(sd_out.sd_name, le.he_deptid)
+    END AS khoa,
+
+    -- Thời gian ra viện hoặc thời gian khám cuối
+    CASE 
+        WHEN d.hd_isinpatient = 'Y' THEN cr.hcr_dischargedate
+        ELSE le.thoi_gian_kham
+    END AS thoi_gian_ra_vien_hoac_kham_cuoi,
+
+    -- Chẩn đoán kết thúc (ra viện hoặc phòng khám cuối)
+    CASE 
+        WHEN d.hd_isinpatient = 'Y' THEN cr.hcr_maindisease
+        ELSE le.chan_doan_kham
+    END AS chan_doan_ket_thuc
+
+FROM target_doc t
+JOIN hms_doc d ON d.hd_docno = t.docno
+JOIN hms_patient p ON d.hd_patientno = p.hp_patientno
+
+-- Nối bệnh án nội trú để lấy tên khoa ra viện
+LEFT JOIN hms_clinical_record cr ON d.hd_docno = cr.hcr_docno
+LEFT JOIN sys_dept sd_in ON COALESCE(cr.hcr_dischargedept, d.hd_enddept) = sd_in.sd_id
+
+-- Nối thông tin khám ngoại trú cuối cùng & khoa phòng khám
+LEFT JOIN last_exam le ON d.hd_docno = le.he_docno
+LEFT JOIN sys_dept sd_out ON le.he_deptid = sd_out.sd_id
+
+-- Giữ nguyên thứ tự danh sách hồ sơ bạn nhập vào:
+ORDER BY t.ord;'''
+
+        full_sql = sql_template.replace("{DOCNO_ARRAY}", array_body)
+        return jsonify({
+            "success": True,
+            "count": n,
+            "docs": items,
+            "array_body": array_body,
+            "sql": full_sql
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 def handle_export_monthly_errors():
     try:
         month = request.args.get("month") or request.form.get("month") or "default"
@@ -8080,6 +8590,8 @@ def dispatch_request(path=""):
         return handle_monthly_error_stats()
     if "export-monthly-errors" in matched or request.args.get("action") == "export-monthly-errors":
         return handle_export_monthly_errors()
+    if "format-sql-check-khoa-phong" in matched or request.args.get("action") == "format-sql-check-khoa-phong":
+        return handle_format_sql_check_khoa_phong()
 
     if "error-tracker/config" in matched or request.args.get("action") == "error-tracker-config":
         return handle_error_tracker_config()
@@ -8170,6 +8682,7 @@ def dispatch_request(path=""):
 @app.route("/api/process-cntt", methods=["GET", "POST"])
 @app.route("/api/monthly-error-stats", methods=["GET", "POST"])
 @app.route("/api/export-monthly-errors", methods=["GET", "POST"])
+@app.route("/api/format-sql-check-khoa-phong", methods=["GET", "POST"])
 @app.route("/<path:path>", methods=["GET", "POST"])
 def master_router(path=""):
     return dispatch_request(path)
