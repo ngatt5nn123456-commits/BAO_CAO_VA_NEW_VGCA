@@ -3329,9 +3329,19 @@ HTML_PAGE = """<!DOCTYPE html>
 
     <!-- CONTENT AREA -->
     <div class="content-area">
-      <div class="breadcrumb-bar">
-        <span class="badge" id="task-badge">LỖI XML BHYT</span>
-        <span class="breadcrumb-title" id="task-breadcrumb">📊 Thống Kê & Lọc Lỗi XML BHYT (Google Sheets) ─ Đọc & Tra Cứu Lỗi Đẩy Cổng BHYT</span>
+      <div class="breadcrumb-bar" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+          <span class="badge" id="task-badge">LỖI XML BHYT</span>
+          <span class="breadcrumb-title" id="task-breadcrumb">📊 Thống Kê & Lọc Lỗi XML BHYT (Google Sheets) ─ Đọc & Tra Cứu Lỗi Đẩy Cổng BHYT</span>
+        </div>
+        <div id="header-auth-box" style="flex-shrink:0; display:flex; align-items:center; gap:8px;">
+          <button type="button" id="btn-header-unlock" onclick="openAuthModal()" style="background:#2563eb; color:#fff; border:none; border-radius:6px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all 0.2s;">
+            🔑 Nhập PIN (8889)
+          </button>
+          <span id="badge-header-unlocked" style="display:none; background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); border-radius:6px; padding:4px 10px; font-size:0.75rem; font-weight:700;">
+            🔓 Đã mở khóa
+          </span>
+        </div>
       </div>
 
       <!-- ==================== TÁC VỤ 1 ==================== -->
@@ -4382,7 +4392,12 @@ HTML_PAGE = """<!DOCTYPE html>
         </div>
       </div>
 
-      <div id="auth-modal" onclick="if(event.target===this) closeAuthModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); backdrop-filter:blur(5px); z-index:9999999; align-items:center; justify-content:center; padding:20px;">
+      
+    </div>
+  </div>
+
+  <!-- MODALS TẠI GỐC BODY -->
+  <div id="auth-modal" onclick="if(event.target===this) closeAuthModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); backdrop-filter:blur(5px); z-index:9999999; align-items:center; justify-content:center; padding:20px;">
         <div style="background:#ffffff; border-radius:14px; max-width:440px; width:100%; padding:26px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.35); border:1px solid #e2e8f0;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
             <div style="display:flex; align-items:center; gap:10px;">
@@ -4529,9 +4544,6 @@ function handleRequest(e) {
         </div>
       </div>
 
-    </div>
-  </div>
-
   <script>
     const taskMeta = {
       1: { badge: 'VGCA', title: '🎯 VGCA (Word + Excel SSO)  ─  Đối chiếu cấp CKS Word & Excel SSO' },
@@ -4550,8 +4562,26 @@ function handleRequest(e) {
     const UNLOCK_PASSWORD = "8889";
     let pendingTaskId = null;
 
+    function safeStorageGet(key) {
+      try {
+        return sessionStorage.getItem(key) || localStorage.getItem(key);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function safeStorageSet(key, val) {
+      try { sessionStorage.setItem(key, val); } catch (e) {}
+      try { localStorage.setItem(key, val); } catch (e) {}
+    }
+
+    function safeStorageRemove(key) {
+      try { sessionStorage.removeItem(key); } catch (e) {}
+      try { localStorage.removeItem(key); } catch (e) {}
+    }
+
     function isAppUnlocked() {
-      return sessionStorage.getItem('app_unlocked_8889') === 'true' || localStorage.getItem('app_unlocked_8889') === 'true';
+      return safeStorageGet('app_unlocked_8889') === 'true';
     }
 
     function updateAuthUI() {
@@ -4577,23 +4607,16 @@ function handleRequest(e) {
       if (btnRelock) {
         btnRelock.style.display = unlocked ? 'inline-block' : 'none';
       }
+      const btnHeaderUnlock = document.getElementById('btn-header-unlock');
+      const badgeHeaderUnlocked = document.getElementById('badge-header-unlocked');
+      if (btnHeaderUnlock) btnHeaderUnlock.style.display = unlocked ? 'none' : 'inline-flex';
+      if (badgeHeaderUnlocked) badgeHeaderUnlocked.style.display = unlocked ? 'inline-block' : 'none';
     }
 
     function switchTask(taskId) {
       taskId = parseInt(taskId);
-      // Chỉ duy nhất Task 10 (Thống Kê Lỗi XML) mở trực tiếp không cần mật khẩu
-      if (taskId === 10) {
-        executeSwitchTask(10);
-        return;
-      }
-      // Nếu đã mở khóa bằng mật khẩu 8889 trước đó trong phiên làm việc, chuyển thẳng tới tác vụ luôn
-      if (isAppUnlocked()) {
-        executeSwitchTask(taskId);
-        return;
-      }
-      // Nếu chưa mở khóa, hiển thị popup nhập mật khẩu 8889
-      pendingTaskId = taskId;
-      openAuthModal(taskId);
+      // Luôn chuyển đổi ngay lập tức sang menu được bấm
+      executeSwitchTask(taskId);
     }
 
     function executeSwitchTask(taskId) {
@@ -4662,8 +4685,7 @@ function handleRequest(e) {
       const val = input.value.trim();
       if (val === UNLOCK_PASSWORD) {
         const target = pendingTaskId || 1;
-        sessionStorage.setItem('app_unlocked_8889', 'true');
-        localStorage.setItem('app_unlocked_8889', 'true');
+        safeStorageSet('app_unlocked_8889', 'true');
         document.cookie = "app_auth_pass=" + UNLOCK_PASSWORD + "; path=/; max-age=864000; SameSite=Lax";
         updateAuthUI();
         closeAuthModal();
@@ -4692,8 +4714,7 @@ function handleRequest(e) {
     }
 
     function lockApp() {
-      sessionStorage.removeItem('app_unlocked_8889');
-      localStorage.removeItem('app_unlocked_8889');
+      safeStorageRemove('app_unlocked_8889');
       document.cookie = "app_auth_pass=; path=/; max-age=0; SameSite=Lax";
       updateAuthUI();
       executeSwitchTask(10);
