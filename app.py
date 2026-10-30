@@ -4629,7 +4629,7 @@ function handleRequest(e) {
       try {
         safeStorageSet('last_active_task', taskId);
         if (window.location.hash !== '#task-' + taskId) {
-          history.replaceState(null, null, '#task-' + taskId);
+          window.location.hash = 'task-' + taskId;
         }
       } catch (e) {}
 
@@ -4639,7 +4639,9 @@ function handleRequest(e) {
       });
       document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
       const activePage = document.getElementById('page-task-' + taskId);
-      if (activePage) activePage.classList.add('active');
+      if (activePage) {
+        activePage.classList.add('active');
+      }
 
       const meta = taskMeta[taskId];
       if (meta) {
@@ -5871,24 +5873,39 @@ function handleRequest(e) {
       }
     }
 
-      window.addEventListener('DOMContentLoaded', () => {
+      function getTaskFromUrl() {
+      // 1. Kiểm tra tham số query ?task=13 hoặc ?task=5
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const qTask = parseInt(params.get('task') || '');
+        if (!isNaN(qTask) && qTask > 0) return qTask;
+      } catch (_) {}
+
+      // 2. Kiểm tra hash #task-13 hoặc #13
+      try {
+        const h = window.location.hash || '';
+        const hNum = parseInt(h.replace(/[^0-9]/g, ''));
+        if (!isNaN(hNum) && hNum > 0) return hNum;
+      } catch (_) {}
+
+      // 3. Kiểm tra lưu trữ trước đó
+      try {
+        const saved = parseInt(safeStorageGet('last_active_task') || '');
+        if (!isNaN(saved) && saved > 0) return saved;
+      } catch (_) {}
+
+      return 10;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
       updateAuthUI();
-      let initTask = 10;
-      const hashMatch = window.location.hash.match(/task-(\\d+)/);
-      if (hashMatch) {
-        initTask = parseInt(hashMatch[1]);
-      } else {
-        const saved = safeStorageGet('last_active_task');
-        if (saved) initTask = parseInt(saved);
-      }
-      executeSwitchTask(initTask || 10);
+      const targetTask = getTaskFromUrl();
+      executeSwitchTask(targetTask);
     });
 
     window.addEventListener('hashchange', () => {
-      const hashMatch = window.location.hash.match(/task-(\\d+)/);
-      if (hashMatch) {
-        executeSwitchTask(parseInt(hashMatch[1]));
-      }
+      const targetTask = getTaskFromUrl();
+      executeSwitchTask(targetTask);
     });
   
 
