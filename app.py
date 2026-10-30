@@ -4382,7 +4382,7 @@ HTML_PAGE = """<!DOCTYPE html>
         </div>
       </div>
 
-      <div id="auth-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); backdrop-filter:blur(5px); z-index:999999; align-items:center; justify-content:center; padding:20px;">
+      <div id="auth-modal" onclick="if(event.target===this) closeAuthModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); backdrop-filter:blur(5px); z-index:9999999; align-items:center; justify-content:center; padding:20px;">
         <div style="background:#ffffff; border-radius:14px; max-width:440px; width:100%; padding:26px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.35); border:1px solid #e2e8f0;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
             <div style="display:flex; align-items:center; gap:10px;">
@@ -4528,8 +4528,6 @@ function handleRequest(e) {
           </div>
         </div>
       </div>
-        </div>
-      </div>
 
     </div>
   </div>
@@ -4588,7 +4586,12 @@ function handleRequest(e) {
         executeSwitchTask(10);
         return;
       }
-      // Các tác vụ khác (1, 2, 3, 5, 7, 8, 9, 11) yêu cầu mật khẩu 8889 mỗi lần chọn
+      // Nếu đã mở khóa bằng mật khẩu 8889 trước đó trong phiên làm việc, chuyển thẳng tới tác vụ luôn
+      if (isAppUnlocked()) {
+        executeSwitchTask(taskId);
+        return;
+      }
+      // Nếu chưa mở khóa, hiển thị popup nhập mật khẩu 8889
       pendingTaskId = taskId;
       openAuthModal(taskId);
     }
