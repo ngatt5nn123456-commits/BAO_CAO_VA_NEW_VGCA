@@ -6301,7 +6301,7 @@ function handleRequest(e) {
       if (badgeText) badgeText.textContent = "Đang đồng bộ...";
 
       try {
-        const url = `/api/monthly-error-stats?month=${encodeURIComponent(monthName || "default")}${forceReload ? "&reload=1" : ""}`;
+        const url = `/api/monthly-error-stats?action=monthly-error-stats&month=${encodeURIComponent(monthName || "default")}${forceReload ? "&reload=1" : ""}`;
         const res = await fetch(url);
         const data = await res.json();
         if (data.error) {
@@ -6571,7 +6571,7 @@ function handleRequest(e) {
         return;
       }
       showCnttToast("📄 ĐANG TẠO EXCEL", `Đang xuất báo cáo thống kê lỗi ${monthlyErrorsData.month}...`);
-      window.open(`/api/export-monthly-errors?month=${encodeURIComponent(monthlyErrorsData.month)}`, '_blank');
+      window.open(`/api/export-monthly-errors?action=export-monthly-errors&month=${encodeURIComponent(monthlyErrorsData.month)}`, '_blank');
     }
 
 </script>
@@ -8059,6 +8059,9 @@ def dispatch_request(path=""):
         request.path + " " +
         request.headers.get("x-matched-path", "") + " " +
         request.environ.get("HTTP_X_MATCHED_PATH", "") + " " +
+        request.headers.get("x-invoke-path", "") + " " +
+        request.environ.get("REQUEST_URI", "") + " " +
+        request.environ.get("RAW_URI", "") + " " +
         request.args.get("action", "")
     ).lower()
 
