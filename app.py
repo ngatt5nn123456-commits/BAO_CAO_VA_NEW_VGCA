@@ -4137,14 +4137,6 @@ HTML_PAGE = """<!DOCTYPE html>
           </div>
         </div>
 
-        <!-- Floating Toast -->
-        <div class="cntt-toast-popup" id="cntt-toast">
-          <div class="cntt-toast-icon">✓</div>
-          <div>
-            <div class="cntt-toast-title" id="cntt-toast-title">THÀNH CÔNG</div>
-            <div class="cntt-toast-msg" id="cntt-toast-msg">Đã tổng hợp 128 ca công việc từ 3 sheet!</div>
-          </div>
-        </div>
       </div>
 
       <!-- ==========================================
@@ -4401,6 +4393,15 @@ HTML_PAGE = """<!DOCTYPE html>
     </div>
   </div>
 
+    <!-- TOAST THÔNG BÁO TOÀN HỆ THỐNG -->
+  <div class="cntt-toast-popup" id="cntt-toast">
+    <div class="cntt-toast-icon">✓</div>
+    <div>
+      <div class="cntt-toast-title" id="cntt-toast-title">THÀNH CÔNG</div>
+      <div class="cntt-toast-msg" id="cntt-toast-msg">Thao tác thành công!</div>
+    </div>
+  </div>
+
   <!-- MODALS TẠI GỐC BODY -->
   <div id="auth-modal" onclick="if(event.target===this) closeAuthModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); backdrop-filter:blur(5px); z-index:9999999; align-items:center; justify-content:center; padding:20px;">
         <div style="background:#ffffff; border-radius:14px; max-width:440px; width:100%; padding:26px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.35); border:1px solid #e2e8f0;">
@@ -4619,9 +4620,19 @@ function handleRequest(e) {
     }
 
     function switchTask(taskId) {
-      taskId = parseInt(taskId);
-      // Luôn chuyển đổi ngay lập tức sang menu được bấm
-      executeSwitchTask(taskId);
+      taskId = parseInt(taskId) || 10;
+      // Chỉ duy nhất Task 10 (Thống Kê Lỗi XML BHYT) mở trực tiếp không cần mật khẩu
+      if (taskId === 10) {
+        executeSwitchTask(10);
+        return;
+      }
+      // Nếu đã mở khóa bằng mật khẩu 8889 trước đó trong phiên làm việc, chuyển thẳng tới tác vụ luôn
+      if (isAppUnlocked()) {
+        executeSwitchTask(taskId);
+        return;
+      }
+      // Nếu chưa mở khóa, hiển thị popup yêu cầu nhập mã PIN 8889
+      openAuthModal(taskId);
     }
 
     function executeSwitchTask(taskId) {
@@ -5904,15 +5915,31 @@ function handleRequest(e) {
     function initPageRouter() {
       try { updateAuthUI(); } catch (e) {}
       const targetTask = getTaskFromUrl();
-      executeSwitchTask(targetTask);
+      if (targetTask !== 10 && !isAppUnlocked()) {
+        // Module yêu cầu bảo mật nhưng chưa mở khóa PIN 8889
+        executeSwitchTask(10);
+        openAuthModal(targetTask);
+      } else {
+        executeSwitchTask(targetTask);
+      }
     }
 
     window.addEventListener('DOMContentLoaded', initPageRouter);
     window.addEventListener('hashchange', () => {
-      executeSwitchTask(getTaskFromUrl());
+      const targetTask = getTaskFromUrl();
+      if (targetTask !== 10 && !isAppUnlocked()) {
+        openAuthModal(targetTask);
+      } else {
+        executeSwitchTask(targetTask);
+      }
     });
     window.addEventListener('popstate', () => {
-      executeSwitchTask(getTaskFromUrl());
+      const targetTask = getTaskFromUrl();
+      if (targetTask !== 10 && !isAppUnlocked()) {
+        openAuthModal(targetTask);
+      } else {
+        executeSwitchTask(targetTask);
+      }
     });
   
 
@@ -6454,17 +6481,48 @@ function handleRequest(e) {
       showCnttToast('📄 XUẤT EXCEL', 'Đang tạo file Excel Báo Cáo P.CNTT...');
     }
 
-    function showCnttToast(title, msg) {
-      const toast = document.getElementById('cntt-toast');
+    function showCnttToast(title, msg, type = 'success') {
+      let toast = document.getElementById('cntt-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'cntt-toast-popup';
+        toast.id = 'cntt-toast';
+        toast.innerHTML = '<div class="cntt-toast-icon">✓</div><div><div class="cntt-toast-title" id="cntt-toast-title">THÀNH CÔNG</div><div class="cntt-toast-msg" id="cntt-toast-msg"></div></div>';
+        document.body.appendChild(toast);
+      }
       const tTitle = document.getElementById('cntt-toast-title');
       const tMsg = document.getElementById('cntt-toast-msg');
-      if (!toast) return;
+      const icon = toast.querySelector('.cntt-toast-icon');
 
       if (tTitle) tTitle.textContent = title;
       if (tMsg) tMsg.textContent = msg;
 
+      if (type === 'warn' || title.includes('CẢNH BÁO')) {
+        toast.style.borderColor = '#f59e0b';
+        if (icon) {
+          icon.textContent = '⚠️';
+          icon.style.background = 'rgba(245, 158, 11, 0.2)';
+          icon.style.color = '#fbbf24';
+        }
+      } else if (type === 'error' || title.includes('LỖI')) {
+        toast.style.borderColor = '#ef4444';
+        if (icon) {
+          icon.textContent = '❌';
+          icon.style.background = 'rgba(239, 68, 68, 0.2)';
+          icon.style.color = '#f87171';
+        }
+      } else {
+        toast.style.borderColor = '#10b981';
+        if (icon) {
+          icon.textContent = '✓';
+          icon.style.background = 'rgba(16, 185, 129, 0.2)';
+          icon.style.color = '#34d399';
+        }
+      }
+
       toast.classList.add('show');
-      setTimeout(() => {
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => {
         toast.classList.remove('show');
       }, 3500);
     }
@@ -6986,26 +7044,59 @@ ORDER BY t.ord;`;
     async function copySqlOutput() {
       const codeEl = document.getElementById('sql-output-code');
       if (!codeEl || !codeEl.textContent.trim()) {
-        showCnttToast("⚠️ CẢNH BÁO", "Không có câu lệnh SQL nào để sao chép!");
+        showCnttToast("⚠️ CẢNH BÁO", "Không có câu lệnh SQL nào để sao chép!", "warn");
         return;
       }
+      const count = currentParsedDocs.length;
+      const textToCopy = codeEl.textContent;
+
+      let copied = false;
       try {
-        await navigator.clipboard.writeText(codeEl.textContent);
-        showCnttToast("✓ ĐÃ SAO CHÉP", `Đã copy toàn bộ câu lệnh SQL (${currentParsedDocs.length} hồ sơ) vào bộ nhớ tạm!`);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(textToCopy);
+          copied = true;
+        }
       } catch (err) {
-        const ta = document.createElement('textarea');
-        ta.value = codeEl.textContent;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        showCnttToast("✓ ĐÃ SAO CHÉP", `Đã copy toàn bộ câu lệnh SQL (${currentParsedDocs.length} hồ sơ)!`);
+        console.warn('Clipboard API error, fallback to execCommand', err);
       }
+
+      if (!copied) {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = textToCopy;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          ta.style.top = '0';
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          copied = document.execCommand('copy');
+          document.body.removeChild(ta);
+        } catch (err) {
+          console.error('Fallback copy failed', err);
+        }
+      }
+
+      const msg = `Đã copy thành công câu lệnh SQL (${count} hồ sơ) vào bộ nhớ tạm!`;
+      showCnttToast("✓ COPY THÀNH CÔNG", msg, "success");
+      showMiniToast("✓ " + msg);
+
+      // Cập nhật nhãn nút tạm thời để người dùng nhìn thấy trực tiếp trên giao diện
+      const buttons = document.querySelectorAll('button[onclick*="copySqlOutput"]');
+      buttons.forEach(btn => {
+        const origText = btn.innerHTML;
+        btn.innerHTML = '✓ Đã Copy SQL Thành Công!';
+        btn.style.filter = 'brightness(1.2)';
+        setTimeout(() => {
+          btn.innerHTML = origText;
+          btn.style.filter = '';
+        }, 2500);
+      });
     }
 
     async function copyArrayOnly() {
       if (!currentParsedDocs || currentParsedDocs.length === 0) {
-        showCnttToast("⚠️ CẢNH BÁO", "Chưa có danh sách số hồ sơ để sao chép mảng!");
+        showCnttToast("⚠️ CẢNH BÁO", "Chưa có danh sách số hồ sơ để sao chép mảng!", "warn");
         return;
       }
       const n = currentParsedDocs.length;
@@ -7014,18 +7105,42 @@ ORDER BY t.ord;`;
         return '    ' + doc + (isLast ? '' : ',');
       }).join(String.fromCharCode(10));
 
+      let copied = false;
       try {
-        await navigator.clipboard.writeText(arrayText);
-        showCnttToast("✓ ĐÃ SAO CHÉP MẢNG", `Đã copy ${n} hồ sơ (đã thêm phẩy & trừ hồ sơ cuối)!`);
-      } catch (err) {
-        const ta = document.createElement('textarea');
-        ta.value = arrayText;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        showCnttToast("✓ ĐÃ SAO CHÉP MẢNG", `Đã copy ${n} hồ sơ!`);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(arrayText);
+          copied = true;
+        }
+      } catch (err) {}
+
+      if (!copied) {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = arrayText;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          copied = document.execCommand('copy');
+          document.body.removeChild(ta);
+        } catch (err) {}
       }
+
+      const msg = `Đã copy thành công mảng ${n} hồ sơ (đã thêm phẩy & trừ hồ sơ cuối)!`;
+      showCnttToast("✓ COPY THÀNH CÔNG", msg, "success");
+      showMiniToast("✓ " + msg);
+
+      const buttons = document.querySelectorAll('button[onclick*="copyArrayOnly"]');
+      buttons.forEach(btn => {
+        const origText = btn.innerHTML;
+        btn.innerHTML = '✓ Đã Copy Mảng!';
+        btn.style.filter = 'brightness(1.2)';
+        setTimeout(() => {
+          btn.innerHTML = origText;
+          btn.style.filter = '';
+        }, 2500);
+      });
     }
 
 
