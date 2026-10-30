@@ -3311,7 +3311,7 @@ HTML_PAGE = """<!DOCTYPE html>
               </div>
               <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
             </li>
-            <li class="active" data-task="10" onclick="switchTask(10)">
+            <li data-task="10" onclick="switchTask(10)">
               <div class="nav-icon">📊</div>
               <div class="nav-text">
                 <span class="nav-title">Thống Kê Lỗi XML BHYT</span>
@@ -3872,7 +3872,7 @@ HTML_PAGE = """<!DOCTYPE html>
       </div>
 
       <!-- ==================== TÁC VỤ 10: THỐNG KÊ LỖI XML BHYT ==================== -->
-      <div class="page active" id="page-task-10">
+      <div class="page" id="page-task-10">
         <div class="tracker-card">
           <div class="tracker-header-box">
             <div class="tracker-title-box">
@@ -4650,17 +4650,19 @@ function handleRequest(e) {
         if (badgeEl) badgeEl.textContent = meta.badge;
         if (breadcrumbEl) breadcrumbEl.textContent = meta.title;
       }
-      if (taskId === 10) {
-        initErrorTracker();
-      }
-      if (taskId === 11) {
-        initCnttDashboard();
-      }
-      if (taskId === 12) {
-        initMonthlyErrorDashboard();
-      }
-      if (taskId === 13) {
-        initCheckKhoaPhongSql();
+
+      try {
+        if (taskId === 10 && typeof initErrorTracker === 'function') {
+          initErrorTracker();
+        } else if (taskId === 11 && typeof initCnttDashboard === 'function') {
+          initCnttDashboard();
+        } else if (taskId === 12 && typeof initMonthlyErrorDashboard === 'function') {
+          initMonthlyErrorDashboard();
+        } else if (taskId === 13 && typeof initCheckKhoaPhongSql === 'function') {
+          initCheckKhoaPhongSql();
+        }
+      } catch (err) {
+        console.error('Lỗi khởi tạo module task ' + taskId, err);
       }
     }
     function openAuthModal(taskId) {
@@ -5324,6 +5326,7 @@ function handleRequest(e) {
 
     async function loadTrackerSheets(forceReload = false) {
       const select = document.getElementById('tracker-sheet-select');
+      if (!select) return;
       select.innerHTML = '<option value="">⏳ Đang nạp danh sách sheet ngày...</option>';
       try {
         const res = await fetch('/api/error-tracker/sheets' + (forceReload ? '?action=error-tracker-sheets&reload=1' : '?action=error-tracker-sheets'));
@@ -5361,6 +5364,7 @@ function handleRequest(e) {
 
     async function loadTrackerSheetData(sheetName) {
       const tbody = document.getElementById('tracker-records-tbody');
+      if (!tbody) return;
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#2563eb;">⏳ Đang tải và phân tích dữ liệu ngày ' + sheetName + '...</td></tr>';
 
       try {
@@ -5897,15 +5901,18 @@ function handleRequest(e) {
       return 10;
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      updateAuthUI();
+    function initPageRouter() {
+      try { updateAuthUI(); } catch (e) {}
       const targetTask = getTaskFromUrl();
       executeSwitchTask(targetTask);
-    });
+    }
 
+    window.addEventListener('DOMContentLoaded', initPageRouter);
     window.addEventListener('hashchange', () => {
-      const targetTask = getTaskFromUrl();
-      executeSwitchTask(targetTask);
+      executeSwitchTask(getTaskFromUrl());
+    });
+    window.addEventListener('popstate', () => {
+      executeSwitchTask(getTaskFromUrl());
     });
   
 
@@ -6872,11 +6879,15 @@ ORDER BY t.ord;`;
     let currentParsedDocs = [];
 
     function initCheckKhoaPhongSql() {
-      const input = document.getElementById('sql-input-docs');
-      if (input && !input.value.trim()) {
-        input.value = SAMPLE_DOCS_LIST.join('\n');
+      try {
+        const input = document.getElementById('sql-input-docs');
+        if (input && !(input.value || '').trim()) {
+          input.value = SAMPLE_DOCS_LIST.join(String.fromCharCode(10));
+        }
+        onSqlDocInput();
+      } catch (e) {
+        console.error('Lỗi khởi tạo CheckKhoaPhongSql:', e);
       }
-      onSqlDocInput();
     }
 
     function parseDocsFromInput(text) {
@@ -6886,15 +6897,15 @@ ORDER BY t.ord;`;
 
       let items = [];
       if (stripNonDigits) {
-        const matches = text.match(/\\b\\d{4,14}\\b/g);
+        const matches = text.match(/\\d{4,14}/g);
         if (matches) {
           items = matches;
         } else {
-          const raw = text.split(/[\r\n,;\t]+/);
+          const raw = text.split(/[,\\s;]+/);
           items = raw.map(s => s.trim()).filter(s => s.length > 0);
         }
       } else {
-        const raw = text.split(/[\r\n,;\t]+/);
+        const raw = text.split(/[,\\s;]+/);
         items = raw.map(s => s.trim().replace(/^,+|,+$/g, '')).filter(s => s.length > 0);
       }
 
@@ -6913,47 +6924,51 @@ ORDER BY t.ord;`;
     }
 
     function onSqlDocInput() {
-      const input = document.getElementById('sql-input-docs');
-      const text = input ? input.value : '';
-      currentParsedDocs = parseDocsFromInput(text);
+      try {
+        const input = document.getElementById('sql-input-docs');
+        const text = input ? input.value : '';
+        currentParsedDocs = parseDocsFromInput(text);
 
-      const countEl = document.getElementById('sql-doc-count');
-      if (countEl) countEl.textContent = currentParsedDocs.length;
+        const countEl = document.getElementById('sql-doc-count');
+        if (countEl) countEl.textContent = currentParsedDocs.length;
 
-      const badgeStatus = document.getElementById('sql-badge-status');
-      if (badgeStatus) {
-        if (currentParsedDocs.length > 0) {
-          badgeStatus.textContent = `Đã nhận diện ${currentParsedDocs.length} hồ sơ`;
-          badgeStatus.style.background = '#047857';
-        } else {
-          badgeStatus.textContent = 'Chưa có hồ sơ';
-          badgeStatus.style.background = '#b91c1c';
+        const badgeStatus = document.getElementById('sql-badge-status');
+        if (badgeStatus) {
+          if (currentParsedDocs.length > 0) {
+            badgeStatus.textContent = `Đã nhận diện ${currentParsedDocs.length} hồ sơ`;
+            badgeStatus.style.background = '#047857';
+          } else {
+            badgeStatus.textContent = 'Chưa có hồ sơ';
+            badgeStatus.style.background = '#b91c1c';
+          }
         }
-      }
 
-      let arrayBody = '';
-      if (currentParsedDocs.length === 0) {
-        arrayBody = '    -- Vui lòng dán danh sách số hồ sơ vào ô bên trái...';
-      } else {
-        // TỰ ĐỘNG THÊM DẤU PHẨY TỪNG HỒ SƠ, TRỪ HỒ SƠ CUỐI CÙNG
-        const n = currentParsedDocs.length;
-        arrayBody = currentParsedDocs.map((doc, idx) => {
-          const isLast = (idx === n - 1);
-          return `    ${doc}${isLast ? '' : ','}`;
-        }).join('\n');
-      }
+        let arrayBody = '';
+        if (currentParsedDocs.length === 0) {
+          arrayBody = '    -- Vui lòng dán danh sách số hồ sơ vào ô bên trái...';
+        } else {
+          // TỰ ĐỘNG THÊM DẤU PHẨY TỪNG HỒ SƠ, TRỪ HỒ SƠ CUỐI CÙNG
+          const n = currentParsedDocs.length;
+          arrayBody = currentParsedDocs.map((doc, idx) => {
+            const isLast = (idx === n - 1);
+            return '    ' + doc + (isLast ? '' : ',');
+          }).join(String.fromCharCode(10));
+        }
 
-      const fullSql = SQL_KHOA_PHONG_TEMPLATE.replace('{DOCNO_ARRAY}', arrayBody);
-      const codeEl = document.getElementById('sql-output-code');
-      if (codeEl) {
-        codeEl.textContent = fullSql;
+        const fullSql = SQL_KHOA_PHONG_TEMPLATE.replace('{DOCNO_ARRAY}', arrayBody);
+        const codeEl = document.getElementById('sql-output-code');
+        if (codeEl) {
+          codeEl.textContent = fullSql;
+        }
+      } catch (e) {
+        console.error('Lỗi onSqlDocInput:', e);
       }
     }
 
     function loadSampleSqlInput() {
       const input = document.getElementById('sql-input-docs');
       if (input) {
-        input.value = SAMPLE_DOCS_LIST.join('\n');
+        input.value = SAMPLE_DOCS_LIST.join(String.fromCharCode(10));
         onSqlDocInput();
         showCnttToast("💡 DỮ LIỆU MẪU", "Đã nạp 9 số hồ sơ mẫu kiểm tra!");
       }
@@ -6996,8 +7011,8 @@ ORDER BY t.ord;`;
       const n = currentParsedDocs.length;
       const arrayText = currentParsedDocs.map((doc, idx) => {
         const isLast = (idx === n - 1);
-        return `    ${doc}${isLast ? '' : ','}`;
-      }).join('\n');
+        return '    ' + doc + (isLast ? '' : ',');
+      }).join(String.fromCharCode(10));
 
       try {
         await navigator.clipboard.writeText(arrayText);
@@ -7014,7 +7029,9 @@ ORDER BY t.ord;`;
     }
 
 
-</script>
+    // Khởi chạy ngay lập tức chuyển hướng menu theo URL
+    try { initPageRouter(); } catch (e) { console.error('Router init error:', e); }
+  </script>
 </body>
 </html>
 """
