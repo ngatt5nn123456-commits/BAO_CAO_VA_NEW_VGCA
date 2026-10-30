@@ -3199,9 +3199,14 @@ HTML_PAGE = """<!DOCTYPE html>
 
     <!-- SIDEBAR ĐƯỢC CHIA THÀNH 2 NHÓM -->
     <div class="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-title">📑 DANH MỤC TÁC VỤ</div>
-        <div class="sidebar-subtitle">Hệ thống phân thành 2 nhóm chuyên biệt</div>
+<div class="sidebar-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div class="sidebar-title">📋 DANH MỤC TÁC VỤ</div>
+          <div class="sidebar-subtitle">Hệ thống phân thành 2 nhóm chuyên biệt</div>
+        </div>
+        <button type="button" onclick="window.location.href='/?v=' + Date.now() + window.location.hash;" title="Tải mới giao diện và xóa bộ nhớ đệm" style="background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.4); color:#93c5fd; border-radius:6px; padding:4px 8px; font-size:11px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:4px; transition:all 0.2s;">
+          🔄 Tải mới
+        </button>
       </div>
 
       <div class="sidebar-scrollable">
@@ -3319,7 +3324,7 @@ HTML_PAGE = """<!DOCTYPE html>
 
       <div class="sidebar-footer">
         <b>Phòng CNTT • BVĐK Bắc Ninh số 2</b><br>
-        Phiên bản Web v2.8 • Phân Quyền Bảo Mật
+        Phiên bản Web v3.0 (Mới Nhất) • Tự Động Đồng Bộ
         <div id="auth-status-bar" style="margin-top: 8px; padding: 6px 10px; border-radius: 6px; font-size: 0.72rem; display: flex; align-items: center; justify-content: space-between; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.08);">
           <span id="auth-status-text">🔒 10 tác vụ có khóa (8889)</span>
           <button type="button" id="btn-relock" onclick="lockApp()" style="display:none; background: #ef4444; color: #fff; border: none; border-radius: 4px; padding: 2px 7px; font-size: 0.7rem; cursor: pointer; font-weight:600;">Khóa lại</button>
@@ -4620,6 +4625,14 @@ function handleRequest(e) {
     }
 
     function executeSwitchTask(taskId) {
+      taskId = parseInt(taskId) || 10;
+      try {
+        safeStorageSet('last_active_task', taskId);
+        if (window.location.hash !== '#task-' + taskId) {
+          history.replaceState(null, null, '#task-' + taskId);
+        }
+      } catch (e) {}
+
       document.querySelectorAll('.sidebar-menu li[data-task]').forEach((el) => {
         const id = parseInt(el.getAttribute('data-task'));
         el.classList.toggle('active', id === taskId);
@@ -4630,8 +4643,10 @@ function handleRequest(e) {
 
       const meta = taskMeta[taskId];
       if (meta) {
-        document.getElementById('task-badge').textContent = meta.badge;
-        document.getElementById('task-breadcrumb').textContent = meta.title;
+        const badgeEl = document.getElementById('task-badge');
+        const breadcrumbEl = document.getElementById('task-breadcrumb');
+        if (badgeEl) badgeEl.textContent = meta.badge;
+        if (breadcrumbEl) breadcrumbEl.textContent = meta.title;
       }
       if (taskId === 10) {
         initErrorTracker();
@@ -4646,7 +4661,6 @@ function handleRequest(e) {
         initCheckKhoaPhongSql();
       }
     }
-
     function openAuthModal(taskId) {
       pendingTaskId = taskId;
       const modal = document.getElementById('auth-modal');
@@ -5859,7 +5873,22 @@ function handleRequest(e) {
 
       window.addEventListener('DOMContentLoaded', () => {
       updateAuthUI();
-      executeSwitchTask(10);
+      let initTask = 10;
+      const hashMatch = window.location.hash.match(/task-(\\d+)/);
+      if (hashMatch) {
+        initTask = parseInt(hashMatch[1]);
+      } else {
+        const saved = safeStorageGet('last_active_task');
+        if (saved) initTask = parseInt(saved);
+      }
+      executeSwitchTask(initTask || 10);
+    });
+
+    window.addEventListener('hashchange', () => {
+      const hashMatch = window.location.hash.match(/task-(\\d+)/);
+      if (hashMatch) {
+        executeSwitchTask(parseInt(hashMatch[1]));
+      }
     });
   
 
