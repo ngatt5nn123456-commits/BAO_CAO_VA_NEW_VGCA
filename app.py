@@ -12,6 +12,7 @@ import urllib.request
 import urllib.parse
 import http.client
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor
 
 import openpyxl
 from openpyxl import Workbook, load_workbook
@@ -2929,6 +2930,254 @@ HTML_PAGE = """<!DOCTYPE html>
       color: #94a3b8;
     }
 
+
+    /* ============================================================
+       TÁC VỤ 12: THỐNG KÊ LỖI XML BHYT THEO THÁNG STYLES
+       ============================================================ */
+    .month-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 18px;
+      padding: 14px 20px;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+    .month-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .month-header-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .month-sync-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 3px 10px;
+      border-radius: 9999px;
+    }
+    .month-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .month-filter-card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+    .month-pills-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .month-pill {
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .month-pill:hover {
+      background: #334155;
+      color: #f8fafc;
+    }
+    .month-pill.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #3b82f6;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+    }
+    .month-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .month-kpi-card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 16px 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    }
+    .month-kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+    }
+    .month-kpi-card.kpi-blue::before { background: linear-gradient(90deg, #38bdf8, #0284c7); }
+    .month-kpi-card.kpi-purple::before { background: linear-gradient(90deg, #a855f7, #6366f1); }
+    .month-kpi-card.kpi-amber::before { background: linear-gradient(90deg, #fbbf24, #d97706); }
+    .month-kpi-card.kpi-emerald::before { background: linear-gradient(90deg, #34d399, #059669); }
+    .month-kpi-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .month-kpi-value {
+      font-size: 30px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .month-kpi-sub {
+      font-size: 12px;
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .month-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 18px;
+      padding: 12px 18px;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    .month-toolbar-inputs {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      flex: 1;
+    }
+    .month-table-card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 6px 14px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      margin-bottom: 24px;
+    }
+    .month-err-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .month-err-table th {
+      padding: 12px 10px;
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #1e293b;
+      background: #0f172a;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .month-err-table td {
+      padding: 12px 10px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.35);
+      color: #cbd5e1;
+      vertical-align: middle;
+    }
+    .month-err-table tr:hover td {
+      background: rgba(30, 41, 59, 0.5);
+    }
+    .month-rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+    .rank-top1 { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
+    .rank-top2 { background: rgba(148, 163, 184, 0.2); color: #e2e8f0; border: 1px solid rgba(148, 163, 184, 0.4); }
+    .rank-top3 { background: rgba(217, 119, 6, 0.2); color: #f59e0b; border: 1px solid rgba(217, 119, 6, 0.4); }
+    .rank-normal { background: rgba(30, 41, 59, 0.7); color: #94a3b8; border: 1px solid #334155; }
+    .count-pill-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .count-badge-prominent {
+      background: #2563eb;
+      color: #ffffff;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+    }
+    .bar-bg {
+      width: 90px;
+      height: 5px;
+      background: #1e293b;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #2563eb);
+      border-radius: 3px;
+    }
+    .latest-hs-box {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 12px;
+    }
+    .latest-hs-code {
+      font-family: monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: #38bdf8;
+      cursor: pointer;
+    }
+    .latest-hs-code:hover {
+      text-decoration: underline;
+    }
+
 </style>
 </head>
 <body>
@@ -3014,7 +3263,7 @@ HTML_PAGE = """<!DOCTYPE html>
             <div class="group-header-title">
               <span>📊 NHÓM BÁO CÁO & GIÁM ĐỊNH BHYT</span>
             </div>
-            <span class="group-header-badge">4 tác vụ</span>
+            <span class="group-header-badge">5 tác vụ</span>
           </div>
           <ul class="sidebar-menu">
             <li data-task="5" onclick="switchTask(5)">
@@ -3030,6 +3279,14 @@ HTML_PAGE = """<!DOCTYPE html>
               <div class="nav-text">
                 <span class="nav-title">BC Sửa CNTT</span>
                 <span class="nav-desc">Tổng hợp ca tiếp nhận & báo cáo cán bộ</span>
+              </div>
+              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
+            </li>
+            <li data-task="12" onclick="switchTask(12)">
+              <div class="nav-icon">📈</div>
+              <div class="nav-text">
+                <span class="nav-title">Thống Kê Lỗi Tháng</span>
+                <span class="nav-desc">Tần suất lỗi BHYT & hồ sơ mới nhất</span>
               </div>
               <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
             </li>
@@ -3056,7 +3313,7 @@ HTML_PAGE = """<!DOCTYPE html>
         <b>Phòng CNTT • BVĐK Bắc Ninh số 2</b><br>
         Phiên bản Web v2.8 • Phân Quyền Bảo Mật
         <div id="auth-status-bar" style="margin-top: 8px; padding: 6px 10px; border-radius: 6px; font-size: 0.72rem; display: flex; align-items: center; justify-content: space-between; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.08);">
-          <span id="auth-status-text">🔒 8 tác vụ có khóa (8889)</span>
+          <span id="auth-status-text">🔒 9 tác vụ có khóa (8889)</span>
           <button type="button" id="btn-relock" onclick="lockApp()" style="display:none; background: #ef4444; color: #fff; border: none; border-radius: 4px; padding: 2px 7px; font-size: 0.7rem; cursor: pointer; font-weight:600;">Khóa lại</button>
         </div>
       </div>
@@ -3867,6 +4124,152 @@ HTML_PAGE = """<!DOCTYPE html>
         </div>
       </div>
 
+      <!-- ==========================================
+           TÁC VỤ 12: THỐNG KÊ LỖI XML BHYT THEO THÁNG
+           ========================================== -->
+      <div class="page" id="page-task-12">
+        <!-- Top Header Bar -->
+        <div class="month-header-bar">
+          <div class="month-header-left">
+            <button class="cntt-btn-back" onclick="switchTask(10)">
+              ‹ Quay lại
+            </button>
+            <div class="month-header-title">
+              📈 Thống Kê Lỗi XML BHYT Theo Tháng
+              <span class="month-sync-badge" id="month-sync-badge">
+                <span style="color:#10b981">●</span> <span id="month-badge-text">Đang tải...</span>
+              </span>
+            </div>
+          </div>
+          <div class="month-header-actions">
+            <button class="cntt-btn-action cntt-btn-sync" onclick="refreshMonthlyErrorsLive()">
+              🔄 Đồng Bộ / Tải Lại
+            </button>
+            <button class="cntt-btn-action cntt-btn-excel" onclick="exportMonthlyErrorsExcel()">
+              📄 Xuất Báo Cáo Excel
+            </button>
+            <a href="https://docs.google.com/spreadsheets/d/1VJ3_I4ehRDLSbm5w0CHAODtS8Y4fN3b-wsvo4p4ANVI/edit?pli=1&gid=1901056129#gid=1901056129" target="_blank" class="cntt-btn-action cntt-btn-link">
+              ↗ Mở File Google Sheets
+            </a>
+          </div>
+        </div>
+
+        <!-- Month Filter Card -->
+        <div class="month-filter-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid #1e293b;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:12px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">📅 CHỌN THÁNG THỐNG KÊ:</span>
+            </div>
+            <div id="month-sheets-info-pill" style="font-size:12px; color:#38bdf8; background:rgba(2,132,199,0.12); padding:4px 12px; border-radius:9999px; border:1px solid rgba(56,189,248,0.25); font-weight:600;">
+              Đang quét dữ liệu...
+            </div>
+          </div>
+          <div class="month-pills-row" id="month-pills-container">
+            <span class="month-pill active">Đang tải danh sách tháng...</span>
+          </div>
+        </div>
+
+        <!-- 4 KPI Metrics Grid -->
+        <div class="month-kpi-grid">
+          <div class="month-kpi-card kpi-blue">
+            <div class="month-kpi-label">📊 TỔNG LƯỢT LỖI TRONG THÁNG</div>
+            <div class="month-kpi-value" id="month-kpi-total-errors">0</div>
+            <div class="month-kpi-sub" id="month-kpi-errors-sub">Đang tính toán...</div>
+          </div>
+          <div class="month-kpi-card kpi-purple">
+            <div class="month-kpi-label">🏷️ SỐ LOẠI LỖI VI PHẠM</div>
+            <div class="month-kpi-value" id="month-kpi-total-types">0</div>
+            <div class="month-kpi-sub" id="month-kpi-types-sub">Quy tắc đẩy cổng vi phạm</div>
+          </div>
+          <div class="month-kpi-card kpi-amber">
+            <div class="month-kpi-label">⚠️ LỖI XUẤT HIỆN NHIỀU NHẤT</div>
+            <div class="month-kpi-value" id="month-kpi-top-count" style="font-size:24px; color:#fbbf24;">-</div>
+            <div class="month-kpi-sub" id="month-kpi-top-name">Đang tải...</div>
+          </div>
+          <div class="month-kpi-card kpi-emerald">
+            <div class="month-kpi-label">🏥 HỒ SƠ MỚI NHẤT GHI NHẬN</div>
+            <div class="month-kpi-value" id="month-kpi-latest-hs" style="font-size:22px; color:#34d399;">-</div>
+            <div class="month-kpi-sub" id="month-kpi-latest-meta">Thời gian ghi nhận</div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="month-toolbar">
+          <div class="month-toolbar-inputs">
+            <select class="cntt-select-cb" id="month-filter-xml" onchange="renderMonthlyErrorsTable()" style="min-width:180px;">
+              <option value="ALL">-- Tất cả Bảng XML --</option>
+              <option value="XML1">Bảng XML1 (Tổng hợp KCB)</option>
+              <option value="XML2">Bảng XML2 (Thuốc)</option>
+              <option value="XML3">Bảng XML3 (Dịch vụ kỹ thuật)</option>
+              <option value="XML4">Bảng XML4 (Dịch vụ CLS)</option>
+              <option value="XML5">Bảng XML5 (Diễn biến bệnh)</option>
+              <option value="XML13">Bảng XML13 (Chuyển tuyến)</option>
+            </select>
+            <input type="text" id="month-search-keyword" class="cntt-search-input" placeholder="🔍 Tìm nhanh tên lỗi, mã hồ sơ, khoa..." oninput="renderMonthlyErrorsTable()">
+            <select class="cntt-select-cb" id="month-sort-order" onchange="renderMonthlyErrorsTable()" style="min-width:210px;">
+              <option value="count-desc">Tần suất: Cao đến Thấp (Mặc định)</option>
+              <option value="count-asc">Tần suất: Thấp đến Cao</option>
+              <option value="name-asc">Tên lỗi: A đến Z</option>
+            </select>
+          </div>
+          <div class="cntt-success-pill" id="month-status-pill">
+            Đang tổng hợp...
+          </div>
+        </div>
+
+        <!-- Error Rankings Table Container -->
+        <div class="month-table-card">
+          <div style="overflow-x:auto;">
+            <table class="month-err-table">
+              <thead>
+                <tr>
+                  <th style="width:75px; text-align:center;">HẠNG</th>
+                  <th style="width:90px; text-align:center;">XML</th>
+                  <th>NỘI DUNG LỖI VI PHẠM</th>
+                  <th style="width:160px; text-align:center;">SỐ LẦN XUẤT HIỆN</th>
+                  <th style="width:90px; text-align:center;">TỶ LỆ %</th>
+                  <th style="width:280px;">HỒ SƠ XUẤT HIỆN GẦN NHẤT</th>
+                  <th style="width:130px; text-align:center;">THAO TÁC</th>
+                </tr>
+              </thead>
+              <tbody id="month-err-table-body">
+                <tr>
+                  <td colspan="7" style="text-align:center; padding:32px; color:#94a3b8;">
+                    Đang nạp và tổng hợp dữ liệu lỗi theo tháng từ Google Sheets...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modal xem toàn bộ danh sách HS cho 1 lỗi -->
+        <div id="modal-monthly-hs" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.8); backdrop-filter:blur(6px); z-index:999999; align-items:center; justify-content:center; padding:20px;">
+          <div style="background:#0f172a; border:1px solid #334155; border-radius:14px; max-width:640px; width:100%; padding:24px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); color:#f8fafc;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+              <div>
+                <span class="badge" id="modal-hs-xml-badge">XML1</span>
+                <h3 style="margin:8px 0 4px; font-size:1.05rem; color:#f8fafc; line-height:1.4;" id="modal-hs-err-title">Tên lỗi</h3>
+                <div style="font-size:0.82rem; color:#94a3b8;" id="modal-hs-subtitle">Danh sách hồ sơ gặp lỗi trong tháng</div>
+              </div>
+              <button type="button" onclick="closeMonthlyHsModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#94a3b8; line-height:1;">&times;</button>
+            </div>
+            <div style="background:#1e293b; border:1px solid #334155; border-radius:8px; padding:12px 14px; margin-bottom:16px; max-height:260px; overflow-y:auto;" id="modal-hs-chips-list">
+              <!-- HS chips -->
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:0.8rem; color:#94a3b8;" id="modal-hs-total-count">Tổng: 0 hồ sơ</span>
+              <div style="display:flex; gap:10px;">
+                <button type="button" class="cntt-btn-small btn-success" onclick="copyAllHsInModal()" style="padding:6px 14px; font-size:12px;">📋 Sao Chép Toàn Bộ Mã HS</button>
+                <button type="button" class="cntt-btn-small" onclick="closeMonthlyHsModal()" style="padding:6px 14px; font-size:12px;">Đóng</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
       <div id="auth-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); backdrop-filter:blur(5px); z-index:999999; align-items:center; justify-content:center; padding:20px;">
         <div style="background:#ffffff; border-radius:14px; max-width:440px; width:100%; padding:26px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.35); border:1px solid #e2e8f0;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
@@ -4029,7 +4432,8 @@ function handleRequest(e) {
       8: { badge: 'P.CNTT', title: '⚡ P.CNTT (Sheet Cố Định)  ─  Tự động tải Google Sheets của viện' },
       9: { badge: 'EMAIL CÔNG VỤ', title: '📧 Cấp Email Công Vụ  ─  Tổng hợp danh sách xin cấp Email' },
       10: { badge: 'LỖI XML BHYT', title: '📊 Thống Kê & Lọc Lỗi XML BHYT (Google Sheets) ─ Đọc & Tra Cứu Lỗi Đẩy Cổng BHYT' },
-      11: { badge: 'BC SỬA CNTT', title: '🛠 BC Sửa CNTT ─ Tổng Hợp Sheet & Báo Cáo Cán Bộ P.CNTT' }
+      11: { badge: 'BC SỬA CNTT', title: '🛠 BC Sửa CNTT ─ Tổng Hợp Sheet & Báo Cáo Cán Bộ P.CNTT' },
+      12: { badge: 'THỐNG KÊ LỖI THÁNG', title: '📈 Thống Kê Lỗi XML BHYT Theo Tháng ─ Tần Suất & Hồ Sơ Gần Nhất' }
     };
 
     const UNLOCK_PASSWORD = "8889";
@@ -4056,7 +4460,7 @@ function handleRequest(e) {
       const statusText = document.getElementById('auth-status-text');
       const btnRelock = document.getElementById('btn-relock');
       if (statusText) {
-        statusText.innerHTML = unlocked ? '🔓 Đã mở khóa đầy đủ' : '🔒 8 tác vụ có khóa (8889)';
+        statusText.innerHTML = unlocked ? '🔓 Đã mở khóa đầy đủ' : '🔒 9 tác vụ có khóa (8889)';
         statusText.style.color = unlocked ? '#34d399' : '#94a3b8';
       }
       if (btnRelock) {
@@ -4095,6 +4499,9 @@ function handleRequest(e) {
       }
       if (taskId === 11) {
         initCnttDashboard();
+      }
+      if (taskId === 12) {
+        initMonthlyErrorDashboard();
       }
     }
 
@@ -4144,6 +4551,9 @@ function handleRequest(e) {
         executeSwitchTask(target);
         if (target === 11) {
           initCnttDashboard();
+        }
+        if (target === 12) {
+          initMonthlyErrorDashboard();
         }
         showMiniToast('🔓 Mở khóa thành công!');
       } else {
@@ -5863,6 +6273,307 @@ function handleRequest(e) {
       }, 3500);
     }
 
+
+    /* ============================================================
+       TÁC VỤ 12: THỐNG KÊ LỖI XML BHYT THEO THÁNG (JS CONTROLLER)
+       ============================================================ */
+    let monthlyErrorsData = null;
+    let selectedMonthKey = "default";
+    let activeModalErrorIdx = -1;
+
+    async function initMonthlyErrorDashboard() {
+      if (!monthlyErrorsData) {
+        await fetchMonthlyErrors("default", false);
+      } else {
+        renderMonthlyErrorsView();
+      }
+    }
+
+    async function refreshMonthlyErrorsLive() {
+      showCnttToast("🔄 ĐỒNG BỘ", "Đang nạp lại dữ liệu thống kê lỗi từ Google Sheets...");
+      await fetchMonthlyErrors(selectedMonthKey, true);
+    }
+
+    async function fetchMonthlyErrors(monthName, forceReload) {
+      const statusPill = document.getElementById("month-status-pill");
+      const badgeText = document.getElementById("month-badge-text");
+      if (statusPill) statusPill.textContent = "⏳ Đang quét & tổng hợp...";
+      if (badgeText) badgeText.textContent = "Đang đồng bộ...";
+
+      try {
+        const url = `/api/monthly-error-stats?month=${encodeURIComponent(monthName || "default")}${forceReload ? "&reload=1" : ""}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.error) {
+          showCnttToast("❌ LỖI", data.error);
+          return;
+        }
+        monthlyErrorsData = data;
+        selectedMonthKey = data.month;
+        renderMonthlyErrorsView();
+
+        const now = new Date();
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        if (badgeText) badgeText.textContent = `Đã đồng bộ (${timeStr})`;
+        showCnttToast("✓ THÀNH CÔNG", `Đã tổng hợp ${data.total_errors} lượt lỗi từ ${data.sheets_scanned} sheet trong ${data.month}!`);
+      } catch (err) {
+        console.error("fetchMonthlyErrors error:", err);
+        showCnttToast("❌ LỖI", "Không thể nạp dữ liệu thống kê lỗi tháng.");
+      }
+    }
+
+    function renderMonthlyErrorsView() {
+      if (!monthlyErrorsData) return;
+      const d = monthlyErrorsData;
+
+      // 1. Render month pills
+      const container = document.getElementById("month-pills-container");
+      const infoPill = document.getElementById("month-sheets-info-pill");
+      if (container && d.available_months) {
+        container.innerHTML = d.available_months.map(m => `
+          <span class="month-pill ${m.name === d.month ? 'active' : ''}" onclick="selectMonthTab('${m.name}')">
+            📅 ${m.name} <span style="font-size:11px; opacity:0.85;">(${m.sheets_count} sheet)</span>
+          </span>
+        `).join('');
+      }
+      if (infoPill) {
+        infoPill.textContent = `Đã quét ${d.sheets_scanned} sheet ngày trong ${d.month}`;
+      }
+
+      // 2. Update KPI cards
+      const kpiTotal = document.getElementById("month-kpi-total-errors");
+      const kpiSub = document.getElementById("month-kpi-errors-sub");
+      const kpiTypes = document.getElementById("month-kpi-total-types");
+      const kpiTypesSub = document.getElementById("month-kpi-types-sub");
+      const kpiTopCount = document.getElementById("month-kpi-top-count");
+      const kpiTopName = document.getElementById("month-kpi-top-name");
+      const kpiLatestHs = document.getElementById("month-kpi-latest-hs");
+      const kpiLatestMeta = document.getElementById("month-kpi-latest-meta");
+
+      if (kpiTotal) kpiTotal.textContent = d.total_errors.toLocaleString('vi-VN');
+      if (kpiSub) kpiSub.textContent = `Tại ${d.total_unique_hs} hồ sơ bệnh nhân khác nhau`;
+      if (kpiTypes) kpiTypes.textContent = d.total_error_types;
+      if (kpiTypesSub) kpiTypesSub.textContent = `Quy tắc BHYT vi phạm trong ${d.month}`;
+
+      if (kpiTopCount && d.top_error) {
+        kpiTopCount.textContent = `${d.top_error.count} lần (${d.top_error.percent})`;
+      } else if (kpiTopCount) {
+        kpiTopCount.textContent = "0";
+      }
+      if (kpiTopName && d.top_error) {
+        kpiTopName.textContent = d.top_error.error;
+        kpiTopName.title = d.top_error.error;
+      }
+
+      if (kpiLatestHs && d.latest_overall_hs) {
+        kpiLatestHs.textContent = `HS: ${d.latest_overall_hs}`;
+      } else if (kpiLatestHs) {
+        kpiLatestHs.textContent = "-";
+      }
+      if (kpiLatestMeta && d.latest_overall_date) {
+        kpiLatestMeta.textContent = `${d.latest_overall_date} (${d.latest_overall_sheet})`;
+      }
+
+      // 3. Render table
+      renderMonthlyErrorsTable();
+    }
+
+    function selectMonthTab(monthName) {
+      if (monthName === selectedMonthKey) return;
+      selectedMonthKey = monthName;
+      fetchMonthlyErrors(monthName, false);
+    }
+
+    function renderMonthlyErrorsTable() {
+      if (!monthlyErrorsData) return;
+      const tbody = document.getElementById("month-err-table-body");
+      const statusPill = document.getElementById("month-status-pill");
+      if (!tbody) return;
+
+      const filterXml = (document.getElementById("month-filter-xml")?.value || "ALL").trim();
+      const searchKw = (document.getElementById("month-search-keyword")?.value || "").trim().toLowerCase();
+      const sortOrder = (document.getElementById("month-sort-order")?.value || "count-desc");
+
+      let list = (monthlyErrorsData.errors || []).slice();
+
+      // Filter by XML
+      if (filterXml !== "ALL") {
+        list = list.filter(e => e.bxml.toUpperCase() === filterXml.toUpperCase());
+      }
+
+      // Filter by search
+      if (searchKw) {
+        list = list.filter(e => {
+          return e.error.toLowerCase().includes(searchKw) ||
+                 e.latest_hs.toLowerCase().includes(searchKw) ||
+                 e.latest_khoa.toLowerCase().includes(searchKw) ||
+                 e.bxml.toLowerCase().includes(searchKw);
+        });
+      }
+
+      // Sort
+      if (sortOrder === "count-desc") {
+        list.sort((a, b) => b.count - a.count);
+      } else if (sortOrder === "count-asc") {
+        list.sort((a, b) => a.count - b.count);
+      } else if (sortOrder === "name-asc") {
+        list.sort((a, b) => a.error.localeCompare(b.error));
+      }
+
+      if (statusPill) {
+        statusPill.textContent = `✓ Hiển thị ${list.length} / ${monthlyErrorsData.total_error_types} loại lỗi (${monthlyErrorsData.month})`;
+      }
+
+      if (list.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align:center; padding:36px; color:#94a3b8;">
+              🔍 Không tìm thấy lỗi nào phù hợp với bộ lọc hiện tại.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      const maxCount = monthlyErrorsData.top_error ? monthlyErrorsData.top_error.count : 1;
+
+      tbody.innerHTML = list.map((item, idx) => {
+        let rankClass = "rank-normal";
+        let rankText = `#${item.rank}`;
+        if (item.rank === 1) { rankClass = "rank-top1"; rankText = "#1 🥇"; }
+        else if (item.rank === 2) { rankClass = "rank-top2"; rankText = "#2 🥈"; }
+        else if (item.rank === 3) { rankClass = "rank-top3"; rankText = "#3 🥉"; }
+
+        const barWidth = Math.max(8, Math.round((item.count / maxCount) * 100));
+
+        let xmlClass = "badge-sheet";
+        if (item.bxml === "XML1") xmlClass = "badge-sheet";
+        else if (item.bxml === "XML3") xmlClass = "badge-dept";
+        else if (item.bxml === "XML2") xmlClass = "badge-hs";
+
+        const originalIndex = monthlyErrorsData.errors.indexOf(item);
+
+        return `
+          <tr>
+            <td style="text-align:center;">
+              <span class="month-rank-badge ${rankClass}">${rankText}</span>
+            </td>
+            <td style="text-align:center;">
+              <span class="${xmlClass}" style="font-weight:700;">${item.bxml}</span>
+            </td>
+            <td>
+              <div style="font-weight:600; color:#f8fafc; font-size:13.5px; line-height:1.45;">
+                ${item.error}
+              </div>
+            </td>
+            <td style="text-align:center;">
+              <div class="count-pill-box">
+                <span class="count-badge-prominent">${item.count.toLocaleString('vi-VN')} lần</span>
+                <div class="bar-bg">
+                  <div class="bar-fill" style="width:${barWidth}%;"></div>
+                </div>
+              </div>
+            </td>
+            <td style="text-align:center; font-weight:700; color:#38bdf8;">
+              ${item.percent}
+            </td>
+            <td>
+              <div class="latest-hs-box">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span class="latest-hs-code" onclick="copyHsToClipboard('${item.latest_hs}')" title="Nhấp để sao chép mã HS">
+                    HS: <b>${item.latest_hs}</b> 📋
+                  </span>
+                  <span class="badge-sheet" style="font-size:10px;">Sheet ${item.latest_sheet || '-'}</span>
+                </div>
+                <div style="color:#94a3b8; font-size:11px;">
+                  🕒 ${item.latest_date || 'Chưa rõ'}
+                </div>
+                <div style="color:#cbd5e1; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:260px;" title="${item.latest_khoa}">
+                  🏥 ${item.latest_khoa || 'Chưa xác định'}
+                </div>
+              </div>
+            </td>
+            <td style="text-align:center;">
+              <div style="display:flex; flex-direction:column; gap:6px; align-items:center;">
+                <button type="button" class="cntt-btn-small" onclick="copyErrorTextToClipboard('${encodeURIComponent(item.error)}')" style="font-size:11px; width:100px;">
+                  📋 Sao chép
+                </button>
+                <button type="button" class="cntt-btn-small btn-success" onclick="openMonthlyHsModal(${originalIndex})" style="font-size:11px; width:100px;">
+                  🔍 Xem ${item.total_hs_affected} HS
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openMonthlyHsModal(errorIndex) {
+      if (!monthlyErrorsData || !monthlyErrorsData.errors[errorIndex]) return;
+      activeModalErrorIdx = errorIndex;
+      const item = monthlyErrorsData.errors[errorIndex];
+      const modal = document.getElementById("modal-monthly-hs");
+      const title = document.getElementById("modal-hs-err-title");
+      const subtitle = document.getElementById("modal-hs-subtitle");
+      const xmlBadge = document.getElementById("modal-hs-xml-badge");
+      const listContainer = document.getElementById("modal-hs-chips-list");
+      const countEl = document.getElementById("modal-hs-total-count");
+
+      if (title) title.textContent = item.error;
+      if (xmlBadge) xmlBadge.textContent = item.bxml;
+      if (subtitle) subtitle.textContent = `Thống kê trong ${monthlyErrorsData.month} • Xuất hiện ${item.count} lần • Hồ sơ gần nhất: ${item.latest_hs} (${item.latest_date})`;
+
+      if (listContainer) {
+        listContainer.innerHTML = (item.sample_hs || []).map(hs => `
+          <span style="display:inline-flex; align-items:center; gap:5px; background:#0f172a; border:1px solid #334155; padding:4px 10px; border-radius:6px; font-family:monospace; font-size:12px; color:#38bdf8; margin:3px; cursor:pointer;" onclick="copyHsToClipboard('${hs}')" title="Nhấp để chép">
+            ${hs}
+          </span>
+        `).join('') || '<span style="color:#94a3b8;">Không có danh sách mã HS</span>';
+      }
+
+      if (countEl) countEl.textContent = `Tổng cộng: ${item.total_hs_affected} hồ sơ bệnh nhân khác nhau`;
+      if (modal) modal.style.display = "flex";
+    }
+
+    function closeMonthlyHsModal() {
+      const modal = document.getElementById("modal-monthly-hs");
+      if (modal) modal.style.display = "none";
+      activeModalErrorIdx = -1;
+    }
+
+    function copyHsToClipboard(hs) {
+      if (!hs || hs === 'N/A') return;
+      navigator.clipboard.writeText(hs).then(() => {
+        showCnttToast("📋 ĐÃ CHÉP MÃ HS", `Đã sao chép mã hồ sơ: ${hs}`);
+      });
+    }
+
+    function copyErrorTextToClipboard(encodedText) {
+      const text = decodeURIComponent(encodedText);
+      navigator.clipboard.writeText(text).then(() => {
+        showCnttToast("📋 ĐÃ CHÉP LỖI", "Đã sao chép nội dung lỗi vào bộ nhớ tạm!");
+      });
+    }
+
+    function copyAllHsInModal() {
+      if (!monthlyErrorsData || activeModalErrorIdx === -1) return;
+      const item = monthlyErrorsData.errors[activeModalErrorIdx];
+      if (!item || !item.sample_hs) return;
+      const text = item.sample_hs.join(String.fromCharCode(10));
+      navigator.clipboard.writeText(text).then(() => {
+        showCnttToast("📋 ĐÃ SAO CHÉP", `Đã sao chép ${item.sample_hs.length} mã hồ sơ!`);
+      });
+    }
+
+    function exportMonthlyErrorsExcel() {
+      if (!monthlyErrorsData) {
+        showCnttToast("⚠️ THÔNG BÁO", "Vui lòng đợi dữ liệu nạp xong trước khi xuất Excel.");
+        return;
+      }
+      showCnttToast("📄 ĐANG TẠO EXCEL", `Đang xuất báo cáo thống kê lỗi ${monthlyErrorsData.month}...`);
+      window.open(`/api/export-monthly-errors?month=${encodeURIComponent(monthlyErrorsData.month)}`, '_blank');
+    }
+
 </script>
 </body>
 </html>
@@ -6986,6 +7697,362 @@ def aggregate_cntt_data(sheets_list):
         "cat_rankings": sorted(cat_counts.items(), key=lambda x: -x[1])
     }
 
+
+# ============================================================
+# LOGIC TÁC VỤ 12: THỐNG KÊ LỖI XML BHYT THEO THÁNG
+# ============================================================
+_MONTHLY_ERROR_CACHE = {}
+
+def parse_sheet_month_key(sheet_name):
+    s = sheet_name.strip()
+    m = re.search(r'[\.\/\-](0?[1-9]|1[0-2])$', s)
+    if m:
+        m_num = int(m.group(1))
+        return f"Tháng {m_num:02d}/2026", m_num
+    if '.10' in s: return "Tháng 10/2026", 10
+    if '.09' in s or '.9' in s: return "Tháng 09/2026", 9
+    if '.08' in s or '.8' in s or '/8' in s: return "Tháng 08/2026", 8
+    if '.7' in s: return "Tháng 07/2026", 7
+    if '.6' in s: return "Tháng 06/2026", 6
+    if '.5' in s: return "Tháng 05/2026", 5
+    if '.4' in s: return "Tháng 04/2026", 4
+    if '.3' in s or '-3' in s: return "Tháng 03/2026", 3
+    return "Khác", 0
+
+def get_available_months_and_sheets(url=None):
+    url = url or DEFAULT_ERROR_TRACKER_URL
+    sheets = get_error_tracker_sheets(url)
+    month_groups = {}
+    for s in sheets:
+        m_name, m_num = parse_sheet_month_key(s)
+        if m_name == "Khác":
+            continue
+        if m_name not in month_groups:
+            month_groups[m_name] = {"key": m_name, "num": m_num, "sheets": []}
+        month_groups[m_name]["sheets"].append(s)
+
+    sorted_months = sorted(month_groups.values(), key=lambda x: x["num"], reverse=True)
+    return [
+        {
+            "name": mg["key"],
+            "sheets_count": len(mg["sheets"]),
+            "sheets": mg["sheets"]
+        }
+        for mg in sorted_months
+    ]
+
+def fetch_single_error_sheet(sid, sname):
+    encoded = urllib.parse.quote(sname)
+    now_ts = int(time.time() * 1000)
+    csv_url = f"https://docs.google.com/spreadsheets/d/{sid}/gviz/tq?tqx=out:csv&sheet={encoded}&_t={now_ts}"
+    req = urllib.request.Request(csv_url, headers={'User-Agent': 'Mozilla/5.0'})
+    try:
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            content = resp.read().decode('utf-8', errors='ignore')
+        reader = list(csv.reader(io.StringIO(content)))
+        recs = []
+        for r in reader[1:]:
+            if len(r) > 4 and r[4].strip():
+                raw_loi = r[4].strip()
+                lines = [l.strip() for l in raw_loi.splitlines() if l.strip()]
+                if not lines:
+                    lines = [raw_loi]
+                hs = r[1].strip() if len(r) > 1 else ''
+                if hs.endswith('.0'):
+                    hs = hs[:-2]
+                date_str = r[2].strip() if len(r) > 2 else ''
+                bxml = r[3].strip() if len(r) > 3 else ''
+                if bxml.upper().startswith('XML'):
+                    bxml = bxml.upper()
+                khoa = r[11].strip() if len(r) > 11 else (r[7].strip() if len(r) > 7 else '')
+                phong = r[10].strip() if len(r) > 10 else (r[6].strip() if len(r) > 6 else '')
+
+                for line in lines:
+                    recs.append({
+                        'sheet': sname,
+                        'hs': hs,
+                        'date': date_str,
+                        'bxml': bxml,
+                        'error': line,
+                        'khoa': khoa,
+                        'phong': phong
+                    })
+        return recs
+    except Exception as e:
+        print(f"Error fetching sheet {sname}: {e}")
+        return []
+
+def aggregate_monthly_error_data(url=None, month_name=None, reload=False):
+    url = url or DEFAULT_ERROR_TRACKER_URL
+    sid = extract_spreadsheet_id(url)
+    available_months = get_available_months_and_sheets(url)
+    if not available_months:
+        return {"error": "Không tìm thấy danh sách sheet từ Google Spreadsheet"}
+
+    if not month_name or month_name == "default":
+        target_month_obj = available_months[0]
+        month_name = target_month_obj["name"]
+    else:
+        target_month_obj = next((m for m in available_months if m["name"] == month_name), available_months[0])
+        month_name = target_month_obj["name"]
+
+    cache_key = f"{sid}_{month_name}"
+    if not reload and cache_key in _MONTHLY_ERROR_CACHE:
+        return _MONTHLY_ERROR_CACHE[cache_key]
+
+    target_sheets = target_month_obj["sheets"]
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        results = list(executor.map(lambda s: fetch_single_error_sheet(sid, s), target_sheets))
+
+    all_recs = [r for sub in results for r in sub]
+
+    error_map = {}
+    all_unique_hs = set()
+    latest_overall_dt = datetime.min
+    latest_overall_rec = {}
+
+    for r in all_recs:
+        err = r['error']
+        if r['hs']:
+            all_unique_hs.add(r['hs'])
+
+        dt = None
+        for fmt in ('%d/%m/%Y %H:%M:%S', '%d/%m/%Y %H:%M', '%d/%m/%Y', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d'):
+            try:
+                dt = datetime.strptime(r['date'], fmt)
+                break
+            except Exception:
+                pass
+        if dt is None:
+            dt = datetime.min
+
+        if dt >= latest_overall_dt:
+            latest_overall_dt = dt
+            latest_overall_rec = r
+
+        if err not in error_map:
+            error_map[err] = {
+                'error': err,
+                'bxml': r['bxml'] or 'XML',
+                'count': 0,
+                'latest_dt': datetime.min,
+                'latest_hs': '',
+                'latest_date': '',
+                'latest_sheet': '',
+                'latest_khoa': '',
+                'latest_phong': '',
+                'hs_list': []
+            }
+        item = error_map[err]
+        item['count'] += 1
+        if r['hs'] and r['hs'] not in item['hs_list']:
+            item['hs_list'].append(r['hs'])
+
+        if dt >= item['latest_dt']:
+            item['latest_dt'] = dt
+            item['latest_date'] = r['date']
+            item['latest_hs'] = r['hs']
+            item['latest_sheet'] = r['sheet']
+            item['latest_khoa'] = r['khoa']
+            item['latest_phong'] = r['phong']
+            if r['bxml'] and (not item['bxml'] or item['bxml'] == 'XML'):
+                item['bxml'] = r['bxml']
+
+    sorted_errors = sorted(error_map.values(), key=lambda x: x['count'], reverse=True)
+    total_error_count = sum(x['count'] for x in sorted_errors)
+
+    out_errors = []
+    for idx, item in enumerate(sorted_errors, start=1):
+        pct = round((item['count'] / total_error_count * 100), 2) if total_error_count > 0 else 0
+        out_errors.append({
+            'rank': idx,
+            'bxml': item['bxml'],
+            'error': item['error'],
+            'count': item['count'],
+            'percent': f"{pct:.1f}%",
+            'percent_num': pct,
+            'latest_hs': item['latest_hs'] or 'N/A',
+            'latest_date': item['latest_date'] or '',
+            'latest_sheet': item['latest_sheet'] or '',
+            'latest_khoa': item['latest_khoa'] or 'Chưa rõ',
+            'latest_phong': item['latest_phong'] or '',
+            'total_hs_affected': len(item['hs_list']),
+            'sample_hs': item['hs_list'][:40]
+        })
+
+    data_result = {
+        "month": month_name,
+        "available_months": available_months,
+        "sheets_scanned": len(target_sheets),
+        "total_errors": total_error_count,
+        "total_error_types": len(out_errors),
+        "total_unique_hs": len(all_unique_hs),
+        "top_error": out_errors[0] if out_errors else None,
+        "latest_overall_hs": latest_overall_rec.get("hs", ""),
+        "latest_overall_date": latest_overall_rec.get("date", ""),
+        "latest_overall_sheet": latest_overall_rec.get("sheet", ""),
+        "errors": out_errors
+    }
+
+    _MONTHLY_ERROR_CACHE[cache_key] = data_result
+    return data_result
+
+def build_monthly_errors_excel(data):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    wb = Workbook()
+    ws = wb.active
+    month_name = data.get("month", "Tháng")
+    safe_title = re.sub(r'[^a-zA-Z0-9.-]', '_', month_name)
+    ws.title = f"Lỗi_{safe_title}"[:31]
+
+    ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+    ws.sheet_view.showGridLines = True
+
+    ws.merge_cells("A1:I1")
+    ws["A1"] = "BỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2 - PHÒNG CÔNG NGHỆ THÔNG TIN"
+    ws["A1"].font = Font(name="Times New Roman", size=11, italic=True)
+    ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
+
+    ws.merge_cells("A2:I2")
+    ws["A2"] = f"BÁO CÁO THỐNG KÊ LỖI XML BHYT THEO THÁNG ({month_name.upper()})"
+    ws["A2"].font = Font(name="Times New Roman", size=14, bold=True, color="1E3A8A")
+    ws["A2"].alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[2].height = 28
+
+    ws.merge_cells("A3:I3")
+    desc = f"Thời gian: {month_name} • Quét {data.get('sheets_scanned', 0)} sheet ngày • Tổng số lượt lỗi vi phạm: {data.get('total_errors', 0)} ({data.get('total_error_types', 0)} loại lỗi)"
+    ws["A3"] = desc
+    ws["A3"].font = Font(name="Times New Roman", size=11, italic=True, color="4B5563")
+    ws["A3"].alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[3].height = 20
+
+    headers = [
+        "HẠNG",
+        "BẢNG XML",
+        "NỘI DUNG LỖI VI PHẠM",
+        "SỐ LƯỢT LỖI",
+        "TỶ LỆ %",
+        "MÃ HỒ SƠ GẦN NHẤT",
+        "THỜI GIAN GẦN NHẤT",
+        "KHOA / PHÒNG GẦN NHẤT",
+        "SHEET GẦN NHẤT"
+    ]
+
+    header_row = 5
+    ws.row_dimensions[header_row].height = 26
+    fill_header = PatternFill(start_color="1E40AF", end_color="1E40AF", fill_type="solid")
+    font_header = Font(name="Times New Roman", size=11, bold=True, color="FFFFFF")
+    thin_border = Border(
+        left=Side(style='thin', color='D1D5DB'),
+        right=Side(style='thin', color='D1D5DB'),
+        top=Side(style='thin', color='D1D5DB'),
+        bottom=Side(style='thin', color='D1D5DB')
+    )
+
+    for col_idx, h in enumerate(headers, start=1):
+        cell = ws.cell(row=header_row, column=col_idx, value=h)
+        cell.fill = fill_header
+        cell.font = font_header
+        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        cell.border = thin_border
+
+    errors = data.get("errors", [])
+    fill_zebra = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+    font_bold = Font(name="Times New Roman", size=11, bold=True)
+    font_regular = Font(name="Times New Roman", size=11)
+
+    for idx, e in enumerate(errors, start=header_row + 1):
+        ws.row_dimensions[idx].height = 22
+        is_even = (idx % 2 == 0)
+
+        c1 = ws.cell(row=idx, column=1, value=f"#{e['rank']}")
+        c1.alignment = Alignment(horizontal="center", vertical="center")
+        c1.font = font_bold
+
+        c2 = ws.cell(row=idx, column=2, value=e['bxml'])
+        c2.alignment = Alignment(horizontal="center", vertical="center")
+        c2.font = font_bold
+
+        c3 = ws.cell(row=idx, column=3, value=e['error'])
+        c3.alignment = Alignment(horizontal="left", vertical="center")
+        c3.font = font_regular
+
+        c4 = ws.cell(row=idx, column=4, value=e['count'])
+        c4.alignment = Alignment(horizontal="center", vertical="center")
+        c4.font = font_bold
+
+        c5 = ws.cell(row=idx, column=5, value=e['percent'])
+        c5.alignment = Alignment(horizontal="center", vertical="center")
+        c5.font = font_regular
+
+        c6 = ws.cell(row=idx, column=6, value=e['latest_hs'])
+        c6.alignment = Alignment(horizontal="center", vertical="center")
+        c6.font = font_bold
+
+        c7 = ws.cell(row=idx, column=7, value=e['latest_date'])
+        c7.alignment = Alignment(horizontal="center", vertical="center")
+        c7.font = font_regular
+
+        c8 = ws.cell(row=idx, column=8, value=e['latest_khoa'])
+        c8.alignment = Alignment(horizontal="left", vertical="center")
+        c8.font = font_regular
+
+        c9 = ws.cell(row=idx, column=9, value=e['latest_sheet'])
+        c9.alignment = Alignment(horizontal="center", vertical="center")
+        c9.font = font_regular
+
+        for c_i in range(1, 10):
+            cell = ws.cell(row=idx, column=c_i)
+            cell.border = thin_border
+            if is_even:
+                cell.fill = fill_zebra
+
+    ws.column_dimensions["A"].width = 10
+    ws.column_dimensions["B"].width = 14
+    ws.column_dimensions["C"].width = 65
+    ws.column_dimensions["D"].width = 15
+    ws.column_dimensions["E"].width = 12
+    ws.column_dimensions["F"].width = 18
+    ws.column_dimensions["G"].width = 20
+    ws.column_dimensions["H"].width = 32
+    ws.column_dimensions["I"].width = 14
+
+    out = io.BytesIO()
+    wb.save(out)
+    out.seek(0)
+    return out
+
+def handle_monthly_error_stats():
+    try:
+        month = request.args.get("month") or request.form.get("month") or "default"
+        reload = request.args.get("reload") == "1"
+        data = aggregate_monthly_error_data(month_name=month, reload=reload)
+        resp = jsonify(data)
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        return resp
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def handle_export_monthly_errors():
+    try:
+        month = request.args.get("month") or request.form.get("month") or "default"
+        data = aggregate_monthly_error_data(month_name=month, reload=False)
+        out_io = build_monthly_errors_excel(data)
+        month_label = data.get("month", "Thang").replace(" ", "_").replace("/", "_")
+        return send_file(
+            out_io,
+            as_attachment=True,
+            download_name=f"Bao_cao_loi_BHYT_{month_label}.xlsx",
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 def dispatch_request(path=""):
     matched = (
         (path or "") + " " +
@@ -7006,6 +8073,11 @@ def dispatch_request(path=""):
         return handle_error_tracker_test_connection()
     if "error-tracker/update-status" in matched or request.args.get("action") == "error-tracker-update-status":
         return handle_error_tracker_update_status()
+    if "monthly-error-stats" in matched or request.args.get("action") == "monthly-error-stats":
+        return handle_monthly_error_stats()
+    if "export-monthly-errors" in matched or request.args.get("action") == "export-monthly-errors":
+        return handle_export_monthly_errors()
+
     if "error-tracker/config" in matched or request.args.get("action") == "error-tracker-config":
         return handle_error_tracker_config()
 
@@ -7093,6 +8165,8 @@ def dispatch_request(path=""):
 @app.route("/api/error-tracker/config", methods=["GET", "POST"])
 @app.route("/api/process-giam-dinh", methods=["GET", "POST"])
 @app.route("/api/process-cntt", methods=["GET", "POST"])
+@app.route("/api/monthly-error-stats", methods=["GET", "POST"])
+@app.route("/api/export-monthly-errors", methods=["GET", "POST"])
 @app.route("/<path:path>", methods=["GET", "POST"])
 def master_router(path=""):
     return dispatch_request(path)
