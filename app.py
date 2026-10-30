@@ -4567,6 +4567,8 @@ function handleRequest(e) {
 
     const UNLOCK_PASSWORD = "8889";
     let pendingTaskId = null;
+    let isProgrammaticSwitch = false;
+    const unlockedTasks = new Set();
 
     function safeStorageGet(key) {
       try {
@@ -4621,12 +4623,12 @@ function handleRequest(e) {
 
     function switchTask(taskId) {
       taskId = parseInt(taskId) || 10;
-      // Chỉ duy nhất Task 10 (Thống Kê Lỗi XML BHYT) mở trực tiếp không cần mật khẩu
-      if (taskId === 10) {
-        executeSwitchTask(10);
+      // Task 10 hoặc tác vụ đã được mở khóa bằng 8889 trước đó thì chuyển trực tiếp ngay lập tức
+      if (taskId === 10 || unlockedTasks.has(taskId)) {
+        executeSwitchTask(taskId);
         return;
       }
-      // Tất cả 10 module còn lại (1, 2, 3, 5, 7, 8, 9, 11, 12, 13) yêu cầu mã PIN 8889 để truy cập
+      // Chưa mở khóa: yêu cầu mã PIN 8889 (chỉ 1 lần duy nhất)
       pendingTaskId = taskId;
       openAuthModal(taskId);
     }
@@ -4636,7 +4638,9 @@ function handleRequest(e) {
       try {
         safeStorageSet('last_active_task', taskId);
         if (window.location.hash !== '#task-' + taskId) {
+          isProgrammaticSwitch = true;
           window.location.hash = 'task-' + taskId;
+          setTimeout(() => { isProgrammaticSwitch = false; }, 150);
         }
       } catch (e) {}
 
@@ -4710,6 +4714,7 @@ function handleRequest(e) {
       const val = input.value.trim();
       if (val === UNLOCK_PASSWORD) {
         const target = pendingTaskId || 10;
+        unlockedTasks.add(target);
         pendingTaskId = null;
         closeAuthModal();
         executeSwitchTask(target);
@@ -5921,21 +5926,23 @@ function handleRequest(e) {
 
     window.addEventListener('DOMContentLoaded', initPageRouter);
     window.addEventListener('hashchange', () => {
+      if (isProgrammaticSwitch) return;
       const targetTask = getTaskFromUrl();
-      if (targetTask !== 10) {
+      if (targetTask === 10 || unlockedTasks.has(targetTask)) {
+        executeSwitchTask(targetTask);
+      } else {
         pendingTaskId = targetTask;
         openAuthModal(targetTask);
-      } else {
-        executeSwitchTask(10);
       }
     });
     window.addEventListener('popstate', () => {
+      if (isProgrammaticSwitch) return;
       const targetTask = getTaskFromUrl();
-      if (targetTask !== 10) {
+      if (targetTask === 10 || unlockedTasks.has(targetTask)) {
+        executeSwitchTask(targetTask);
+      } else {
         pendingTaskId = targetTask;
         openAuthModal(targetTask);
-      } else {
-        executeSwitchTask(10);
       }
     });
   
