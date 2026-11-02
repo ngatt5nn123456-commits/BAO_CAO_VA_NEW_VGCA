@@ -3340,9 +3340,7 @@ HTML_PAGE = """<!DOCTYPE html>
           <span class="breadcrumb-title" id="task-breadcrumb">📊 Thống Kê & Lọc Lỗi XML BHYT (Google Sheets) ─ Đọc & Tra Cứu Lỗi Đẩy Cổng BHYT</span>
         </div>
         <div id="header-auth-box" style="flex-shrink:0; display:flex; align-items:center; gap:8px;">
-          <button type="button" id="btn-header-unlock" onclick="openAuthModal()" style="display:none; background:#2563eb; color:#fff; border:none; border-radius:6px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all 0.2s;">
-            🔑 Nhập PIN (8889)
-          </button>
+          
           <span id="badge-header-unlocked" style="display:inline-flex; background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); border-radius:6px; padding:4px 10px; font-size:0.75rem; font-weight:700;">
             🔓 Đã mở khóa
           </span>
@@ -4666,22 +4664,7 @@ function handleRequest(e) {
       }
     }
     function openAuthModal(taskId) {
-      pendingTaskId = taskId;
-      const modal = document.getElementById('auth-modal');
-      const input = document.getElementById('auth-password-input');
-      const nameEl = document.getElementById('auth-task-name');
-      const errEl = document.getElementById('auth-error-msg');
-      if (nameEl) {
-        const meta = taskMeta[taskId];
-        nameEl.textContent = meta ? meta.badge : ('Tác vụ ' + taskId);
-      }
-      if (errEl) errEl.style.display = 'none';
-      if (input) {
-        input.value = '';
-        input.style.borderColor = '#cbd5e1';
-      }
-      if (modal) modal.style.display = 'flex';
-      setTimeout(() => { if (input) input.focus(); }, 120);
+      if (taskId) executeSwitchTask(taskId);
     }
 
     function closeAuthModal() {
