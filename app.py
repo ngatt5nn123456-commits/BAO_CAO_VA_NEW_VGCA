@@ -3225,7 +3225,7 @@ HTML_PAGE = """<!DOCTYPE html>
                 <span class="nav-title">VGCA (Word + Excel SSO)</span>
                 <span class="nav-desc">Đối chiếu cấp CKS Word & Excel SSO</span>
               </div>
-              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
+              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
             <li data-task="2" onclick="switchTask(2)">
               <div class="nav-icon">📝</div>
@@ -3233,7 +3233,7 @@ HTML_PAGE = """<!DOCTYPE html>
                 <span class="nav-title">CKS (Công văn Mẫu 02)</span>
                 <span class="nav-desc">Xuất Công văn Mẫu 02 (Có Excel SSO)</span>
               </div>
-              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
+              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
             <li data-task="3" onclick="switchTask(3)">
               <div class="nav-icon">📝</div>
@@ -3241,7 +3241,7 @@ HTML_PAGE = """<!DOCTYPE html>
                 <span class="nav-title">CKS (Mẫu CV02 chỉ đọc file Word)</span>
                 <span class="nav-desc">Đọc toàn bộ file Word xuất Mẫu 02</span>
               </div>
-              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
+              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
             <li data-task="7" onclick="switchTask(7)">
               <div class="nav-icon">📄</div>
@@ -3249,7 +3249,7 @@ HTML_PAGE = """<!DOCTYPE html>
                 <span class="nav-title">VGCA (Từ File Word)</span>
                 <span class="nav-desc">Đọc nhiều file Word không cần SSO</span>
               </div>
-              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
+              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
             <li data-task="9" onclick="switchTask(9)">
               <div class="nav-icon">📧</div>
@@ -3257,7 +3257,7 @@ HTML_PAGE = """<!DOCTYPE html>
                 <span class="nav-title">Cấp Email Công Vụ</span>
                 <span class="nav-desc">Tổng hợp danh sách xin cấp Email</span>
               </div>
-              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
+              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
           </ul>
         </div>
@@ -3277,7 +3277,7 @@ HTML_PAGE = """<!DOCTYPE html>
                 <span class="nav-title">Check Log MDINSIGHT</span>
                 <span class="nav-desc">Lọc người dùng & xuất Excel A4</span>
               </div>
-              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
+              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
             <li data-task="11" onclick="switchTask(11)">
               <div class="nav-icon">🛠</div>
@@ -3285,7 +3285,7 @@ HTML_PAGE = """<!DOCTYPE html>
                 <span class="nav-title">BC Sửa CNTT</span>
                 <span class="nav-desc">Tổng hợp ca tiếp nhận & báo cáo cán bộ</span>
               </div>
-              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
+              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
             <li data-task="12" onclick="switchTask(12)">
               <div class="nav-icon">📈</div>
@@ -3293,7 +3293,7 @@ HTML_PAGE = """<!DOCTYPE html>
                 <span class="nav-title">Thống Kê Lỗi Tháng</span>
                 <span class="nav-desc">Tần suất lỗi BHYT & hồ sơ mới nhất</span>
               </div>
-              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
+              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
             <li data-task="13" onclick="switchTask(13)">
               <div class="nav-icon">⚡</div>
@@ -3301,7 +3301,7 @@ HTML_PAGE = """<!DOCTYPE html>
                 <span class="nav-title">Check Khoa, Phòng BHYT</span>
                 <span class="nav-desc">Câu lệnh check khoa, phòng bảo hiểm</span>
               </div>
-              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
+              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
             <li data-task="8" onclick="switchTask(8)">
               <div class="nav-icon">⚡</div>
@@ -3309,7 +3309,7 @@ HTML_PAGE = """<!DOCTYPE html>
                 <span class="nav-title">P.CNTT (Sheet Cố Định)</span>
                 <span class="nav-desc">Tự động tải Google Sheets của viện</span>
               </div>
-              <span class="nav-lock" title="Chức năng yêu cầu mật khẩu (8889)">🔒</span>
+              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
             <li data-task="10" onclick="switchTask(10)">
               <div class="nav-icon">📊</div>
@@ -3326,7 +3326,7 @@ HTML_PAGE = """<!DOCTYPE html>
         <b>Phòng CNTT • BVĐK Bắc Ninh số 2</b><br>
         Phiên bản Web v3.0 (Mới Nhất) • Tự Động Đồng Bộ
         <div id="auth-status-bar" style="margin-top: 8px; padding: 6px 10px; border-radius: 6px; font-size: 0.72rem; display: flex; align-items: center; justify-content: space-between; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.08);">
-          <span id="auth-status-text">🔒 10 tác vụ có khóa (8889)</span>
+          <span id="auth-status-text">🟢 Đã mở toàn bộ chức năng</span>
           <button type="button" id="btn-relock" onclick="lockApp()" style="display:none; background: #ef4444; color: #fff; border: none; border-radius: 4px; padding: 2px 7px; font-size: 0.7rem; cursor: pointer; font-weight:600;">Khóa lại</button>
         </div>
       </div>
@@ -3340,10 +3340,10 @@ HTML_PAGE = """<!DOCTYPE html>
           <span class="breadcrumb-title" id="task-breadcrumb">📊 Thống Kê & Lọc Lỗi XML BHYT (Google Sheets) ─ Đọc & Tra Cứu Lỗi Đẩy Cổng BHYT</span>
         </div>
         <div id="header-auth-box" style="flex-shrink:0; display:flex; align-items:center; gap:8px;">
-          <button type="button" id="btn-header-unlock" onclick="openAuthModal()" style="background:#2563eb; color:#fff; border:none; border-radius:6px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all 0.2s;">
+          <button type="button" id="btn-header-unlock" onclick="openAuthModal()" style="display:none; background:#2563eb; color:#fff; border:none; border-radius:6px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all 0.2s;">
             🔑 Nhập PIN (8889)
           </button>
-          <span id="badge-header-unlocked" style="display:none; background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); border-radius:6px; padding:4px 10px; font-size:0.75rem; font-weight:700;">
+          <span id="badge-header-unlocked" style="display:inline-flex; background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); border-radius:6px; padding:4px 10px; font-size:0.75rem; font-weight:700;">
             🔓 Đã mở khóa
           </span>
         </div>
@@ -4589,48 +4589,37 @@ function handleRequest(e) {
     }
 
     function isAppUnlocked() {
-      return false; // Mặc định tất cả các menu bảo mật luôn luôn có khóa 🔒
+      return true; // Tạm thời mở toàn bộ chức năng
     }
 
     function updateAuthUI() {
       document.querySelectorAll('.sidebar-menu li[data-task]').forEach(li => {
-        const id = parseInt(li.getAttribute('data-task'));
         const lockEl = li.querySelector('.nav-lock');
         if (lockEl) {
-          if (id === 10) {
-            lockEl.style.display = 'none';
-          } else {
-            lockEl.style.display = 'inline-block';
-            lockEl.textContent = '🔒';
-            lockEl.title = 'Yêu cầu mật khẩu (8889)';
-          }
+          lockEl.style.display = 'none';
         }
       });
       const statusText = document.getElementById('auth-status-text');
       const btnRelock = document.getElementById('btn-relock');
       if (statusText) {
-        statusText.innerHTML = '🔒 10 tác vụ có khóa bảo vệ (PIN: 8889)';
-        statusText.style.color = '#f59e0b';
+        statusText.innerHTML = '🟢 Hệ thống sẵn sàng (Đã mở toàn bộ chức năng)';
+        statusText.style.color = '#34d399';
       }
       if (btnRelock) {
         btnRelock.style.display = 'none';
       }
       const btnHeaderUnlock = document.getElementById('btn-header-unlock');
       const badgeHeaderUnlocked = document.getElementById('badge-header-unlocked');
-      if (btnHeaderUnlock) btnHeaderUnlock.style.display = 'inline-flex';
-      if (badgeHeaderUnlocked) badgeHeaderUnlocked.style.display = 'none';
+      if (btnHeaderUnlock) btnHeaderUnlock.style.display = 'none';
+      if (badgeHeaderUnlocked) {
+        badgeHeaderUnlocked.style.display = 'inline-flex';
+        badgeHeaderUnlocked.textContent = '🟢 Đã mở tất cả chức năng';
+      }
     }
 
     function switchTask(taskId) {
       taskId = parseInt(taskId) || 10;
-      // Task 10 hoặc tác vụ đã được mở khóa bằng 8889 trước đó thì chuyển trực tiếp ngay lập tức
-      if (taskId === 10 || unlockedTasks.has(taskId)) {
-        executeSwitchTask(taskId);
-        return;
-      }
-      // Chưa mở khóa: yêu cầu mã PIN 8889 (chỉ 1 lần duy nhất)
-      pendingTaskId = taskId;
-      openAuthModal(taskId);
+      executeSwitchTask(taskId);
     }
 
     function executeSwitchTask(taskId) {
@@ -5904,36 +5893,16 @@ function handleRequest(e) {
     }
 
     function initPageRouter() {
-      // Xóa sạch mọi session / local cache cũ để đảm bảo các module luôn có khóa 🔒
-      try {
-        localStorage.removeItem('app_unlocked_8889');
-        sessionStorage.removeItem('app_unlocked_8889');
-        document.cookie = "app_auth_pass=; path=/; max-age=0; SameSite=Lax";
-      } catch (e) {}
-
       try { updateAuthUI(); } catch (e) {}
-
       const targetTask = getTaskFromUrl();
-      if (targetTask !== 10) {
-        // Mặc định về trang 10 và bật modal yêu cầu nhập mã PIN 8889 cho tác vụ được chọn
-        executeSwitchTask(10);
-        pendingTaskId = targetTask;
-        openAuthModal(targetTask);
-      } else {
-        executeSwitchTask(10);
-      }
+      executeSwitchTask(targetTask);
     }
 
     window.addEventListener('DOMContentLoaded', initPageRouter);
     window.addEventListener('hashchange', () => {
       if (isProgrammaticSwitch) return;
       const targetTask = getTaskFromUrl();
-      if (targetTask === 10 || unlockedTasks.has(targetTask)) {
-        executeSwitchTask(targetTask);
-      } else {
-        pendingTaskId = targetTask;
-        openAuthModal(targetTask);
-      }
+      executeSwitchTask(targetTask);
     });
     window.addEventListener('popstate', () => {
       if (isProgrammaticSwitch) return;
@@ -8825,8 +8794,8 @@ def dispatch_request(path=""):
 
     if request.method == "POST":
         action = request.args.get("action", "")
-        # Bảo vệ toàn bộ các tác vụ ngoài Thống Kê Lỗi XML BHYT bằng mật khẩu 8889
-        is_protected = any(act in matched or action == act for act in ["task-1", "task-2", "task-3", "task-4", "task-5", "task-6", "task-7", "task-8", "task-9", "get-sheets", "process-giam-dinh", "process-cntt"])
+        # Tạm thời bỏ hết chức năng khóa bảo vệ theo yêu cầu
+        is_protected = False
         if is_protected:
             req_pass = (
                 request.headers.get("X-App-Password") or
