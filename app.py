@@ -1098,134 +1098,290 @@ def find_giam_dinh_header_and_cols(ws):
     sheet_names = ", ".join(ws.parent.sheetnames)
     raise Exception(f"Không tìm thấy dòng tiêu đề STT / NGƯỜI DÙNG trong sheet '{ws.title}'. Các sheet trong file gồm: {sheet_names}")
 
-def process_giam_dinh_web(file_streams, start_day, end_day):
-    if not isinstance(file_streams, list):
-        file_streams = [file_streams]
+def prune_xlsx_for_giam_dinh(file_bytes):
+    try:
+        with zipfile.ZipFile(io.BytesIO(file_bytes), 'r') as zin:
+            wb_xml = zin.read('xl/workbook.xml').decode('utf-8', errors='ignore')
+            m = re.search(r'<sheet[^>]*name=["\']([^"\']*(?:Người dùng|người dùng|nguoi dung|user)[^"\']*)["\'][^>]*r:id=["\']([^"\']+)["\']', wb_xml, re.IGNORECASE)
+            if not m:
+                m = re.search(r'<sheet[^>]*r:id=["\']([^"\']+)["\'][^>]*name=["\']([^"\']*(?:Người dùng|người dùng|nguoi dung|user)[^"\']*)["\']', wb_xml, re.IGNORECASE)
+                if m:
+                    target_rid, target_name = m.group(1), m.group(2)
+                else:
+                    target_name, target_rid = None, None
+            else:
+                target_name, target_rid = m.group(1), m.group(2)
+            
+            if not target_name:
+                return file_bytes
+            
+            rels_xml = zin.read('xl/_rels/workbook.xml.rels').decode('utf-8', errors='ignore')
+            m_rel = re.search(r'<Relationship[^>]*Id=["\']' + re.escape(target_rid) + r'["\'][^>]*Target=["\']([^"\']+)["\']', rels_xml)
+            if not m_rel:
+                m_rel = re.search(r'<Relationship[^>]*Target=["\']([^"\']+)["\'][^>]*Id=["\']' + re.escape(target_rid) + r'["\']', rels_xml)
+            if not m_rel:
+                return file_bytes
+            
+            target_target = m_rel.group(1)
+            target_sheet_path = 'xl/' + target_target.lstrip('/')
+            if not target_sheet_path.startswith('xl/worksheets/'):
+                target_sheet_path = 'xl/worksheets/' + target_target.split('/')[-1]
+            
+            new_wb_xml = f'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="{target_name}" sheetId="1" r:id="rId1"/></sheets></workbook>'
+            new_rels_xml = f'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="{target_target}"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'
 
+            out_buf = io.BytesIO()
+            with zipfile.ZipFile(out_buf, 'w', compression=zipfile.ZIP_DEFLATED) as zout:
+                for item in zin.infolist():
+                    if item.filename.startswith('xl/worksheets/'):
+                        if item.filename == target_sheet_path:
+                            zout.writestr(item, zin.read(item.filename))
+                    elif item.filename == 'xl/workbook.xml':
+                        zout.writestr(item.filename, new_wb_xml.encode('utf-8'))
+                    elif item.filename == 'xl/_rels/workbook.xml.rels':
+                        zout.writestr(item.filename, new_rels_xml.encode('utf-8'))
+                    else:
+                        zout.writestr(item, zin.read(item.filename))
+            out_buf.seek(0)
+            return out_buf.getvalue()
+    except Exception as e:
+        print('Prune warning:', e)
+        return file_bytes
+
+def parse_month_year(title_text):
+    if not title_text:
+        return None, None
+    m = re.search(r'TH[AÁ]NG\s+(\d{1,2})(?:\s+N[AĂ]M\s+(\d{4}))?', title_text, re.IGNORECASE)
+    if m:
+        month = int(m.group(1))
+        year = int(m.group(2)) if m.group(2) else 2026
+        return year, month
+    return None, None
+
+def process_giam_dinh_web(file_bytes_list, date_range="full"):
+    if not isinstance(file_bytes_list, list):
+        file_bytes_list = [file_bytes_list]
+
+    # Pre-parse each file to get year, month, sheet data
+    parsed_files = []
+    ALLOWED_USERS_NORM = {remove_accents(u).upper(): u for u in ALLOWED_USERS_ORDER}
+
+    for idx, f_bytes in enumerate(file_bytes_list):
+        pruned = prune_xlsx_for_giam_dinh(f_bytes)
+        wb = openpyxl.load_workbook(io.BytesIO(pruned), data_only=True)
+        # Select active or 'Người dùng'
+        source = wb.active
+        for sname in wb.sheetnames:
+            if 'người dùng' in sname.lower() or 'user' in sname.lower():
+                source = wb[sname]
+                break
+
+        title = source["A1"].value or ""
+        note = source["A2"].value or "Ghi chú: [X]: Có hoạt động, [-]: Không hoạt động"
+        year, month = parse_month_year(title)
+        if not month:
+            month = 10 + idx  # fallback
+            year = 2026
+
+        # Find header row and day columns
+        header_row = 4
+        user_col = 2
+        for r in range(1, 15):
+            for c in range(1, 10):
+                val = clean_text(source.cell(r, c).value).upper()
+                norm = remove_accents(val).upper()
+                if "NGUOI DUNG" in norm or "CAN BO" in norm:
+                    header_row = r
+                    user_col = c
+                    break
+            else:
+                continue
+            break
+
+        day_columns = {}
+        for c in range(user_col + 1, source.max_column + 1):
+            val = source.cell(header_row, c).value
+            if val is not None:
+                val_str = str(val).strip()
+                if val_str.isdigit():
+                    day_columns[int(val_str)] = c
+
+        parsed_files.append({
+            'year': year,
+            'month': month,
+            'title': title,
+            'note': note,
+            'header_row': header_row,
+            'user_col': user_col,
+            'day_columns': day_columns,
+            'source': source,
+            'wb': wb
+        })
+
+    # Sort files chronologically by (year, month)
+    parsed_files.sort(key=lambda x: (x['year'], x['month']))
+
+    # Chronologically gather all day metadata and user data
+    # Key: (year, month, day)
     all_day_meta = {}
     user_data = {remove_accents(u).upper(): {} for u in ALLOWED_USERS_ORDER}
-    title = "BẢNG HOẠT ĐỘNG TRONG THÁNG"
-    note = "Ghi chú: [X]: Có hoạt động, [-]: Không hoạt động"
+    all_date_keys = []
+    date_keys_with_data = []
 
-    for f_stream in file_streams:
-        wb_source = load_workbook(f_stream, data_only=True)
-        source = select_giam_dinh_sheet(wb_source)
+    latest_title = parsed_files[-1]['title'] or "BẢNG HOẠT ĐỘNG TRONG THÁNG"
+    latest_note = parsed_files[-1]['note'] or "Ghi chú: [X]: Có hoạt động, [-]: Không hoạt động"
 
-        header_row, stt_col, user_col, day_columns = find_giam_dinh_header_and_cols(source)
+    for pf in parsed_files:
+        source = pf['source']
+        hr = pf['header_row']
+        uc = pf['user_col']
+        y, m = pf['year'], pf['month']
 
-        if source["A1"].value:
-            title = source["A1"].value
-        if source["A2"].value:
-            note = source["A2"].value
+        # Determine which days have data
+        file_days_with_data = set()
 
-        # Thu thập thông tin tiêu đề ngày (Row 4 & Row 5)
-        for d, col_idx in day_columns.items():
-            c4 = source.cell(header_row, col_idx)
-            c5 = source.cell(header_row + 1, col_idx) if header_row + 1 <= source.max_row else None
-            
-            val4 = c4.value if c4.value is not None else f"{d:02d}"
-            val5 = c5.value if (c5 and c5.value is not None) else ""
-            
-            if d not in all_day_meta:
-                all_day_meta[d] = {
-                    'val4': val4,
-                    'val5': val5,
-                    'fill4': copy.copy(c4.fill) if c4.has_style else None,
-                    'fill5': copy.copy(c5.fill) if (c5 and c5.has_style) else None,
-                    'border': copy.copy(c4.border) if c4.has_style else None
-                }
-
-        # Thu thập dữ liệu từng cán bộ/khoa phòng
-        ALLOWED_USERS_NORM = {remove_accents(u).upper(): u for u in ALLOWED_USERS_ORDER}
-        for source_row in range(header_row + 2, source.max_row + 1):
-            raw_user = source.cell(source_row, user_col).value
+        # Read users
+        for source_row in range(hr + 2, source.max_row + 1):
+            raw_user = source.cell(source_row, uc).value
             if not raw_user:
                 continue
             u_clean = clean_text(raw_user).upper()
             u_norm = remove_accents(u_clean).upper()
-
-            # Lọc danh sách người dùng được phép (bao gồm XNTT và TCKT)
             if u_norm not in ALLOWED_USERS_NORM:
                 continue
 
-            for d, col_idx in day_columns.items():
+            for d, col_idx in pf['day_columns'].items():
                 cell_val = source.cell(source_row, col_idx).value
                 val_str = clean_text(cell_val)
+                date_key = (y, m, d)
 
-                existing = user_data[u_norm].get(d)
+                if val_str:
+                    file_days_with_data.add(d)
+
+                existing = user_data[u_norm].get(date_key)
                 if val_str.upper() == 'X':
-                    user_data[u_norm][d] = 'X'
+                    user_data[u_norm][date_key] = 'X'
                 elif val_str and val_str != '-':
                     if existing != 'X':
-                        user_data[u_norm][d] = cell_val
+                        user_data[u_norm][date_key] = cell_val
                 else:
                     if existing is None:
-                        user_data[u_norm][d] = '-'
+                        user_data[u_norm][date_key] = '-'
 
-    available_days = sorted(all_day_meta.keys())
-    if not available_days:
-        raise Exception("Không tìm thấy các cột ngày (1-31) trong các file dữ liệu.")
+        # Collect headers
+        for d, col_idx in pf['day_columns'].items():
+            date_key = (y, m, d)
+            c4 = source.cell(hr, col_idx)
+            c5 = source.cell(hr + 1, col_idx) if hr + 1 <= source.max_row else None
+            val4 = c4.value if c4.value is not None else f"{d:02d}"
+            val5 = c5.value if (c5 and c5.value is not None) else ""
+            
+            all_day_meta[date_key] = {
+                'val4': val4,
+                'val5': val5,
+                'fill4': copy.copy(c4.fill) if c4.has_style else None,
+                'fill5': copy.copy(c5.fill) if (c5 and c5.has_style) else None,
+                'border': copy.copy(c4.border) if c4.has_style else None,
+                'has_data': d in file_days_with_data
+            }
+            all_date_keys.append(date_key)
+            if d in file_days_with_data:
+                date_keys_with_data.append(date_key)
 
-    last_available = max(available_days)
-    if end_day > last_available:
-        end_day = last_available
+    # Now decide selected_days based on date_range
+    if len(parsed_files) == 1:
+        # Single file behavior
+        pf = parsed_files[0]
+        y, m = pf['year'], pf['month']
+        if date_range == "01-14":
+            start_d, end_d = 1, 14
+        elif date_range == "15-31":
+            start_d, end_d = 15, 31
+        else:
+            start_d, end_d = 1, 31
+        
+        selected_keys = [k for k in all_date_keys if k[0] == y and k[1] == m and start_d <= k[2] <= end_d]
+        if not selected_keys:
+            selected_keys = all_date_keys
+    else:
+        # Multi-file / cross-month behavior!
+        # The user has e.g. Oct (days 1..31) and Nov (days 1..3 has data)
+        # Find latest date that has data
+        if date_keys_with_data:
+            latest_key_with_data = date_keys_with_data[-1]
+            # All dates up to the latest date that has data
+            idx_latest = all_date_keys.index(latest_key_with_data)
+            valid_chronological_keys = all_date_keys[:idx_latest + 1]
+        else:
+            valid_chronological_keys = all_date_keys
 
-    selected_days = [d for d in range(start_day, end_day + 1) if d in all_day_meta]
-    if not selected_days:
-        selected_days = available_days
+        if date_range == "01-14":
+            # 14 days ending at latest day with data
+            target_count = 14
+            selected_keys = valid_chronological_keys[-target_count:]
+        elif date_range == "15-31":
+            # 15 days ending at latest day with data
+            target_count = 15
+            selected_keys = valid_chronological_keys[-target_count:]
+        else:
+            # Full 30 days ending at latest day with data!
+            target_count = 30
+            selected_keys = valid_chronological_keys[-target_count:]
 
-    result_last_col = 2 + len(selected_days)
-    result_last_letter = get_column_letter(result_last_col)
+    print(f'Selected {len(selected_keys)} columns:')
+    for k in selected_keys:
+        print(f'{k[0]}-{k[1]:02d}-{k[2]:02d} ({all_day_meta[k]["val5"]})', end=' | ')
+    print()
 
+    # Create output Excel
+    result_last_col = 2 + len(selected_keys)
     result_wb = Workbook()
-    for s in result_wb._named_styles:
-        if s.name == "Normal":
-            s.font = Font(name="Times New Roman", size=14)
     result = result_wb.active
     result.title = "Người dùng"
 
     thin_border = Border(
-        left=Side(style="thin"),
-        right=Side(style="thin"),
-        top=Side(style="thin"),
-        bottom=Side(style="thin")
+        left=Side(style="thin"), right=Side(style="thin"),
+        top=Side(style="thin"), bottom=Side(style="thin")
     )
 
+    def center_cell(cell, wrap=False):
+        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=wrap)
+
     # Row 1: Title
-    result["A1"] = title
+    result["A1"] = latest_title
     result.merge_cells(start_row=1, start_column=1, end_row=1, end_column=result_last_col)
     center_cell(result["A1"], wrap=False)
     result["A1"].font = Font(name="Times New Roman", size=14, bold=True)
     result.row_dimensions[1].height = 30
 
     # Row 2: Note
-    result["A2"] = note
+    result["A2"] = latest_note
     result.merge_cells(start_row=2, start_column=1, end_row=2, end_column=result_last_col)
     result["A2"].font = Font(name="Times New Roman", size=14, italic=True)
     result.row_dimensions[2].height = 24
 
-    # Header Row 4 & 5: STT & NGUOI DUNG
+    # Header Row 4 & 5
     result["A4"] = "STT"
     result.merge_cells("A4:A5")
-    center_cell(result["A4"], wrap=False)
+    center_cell(result["A4"])
     result["A4"].font = Font(name="Times New Roman", size=14, bold=True)
     result["A4"].border = thin_border
     result["A5"].border = thin_border
 
     result["B4"] = "NGƯỜI DÙNG"
     result.merge_cells("B4:B5")
-    center_cell(result["B4"], wrap=False)
+    center_cell(result["B4"])
     result["B4"].font = Font(name="Times New Roman", size=14, bold=True)
     result["B4"].border = thin_border
     result["B5"].border = thin_border
 
     # Days in Header
-    for idx, d in enumerate(selected_days, start=3):
-        meta = all_day_meta[d]
+    for idx, k in enumerate(selected_keys, start=3):
+        meta = all_day_meta[k]
         c4 = result.cell(4, idx)
         c4.value = meta['val4']
         c4.font = Font(name="Times New Roman", size=14, bold=True)
-        center_cell(c4, wrap=False)
+        center_cell(c4)
         c4.border = thin_border
         if meta['fill4']:
             c4.fill = copy.copy(meta['fill4'])
@@ -1233,7 +1389,7 @@ def process_giam_dinh_web(file_streams, start_day, end_day):
         c5 = result.cell(5, idx)
         c5.value = meta['val5']
         c5.font = Font(name="Times New Roman", size=14, bold=True)
-        center_cell(c5, wrap=False)
+        center_cell(c5)
         c5.border = thin_border
         if meta['fill5']:
             c5.fill = copy.copy(meta['fill5'])
@@ -1241,36 +1397,32 @@ def process_giam_dinh_web(file_streams, start_day, end_day):
     result.row_dimensions[4].height = 28
     result.row_dimensions[5].height = 26
 
-    # Data Rows (bao gồm XNTT và TCKT, chuẩn 32 người dùng)
+    # Data Rows
     output_row = 6
     stt = 1
     for u_name in ALLOWED_USERS_ORDER:
         u_norm = remove_accents(u_name).upper()
-        # STT
         c_stt = result.cell(output_row, 1)
         c_stt.value = stt
         c_stt.font = Font(name="Times New Roman", size=14)
-        center_cell(c_stt, wrap=False)
+        center_cell(c_stt)
         c_stt.border = thin_border
 
-        # User Name
         c_user = result.cell(output_row, 2)
         c_user.value = u_name
         c_user.font = Font(name="Times New Roman", size=14)
         c_user.alignment = Alignment(horizontal="left", vertical="center")
         c_user.border = thin_border
 
-        # Days
-        for idx, d in enumerate(selected_days, start=3):
+        for idx, k in enumerate(selected_keys, start=3):
             cell = result.cell(output_row, idx)
-            val = user_data.get(u_norm, {}).get(d, '-')
+            val = user_data.get(u_norm, {}).get(k, '-')
             cell.value = val
             cell.font = Font(name="Times New Roman", size=14)
-            center_cell(cell, wrap=False)
+            center_cell(cell)
             cell.border = thin_border
 
-            # Áp dụng màu nền cuối tuần (T7, CN) nếu có
-            meta = all_day_meta[d]
+            meta = all_day_meta[k]
             if meta['fill5'] and getattr(meta['fill5'], 'fill_type', None):
                 cell.fill = copy.copy(meta['fill5'])
 
@@ -1278,49 +1430,29 @@ def process_giam_dinh_web(file_streams, start_day, end_day):
         stt += 1
         output_row += 1
 
-    total_row = output_row
-    result.cell(total_row, 1, "").border = thin_border
-    c_tot = result.cell(total_row, 2, "Tổng cộng")
-    c_tot.font = Font(name="Times New Roman", size=14, bold=True)
-    c_tot.border = thin_border
-    center_cell(c_tot, wrap=False)
-    result.row_dimensions[total_row].height = 28
+    # Page setup
+    result.column_dimensions['A'].width = 6
+    result.column_dimensions['B'].width = 18
+    for idx in range(3, result_last_col + 1):
+        result.column_dimensions[get_column_letter(idx)].width = 3.6
 
-    for idx, d in enumerate(selected_days, start=3):
-        col_letter = get_column_letter(idx)
-        cell = result.cell(total_row, idx)
-        cell.value = f"=SUM({col_letter}6:{col_letter}{total_row - 1})"
-        cell.font = Font(name="Times New Roman", size=14, bold=True)
-        cell.border = thin_border
-        center_cell(cell, wrap=False)
-
-    # Column widths
-    result.column_dimensions["A"].width = 8
-    result.column_dimensions["B"].width = 25
-    for col in range(3, result_last_col + 1):
-        result.column_dimensions[get_column_letter(col)].width = 7.5
-
-    # CẤU HÌNH TRANG IN: KHỔ A4 NGANG (LANDSCAPE)
-    result.print_title_rows = "4:5"
     result.page_setup.orientation = result.ORIENTATION_LANDSCAPE
     result.page_setup.paperSize = result.PAPERSIZE_A4
-    result.sheet_properties.pageSetUpPr.fitToPage = True
+    result.page_setup.fitToPage = True
     result.page_setup.fitToWidth = 1
     result.page_setup.fitToHeight = 0
-    result.page_margins.left = 0.25
-    result.page_margins.right = 0.25
-    result.page_margins.top = 0.35
-    result.page_margins.bottom = 0.35
-    result.page_margins.header = 0.2
-    result.page_margins.footer = 0.2
+    result.sheet_properties.pageSetUpPr.fitToPage = True
+
+    # Close sources
+    for pf in parsed_files:
+        pf['wb'].close()
 
     out_io = io.BytesIO()
     result_wb.save(out_io)
     out_io.seek(0)
     return out_io
 
-# ============================================================
-# LOGIC XỬ LÝ BÁO CÁO P.CNTT & TẢI GOOGLE SHEETS
+
 # ============================================================
 def extract_spreadsheet_id(url):
     match = re.search(r'/spreadsheets/d/([a-zA-Z0-9\-_]+)', url)
@@ -3650,7 +3782,7 @@ HTML_PAGE = """<!DOCTYPE html>
             </div>
             <div class="guide-box">
               <h3>🎯 Mục đích:</h3>
-              <p>Đọc file Excel báo cáo Check Log MDINSIGHT, lọc danh sách người dùng được phép, xuất ra file <b>'DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM.xlsx'</b> chuẩn khổ A4 ngang (đã bỏ XNTT, TCKT), tự động autofit cột và co giãn vừa 1 trang ngang.</p>
+              <p>Đọc file Excel báo cáo Check Log MDINSIGHT, lọc danh sách người dùng được phép, xuất ra file <b>'DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM.xlsx'</b> chuẩn khổ A4 ngang (đầy đủ 32 người dùng bao gồm XNTT, TCKT), tự động autofit cột và co giãn vừa 1 trang ngang.</p>
               <h3>📝 Các bước thực hiện:</h3>
               <ol>
                 <li><b>Bước 1:</b> Tải lên 1 hoặc nhiều file Excel Check Log MDINSIGHT.</li>
@@ -3676,7 +3808,7 @@ HTML_PAGE = """<!DOCTYPE html>
                 <label class="form-label">1️⃣ Tải lên file Excel Check Log MDINSIGHT (có thể chọn nhiều file):</label>
                 <div class="file-dropzone" onclick="document.getElementById('file-t5').click()">
                   <div class="drop-icon">🏥</div>
-                  <div class="drop-text">Nhấp để chọn file Excel Check Log MDINSIGHT (chọn 1 hoặc nhiều file)</div>
+                  <div class="drop-text">Nhấp để chọn file Check Log MDINSIGHT (hỗ trợ chọn 2 file cross-tháng để ghép 30 ngày)</div>
                   <input type="file" id="file-t5" accept=".xlsx,.xls" multiple onchange="previewFiles(this, 'chosen-t5')">
                 </div>
                 <div class="file-chosen-badge" id="chosen-t5"></div>
@@ -3702,8 +3834,8 @@ HTML_PAGE = """<!DOCTYPE html>
                   <label class="radio-card">
                     <input type="radio" name="t5_date_range" value="full">
                     <div>
-                      <div class="radio-title">Lựa chọn 3: Lấy full từ ngày 01 đến ngày cuối cùng của tháng</div>
-                      <div class="radio-desc">Tổng hợp toàn bộ các ngày có dữ liệu trong tháng</div>
+                      <div class="radio-title">Lựa chọn 3: Lấy full tháng / Ghép 30 ngày gần nhất</div>
+                      <div class="radio-desc">Tổng hợp toàn bộ các ngày có dữ liệu trong tháng (hoặc tự động ghép 30 ngày khi tải 2 file tháng trước và tháng này)</div>
                     </div>
                   </label>
                 </div>
@@ -4972,8 +5104,15 @@ function handleRequest(e) {
       try {
         const res = await fetch('/api/task-1?action=task-1', { method: 'POST', body: formData });
         if (!res.ok) {
-          const errData = await res.json().catch(() => ({ error: 'Lỗi máy chủ.' }));
-          throw new Error(errData.error || 'Xử lý thất bại.');
+          let errMsg = 'Lỗi máy chủ (' + res.status + ').';
+          try {
+            const errData = await res.json();
+            errMsg = errData.error || errData.message || errMsg;
+          } catch (_) {
+            const t = await res.text().catch(() => '');
+            if (t) errMsg = t.length > 250 ? t.substring(0, 250) + '...' : t;
+          }
+          throw new Error(errMsg);
         }
         const blob = await res.blob();
         const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, 'Ket_qua.xlsx');
@@ -5195,7 +5334,6 @@ function handleRequest(e) {
       for (let i = 0; i < fInput.files.length; i++) {
         formData.append('files', fInput.files[i]);
       }
-      formData.append('file', fInput.files[0]);
       formData.append('date_range', range);
 
       setLoading('t5', true);
@@ -7418,15 +7556,10 @@ def handle_task_5():
         if not valid_files:
             return jsonify({"error": "Vui lòng tải lên file Excel hợp lệ."}), 400
 
-        date_range = request.form.get("date_range", "01-14")
-        if date_range == "01-14":
-            start_day, end_day = 1, 14
-        elif date_range == "15-31":
-            start_day, end_day = 15, 31
-        else:
-            start_day, end_day = 1, 31
+        date_range = request.form.get("date_range", "full")
+        file_bytes_list = [f.read() for f in valid_files]
 
-        out_io = process_giam_dinh_web([f.stream for f in valid_files], start_day, end_day)
+        out_io = process_giam_dinh_web(file_bytes_list, date_range=date_range)
         return send_file(
             out_io,
             as_attachment=True,
