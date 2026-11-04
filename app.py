@@ -3585,7 +3585,6 @@ HTML_PAGE = """<!DOCTYPE html>
               </div>
               <span class="nav-lock" style="display:none;">🔒</span>
             </li>
-            <li data-task="8" onclick="switchTask(8)">
             <li data-task="14" onclick="switchTask(14)">
               <div class="nav-icon">📋</div>
               <div class="nav-text">
@@ -3594,7 +3593,7 @@ HTML_PAGE = """<!DOCTYPE html>
               </div>
               <span class="nav-lock" style="display:none;">🔒</span>
             </li>
-
+            <li data-task="8" onclick="switchTask(8)">
               <div class="nav-icon">⚡</div>
               <div class="nav-text">
                 <span class="nav-title">P.CNTT (Sheet Cố Định)</span>
