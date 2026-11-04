@@ -1158,18 +1158,41 @@ def parse_month_year(title_text):
         return year, month
     return None, None
 
-def process_giam_dinh_web(file_bytes_list, date_range="full"):
-    if not isinstance(file_bytes_list, list):
-        file_bytes_list = [file_bytes_list]
+def process_giam_dinh_web(file_inputs, date_range="full", end_day=None):
+    if end_day is not None and isinstance(date_range, int):
+        start_d = date_range
+        if start_d == 1 and end_day == 14:
+            date_range = "01-14"
+        elif start_d == 15:
+            date_range = "15-31"
+        else:
+            date_range = "full"
+    else:
+        date_range = str(date_range or "full")
 
-    # Pre-parse each file to get year, month, sheet data
+    if not isinstance(file_inputs, list):
+        file_inputs = [file_inputs]
+
+    file_bytes_list = []
+    for f in file_inputs:
+        if isinstance(f, bytes):
+            file_bytes_list.append(f)
+        elif hasattr(f, "read"):
+            f.seek(0) if hasattr(f, "seek") else None
+            file_bytes_list.append(f.read())
+        elif isinstance(f, str) and os.path.exists(f):
+            with open(f, "rb") as fp:
+                file_bytes_list.append(fp.read())
+
+    if not file_bytes_list:
+        raise Exception("Không nhận được dữ liệu file Excel Check Log MDINSIGHT.")
+
     parsed_files = []
     ALLOWED_USERS_NORM = {remove_accents(u).upper(): u for u in ALLOWED_USERS_ORDER}
 
     for idx, f_bytes in enumerate(file_bytes_list):
         pruned = prune_xlsx_for_giam_dinh(f_bytes)
         wb = openpyxl.load_workbook(io.BytesIO(pruned), data_only=True)
-        # Select active or 'Người dùng'
         source = wb.active
         for sname in wb.sheetnames:
             if 'người dùng' in sname.lower() or 'user' in sname.lower():
@@ -1178,12 +1201,12 @@ def process_giam_dinh_web(file_bytes_list, date_range="full"):
 
         title = source["A1"].value or ""
         note = source["A2"].value or "Ghi chú: [X]: Có hoạt động, [-]: Không hoạt động"
+
         year, month = parse_month_year(title)
         if not month:
-            month = 10 + idx  # fallback
+            month = 10 + idx
             year = 2026
 
-        # Find header row and day columns
         header_row = 4
         user_col = 2
         for r in range(1, 15):
@@ -1218,11 +1241,8 @@ def process_giam_dinh_web(file_bytes_list, date_range="full"):
             'wb': wb
         })
 
-    # Sort files chronologically by (year, month)
     parsed_files.sort(key=lambda x: (x['year'], x['month']))
 
-    # Chronologically gather all day metadata and user data
-    # Key: (year, month, day)
     all_day_meta = {}
     user_data = {remove_accents(u).upper(): {} for u in ALLOWED_USERS_ORDER}
     all_date_keys = []
@@ -1237,10 +1257,8 @@ def process_giam_dinh_web(file_bytes_list, date_range="full"):
         uc = pf['user_col']
         y, m = pf['year'], pf['month']
 
-        # Determine which days have data
         file_days_with_data = set()
 
-        # Read users
         for source_row in range(hr + 2, source.max_row + 1):
             raw_user = source.cell(source_row, uc).value
             if not raw_user:
@@ -1268,29 +1286,31 @@ def process_giam_dinh_web(file_bytes_list, date_range="full"):
                     if existing is None:
                         user_data[u_norm][date_key] = '-'
 
-        # Collect headers
         for d, col_idx in pf['day_columns'].items():
             date_key = (y, m, d)
             c4 = source.cell(hr, col_idx)
             c5 = source.cell(hr + 1, col_idx) if hr + 1 <= source.max_row else None
             val4 = c4.value if c4.value is not None else f"{d:02d}"
             val5 = c5.value if (c5 and c5.value is not None) else ""
-            
+
+            # Check if weekend (T7, CN)
+            is_weekend = str(val5).upper() in ("T7", "CN")
+
             all_day_meta[date_key] = {
                 'val4': val4,
                 'val5': val5,
-                'fill4': copy.copy(c4.fill) if c4.has_style else None,
-                'fill5': copy.copy(c5.fill) if (c5 and c5.has_style) else None,
-                'border': copy.copy(c4.border) if c4.has_style else None,
+                'is_weekend': is_weekend,
+                'year': y,
+                'month': m,
+                'day': d,
                 'has_data': d in file_days_with_data
             }
-            all_date_keys.append(date_key)
-            if d in file_days_with_data:
+            if date_key not in all_date_keys:
+                all_date_keys.append(date_key)
+            if d in file_days_with_data and date_key not in date_keys_with_data:
                 date_keys_with_data.append(date_key)
 
-    # Now decide selected_days based on date_range
     if len(parsed_files) == 1:
-        # Single file behavior
         pf = parsed_files[0]
         y, m = pf['year'], pf['month']
         if date_range == "01-14":
@@ -1299,153 +1319,208 @@ def process_giam_dinh_web(file_bytes_list, date_range="full"):
             start_d, end_d = 15, 31
         else:
             start_d, end_d = 1, 31
-        
+
         selected_keys = [k for k in all_date_keys if k[0] == y and k[1] == m and start_d <= k[2] <= end_d]
         if not selected_keys:
             selected_keys = all_date_keys
     else:
-        # Multi-file / cross-month behavior!
-        # The user has e.g. Oct (days 1..31) and Nov (days 1..3 has data)
-        # Find latest date that has data
         if date_keys_with_data:
             latest_key_with_data = date_keys_with_data[-1]
-            # All dates up to the latest date that has data
             idx_latest = all_date_keys.index(latest_key_with_data)
             valid_chronological_keys = all_date_keys[:idx_latest + 1]
         else:
             valid_chronological_keys = all_date_keys
 
         if date_range == "01-14":
-            # 14 days ending at latest day with data
-            target_count = 14
-            selected_keys = valid_chronological_keys[-target_count:]
+            selected_keys = valid_chronological_keys[-14:]
         elif date_range == "15-31":
-            # 15 days ending at latest day with data
-            target_count = 15
-            selected_keys = valid_chronological_keys[-target_count:]
+            selected_keys = valid_chronological_keys[-15:]
         else:
-            # Full 30 days ending at latest day with data!
-            target_count = 30
-            selected_keys = valid_chronological_keys[-target_count:]
+            selected_keys = valid_chronological_keys[-30:]
 
-    print(f'Selected {len(selected_keys)} columns:')
-    for k in selected_keys:
-        print(f'{k[0]}-{k[1]:02d}-{k[2]:02d} ({all_day_meta[k]["val5"]})', end=' | ')
-    print()
+    if not selected_keys:
+        selected_keys = all_date_keys
 
-    # Create output Excel
     result_last_col = 2 + len(selected_keys)
     result_wb = Workbook()
+    for s in result_wb._named_styles:
+        if s.name == "Normal":
+            s.font = Font(name="Times New Roman", size=18)
     result = result_wb.active
     result.title = "Người dùng"
 
     thin_border = Border(
-        left=Side(style="thin"), right=Side(style="thin"),
-        top=Side(style="thin"), bottom=Side(style="thin")
+        left=Side(style="thin"),
+        right=Side(style="thin"),
+        top=Side(style="thin"),
+        bottom=Side(style="thin")
     )
+
+    weekend_fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
 
     def center_cell(cell, wrap=False):
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=wrap)
 
-    # Row 1: Title
+    # Row 1: Tiêu đề
     result["A1"] = latest_title
     result.merge_cells(start_row=1, start_column=1, end_row=1, end_column=result_last_col)
     center_cell(result["A1"], wrap=False)
-    result["A1"].font = Font(name="Times New Roman", size=14, bold=True)
-    result.row_dimensions[1].height = 30
+    result["A1"].font = Font(name="Times New Roman", size=18, bold=True)
+    result.row_dimensions[1].height = 32
 
-    # Row 2: Note
+    # Row 2: Ghi chú
     result["A2"] = latest_note
     result.merge_cells(start_row=2, start_column=1, end_row=2, end_column=result_last_col)
-    result["A2"].font = Font(name="Times New Roman", size=14, italic=True)
-    result.row_dimensions[2].height = 24
+    result["A2"].font = Font(name="Times New Roman", size=16, italic=True)
+    result.row_dimensions[2].height = 26
 
-    # Header Row 4 & 5
-    result["A4"] = "STT"
-    result.merge_cells("A4:A5")
-    center_cell(result["A4"])
-    result["A4"].font = Font(name="Times New Roman", size=14, bold=True)
-    result["A4"].border = thin_border
-    result["A5"].border = thin_border
+    # Header Row 3, 4, 5:
+    # Row 3: Month Headers + STT & NGƯỜI DÙNG merged across rows 3:5
+    result["A3"] = "STT"
+    result.merge_cells("A3:A5")
+    center_cell(result["A3"], wrap=False)
+    result["A3"].font = Font(name="Times New Roman", size=18, bold=True)
 
-    result["B4"] = "NGƯỜI DÙNG"
-    result.merge_cells("B4:B5")
-    center_cell(result["B4"])
-    result["B4"].font = Font(name="Times New Roman", size=14, bold=True)
-    result["B4"].border = thin_border
-    result["B5"].border = thin_border
+    result["B3"] = "NGƯỜI DÙNG"
+    result.merge_cells("B3:B5")
+    center_cell(result["B3"], wrap=False)
+    result["B3"].font = Font(name="Times New Roman", size=18, bold=True)
 
-    # Days in Header
+    for r_idx in (3, 4, 5):
+        result.cell(r_idx, 1).border = thin_border
+        result.cell(r_idx, 2).border = thin_border
+
+    # Row 3: Group columns by month to create Month header
+    # e.g., Tháng 10 spanning cols 3..29, Tháng 11 spanning cols 30..32
+    month_groups = []
+    current_m = None
+    start_c = None
+    for idx, k in enumerate(selected_keys, start=3):
+        m = k[1]
+        y = k[0]
+        if m != current_m:
+            if current_m is not None:
+                month_groups.append((current_m, start_c, idx - 1))
+            current_m = m
+            start_c = idx
+    if current_m is not None:
+        month_groups.append((current_m, start_c, 2 + len(selected_keys)))
+
+    for m_val, c_start, c_end in month_groups:
+        c_month = result.cell(3, c_start)
+        c_month.value = f"Tháng {m_val}"
+        c_month.font = Font(name="Times New Roman", size=18, bold=True)
+        center_cell(c_month, wrap=False)
+        if c_start != c_end:
+            result.merge_cells(start_row=3, start_column=c_start, end_row=3, end_column=c_end)
+        for c in range(c_start, c_end + 1):
+            result.cell(3, c).border = thin_border
+
+    result.row_dimensions[3].height = 28
+
+    # Row 4: Day numbers & Row 5: Day of week
     for idx, k in enumerate(selected_keys, start=3):
         meta = all_day_meta[k]
         c4 = result.cell(4, idx)
         c4.value = meta['val4']
-        c4.font = Font(name="Times New Roman", size=14, bold=True)
-        center_cell(c4)
+        c4.font = Font(name="Times New Roman", size=18, bold=True)
+        center_cell(c4, wrap=False)
         c4.border = thin_border
-        if meta['fill4']:
-            c4.fill = copy.copy(meta['fill4'])
 
         c5 = result.cell(5, idx)
         c5.value = meta['val5']
-        c5.font = Font(name="Times New Roman", size=14, bold=True)
-        center_cell(c5)
+        c5.font = Font(name="Times New Roman", size=18, bold=True)
+        center_cell(c5, wrap=False)
         c5.border = thin_border
-        if meta['fill5']:
-            c5.fill = copy.copy(meta['fill5'])
+
+        # Weekend fill ONLY (No blue for weekdays!)
+        if meta['is_weekend']:
+            c4.fill = weekend_fill
+            c5.fill = weekend_fill
 
     result.row_dimensions[4].height = 28
     result.row_dimensions[5].height = 26
 
-    # Data Rows
+    # Data Rows (Rows 6..37)
     output_row = 6
     stt = 1
     for u_name in ALLOWED_USERS_ORDER:
         u_norm = remove_accents(u_name).upper()
+        # STT
         c_stt = result.cell(output_row, 1)
         c_stt.value = stt
-        c_stt.font = Font(name="Times New Roman", size=14)
-        center_cell(c_stt)
+        c_stt.font = Font(name="Times New Roman", size=18)
+        center_cell(c_stt, wrap=False)
         c_stt.border = thin_border
 
+        # User Name
         c_user = result.cell(output_row, 2)
         c_user.value = u_name
-        c_user.font = Font(name="Times New Roman", size=14)
+        c_user.font = Font(name="Times New Roman", size=18)
         c_user.alignment = Alignment(horizontal="left", vertical="center")
         c_user.border = thin_border
 
+        # Days
         for idx, k in enumerate(selected_keys, start=3):
             cell = result.cell(output_row, idx)
             val = user_data.get(u_norm, {}).get(k, '-')
             cell.value = val
-            cell.font = Font(name="Times New Roman", size=14)
-            center_cell(cell)
+            cell.font = Font(name="Times New Roman", size=18)
+            center_cell(cell, wrap=False)
             cell.border = thin_border
 
+            # Weekend fill ONLY (No blue for weekdays!)
             meta = all_day_meta[k]
-            if meta['fill5'] and getattr(meta['fill5'], 'fill_type', None):
-                cell.fill = copy.copy(meta['fill5'])
+            if meta['is_weekend']:
+                cell.fill = weekend_fill
 
-        result.row_dimensions[output_row].height = 25
+        result.row_dimensions[output_row].height = 26
         stt += 1
         output_row += 1
 
-    # Page setup
-    result.column_dimensions['A'].width = 6
-    result.column_dimensions['B'].width = 18
-    for idx in range(3, result_last_col + 1):
-        result.column_dimensions[get_column_letter(idx)].width = 3.6
+    total_row = output_row
+    result.cell(total_row, 1, "").border = thin_border
+    c_tot = result.cell(total_row, 2, "Tổng cộng")
+    c_tot.font = Font(name="Times New Roman", size=18, bold=True)
+    c_tot.border = thin_border
+    center_cell(c_tot, wrap=False)
+    result.row_dimensions[total_row].height = 28
 
+    for idx in range(3, result_last_col + 1):
+        col_letter = get_column_letter(idx)
+        cell = result.cell(total_row, idx)
+        cell.value = f"=SUM({col_letter}6:{col_letter}{total_row - 1})"
+        cell.font = Font(name="Times New Roman", size=18, bold=True)
+        cell.border = thin_border
+        center_cell(cell, wrap=False)
+
+    # Column widths
+    result.column_dimensions["A"].width = 7.5
+    result.column_dimensions["B"].width = 24.0
+    for col in range(3, result_last_col + 1):
+        result.column_dimensions[get_column_letter(col)].width = 4.2
+
+    # Print setup: A4 Landscape, Narrow margins, fit to full page
+    result.print_title_rows = "3:5"
     result.page_setup.orientation = result.ORIENTATION_LANDSCAPE
     result.page_setup.paperSize = result.PAPERSIZE_A4
-    result.page_setup.fitToPage = True
-    result.page_setup.fitToWidth = 1
-    result.page_setup.fitToHeight = 0
     result.sheet_properties.pageSetUpPr.fitToPage = True
+    result.page_setup.fitToWidth = 1
+    result.page_setup.fitToHeight = 1
 
-    # Close sources
+    # Chuẩn Margin Narrow trong Excel (0.25 in left/right, 0.3 in top/bottom)
+    result.page_margins.left = 0.25
+    result.page_margins.right = 0.25
+    result.page_margins.top = 0.3
+    result.page_margins.bottom = 0.3
+    result.page_margins.header = 0.2
+    result.page_margins.footer = 0.2
+
     for pf in parsed_files:
-        pf['wb'].close()
+        try:
+            pf['wb'].close()
+        except Exception:
+            pass
 
     out_io = io.BytesIO()
     result_wb.save(out_io)
