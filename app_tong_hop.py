@@ -2155,8 +2155,8 @@ def run_task_8(log_func=print, progress_func=lambda v: None, output_folder=None)
 # LOGIC TÁC VỤ 5: BÁO CÁO CỔNG GIÁM ĐỊNH BẢO HIỂM (Xuất Excel A4 Portrait Fit 1 Page)
 # ============================================================
 ALLOWED_USERS = {
-    "PHCN", "NGOẠI TH", "NHH", "TTTM", "NGOẠI CT", "DA LIỄU", "PTGMHS",
-    "NỘI TH", "PHỤ SẢN", "MẮT", "TTBVSK", "DƯỢC", "THẬN", "TRUYỀN NHIỄM",
+    "PHCN", "NGOẠI TH", "XNTT", "NHH", "TTTM", "NGOẠI CT", "DA LIỄU", "PTGMHS",
+    "NỘI TH", "PHỤ SẢN", "MẮT", "TTBVSK", "DƯỢC", "THẬN", "TRUYỀN NHIỄM", "TCKT",
     "NGOẠI UB", "NGOẠI XẠ TRỊ", "RHM", "KB", "CXK", "CSGN", "NGOẠI TN", "HHLS",
     "TMH", "HSTC", "HTL", "NGOẠI TKLN", "NHI", "ĐÔNG Y", "CẤP CỨU", "LKTK"
 }

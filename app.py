@@ -66,8 +66,8 @@ def set_tracker_apps_script_url(url):
         print("Error saving tracker config:", e)
 
 ALLOWED_USERS_ORDER = [
-    "PHCN", "NGOẠI TH", "NHH", "TTTM", "NGOẠI CT", "DA LIỄU", "PTGMHS",
-    "NỘI TH", "PHỤ SẢN", "MẮT", "TTBVSK", "DƯỢC", "THẬN", "TRUYỀN NHIỄM",
+    "PHCN", "NGOẠI TH", "XNTT", "NHH", "TTTM", "NGOẠI CT", "DA LIỄU", "PTGMHS",
+    "NỘI TH", "PHỤ SẢN", "MẮT", "TTBVSK", "DƯỢC", "THẬN", "TRUYỀN NHIỄM", "TCKT",
     "NGOẠI UB", "NGOẠI XẠ TRỊ", "RHM", "KB", "CXK", "CSGN", "NGOẠI TN", "HHLS",
     "TMH", "HSTC", "HTL", "NGOẠI TKLN", "NHI", "ĐÔNG Y", "CẤP CỨU", "LKTK"
 ]
@@ -1142,9 +1142,9 @@ def process_giam_dinh_web(file_streams, start_day, end_day):
             if not raw_user:
                 continue
             u_clean = clean_text(raw_user).upper()
-            u_norm = remove_accents(u_clean)
+            u_norm = remove_accents(u_clean).upper()
 
-            # Bỏ người dùng không thuộc ALLOWED_USERS (loại trừ XNTT và TCKT)
+            # Lọc danh sách người dùng được phép (bao gồm XNTT và TCKT)
             if u_norm not in ALLOWED_USERS_NORM:
                 continue
 
@@ -1241,7 +1241,7 @@ def process_giam_dinh_web(file_streams, start_day, end_day):
     result.row_dimensions[4].height = 28
     result.row_dimensions[5].height = 26
 
-    # Data Rows (Loại bỏ XNTT và TCKT, giữ chuẩn danh sách 30 người dùng)
+    # Data Rows (bao gồm XNTT và TCKT, chuẩn 32 người dùng)
     output_row = 6
     stt = 1
     for u_name in ALLOWED_USERS_ORDER:
@@ -4145,8 +4145,9 @@ HTML_PAGE = """<!DOCTYPE html>
             <div class="cntt-quick-row">
               <div class="cntt-quick-left">
                 <span style="font-size:12px; font-weight:700; color:#94a3b8; margin-right:4px;">⚡ Gợi ý:</span>
-                <span class="cntt-quick-pill" onclick="selectCnttShortcut('today')">⚡ Hôm nay (29.10)</span>
+                <span class="cntt-quick-pill" onclick="selectCnttShortcut('today')" id="cntt-pill-today">⚡ Hôm nay (03.11)</span>
                 <span class="cntt-quick-pill" onclick="selectCnttShortcut('week')">⚡ Tuần này</span>
+                <span class="cntt-quick-pill" onclick="selectCnttShortcut('m11')">⚡ Tháng 11</span>
                 <span class="cntt-quick-pill" onclick="selectCnttShortcut('m10')">⚡ Tháng 10</span>
                 <span class="cntt-quick-pill" onclick="selectCnttShortcut('m9')">⚡ Tháng 9</span>
               </div>
@@ -4158,12 +4159,13 @@ HTML_PAGE = """<!DOCTYPE html>
             </div>
 
             <!-- Month Selection Tabs -->
-            <div class="cntt-month-tabs">
-              <span class="cntt-month-pill active" onclick="switchCnttMonth('m10', this)">★ Tháng 10 (Hiện tại)</span>
+            <div class="cntt-month-tabs" id="cntt-month-tabs">
+              <span class="cntt-month-pill active" onclick="switchCnttMonth('m11', this)">★ Tháng 11 (Hiện tại)</span>
+              <span class="cntt-month-pill" onclick="switchCnttMonth('m10', this)">Tháng 10</span>
               <span class="cntt-month-pill" onclick="switchCnttMonth('m9', this)">Tháng 9</span>
               <span class="cntt-month-pill" onclick="switchCnttMonth('m8', this)">Tháng 8</span>
               <span class="cntt-month-pill" onclick="switchCnttMonth('m7', this)">Tháng 7</span>
-              <span class="cntt-month-pill" onclick="switchCnttMonth('all', this)">Tất cả (67 sheet)</span>
+              <span class="cntt-month-pill" onclick="switchCnttMonth('all', this)">Tất cả (70 sheet)</span>
             </div>
 
             <!-- Sheets Checkbox Grid -->
@@ -5980,8 +5982,9 @@ function handleRequest(e) {
        BC SỬA CNTT JAVASCRIPT CONTROLLER
        ============================================================ */
     const CNTT_ALL_MONTHS = {
+      m11: ['03.11', '02.11'],
       m10: [
-        '29.10', '28.10', '27.10', '26.10', '23-24-25.10', '22.10', '21.10', 
+        '30.10', '29.10', '28.10', '27.10', '26.10', '23-24-25.10', '22.10', '21.10', 
         '20.10', '19.10', '16.10-18.10', '15.10', '14.10', '13.10', '12.10', 
         '9.10-10.10-11.10', '8.10', '7.10', '6.10', '05.10', '3-4.10', '2.10', '1.10'
       ],
@@ -5996,8 +5999,8 @@ function handleRequest(e) {
       m7: ['31.7-2.8', '30.7', '29.7']
     };
 
-    let cnttSelectedMonth = 'm10';
-    let cnttSelectedSheets = new Set(['29.10', '28.10', '27.10']);
+    let cnttSelectedMonth = 'm11';
+    let cnttSelectedSheets = new Set(['03.11', '02.11']);
     let cnttRawRecords = [];
     let cnttAggregatedData = null;
     let cnttIsGridCollapsed = false;
@@ -6005,12 +6008,52 @@ function handleRequest(e) {
     // Preloaded initial records from Python
     const CNTT_INITIAL_DATA = {};
 
+    async function syncLiveSheetListFromGoogle() {
+      try {
+        const formData = new FormData();
+        formData.append('url', 'https://docs.google.com/spreadsheets/d/1_I7qmDx7mtIOcCLkEkDz_PCaC8KPd_Po-pqEh7krdPA/edit?gid=1894058788#gid=1894058788');
+        const res = await fetch('/api/get-sheets?action=get-sheets', {
+          method: 'POST',
+          body: formData
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.sheets && data.sheets.length > 0) {
+            const m11 = [];
+            const m10 = [];
+            data.sheets.forEach(s => {
+              const sTrim = s.trim();
+              if (sTrim.includes('.11')) {
+                if (!m11.includes(sTrim)) m11.push(sTrim);
+              } else if (sTrim.includes('.10')) {
+                if (!m10.includes(sTrim)) m10.push(sTrim);
+              }
+            });
+            if (m11.length > 0) {
+              CNTT_ALL_MONTHS.m11 = m11.reverse();
+              const pillToday = document.getElementById('cntt-pill-today');
+              if (pillToday) pillToday.textContent = `⚡ Hôm nay (${CNTT_ALL_MONTHS.m11[0]})`;
+            }
+            if (m10.length > 0) {
+              CNTT_ALL_MONTHS.m10 = m10.reverse();
+            }
+            renderCnttSheetGrid();
+          }
+        }
+      } catch (err) {
+        console.warn('Auto-sync live sheets fallback to static:', err);
+      }
+    }
+
     function initCnttDashboard() {
       renderCnttMonthPills();
       renderCnttSheetGrid();
       
       // Fetch data cleanly from API
       fetchOrAggregateCnttSheets(false);
+      
+      // Auto-sync live sheet list from Google Sheets in background
+      syncLiveSheetListFromGoogle();
       
       // Show sync time
       const now = new Date();
@@ -6038,9 +6081,9 @@ function handleRequest(e) {
 
       let list = [];
       if (cnttSelectedMonth === 'all') {
-        list = [...CNTT_ALL_MONTHS.m10, ...CNTT_ALL_MONTHS.m9, ...CNTT_ALL_MONTHS.m8, ...CNTT_ALL_MONTHS.m7];
+        list = [...(CNTT_ALL_MONTHS.m11 || []), ...CNTT_ALL_MONTHS.m10, ...CNTT_ALL_MONTHS.m9, ...CNTT_ALL_MONTHS.m8, ...CNTT_ALL_MONTHS.m7];
       } else {
-        list = CNTT_ALL_MONTHS[cnttSelectedMonth] || CNTT_ALL_MONTHS.m10;
+        list = CNTT_ALL_MONTHS[cnttSelectedMonth] || CNTT_ALL_MONTHS.m11 || CNTT_ALL_MONTHS.m10;
       }
 
       list.forEach(sheetName => {
@@ -6066,7 +6109,7 @@ function handleRequest(e) {
     }
 
     function selectAllCurrentMonthSheets() {
-      const list = CNTT_ALL_MONTHS[cnttSelectedMonth] || CNTT_ALL_MONTHS.m10;
+      const list = CNTT_ALL_MONTHS[cnttSelectedMonth] || CNTT_ALL_MONTHS.m11 || CNTT_ALL_MONTHS.m10;
       list.forEach(s => cnttSelectedSheets.add(s));
       renderCnttSheetGrid();
       fetchOrAggregateCnttSheets();
@@ -6081,13 +6124,16 @@ function handleRequest(e) {
     function selectCnttShortcut(type) {
       cnttSelectedSheets.clear();
       if (type === 'today') {
-        cnttSelectedSheets.add('29.10');
+        const todaySheet = (CNTT_ALL_MONTHS.m11 && CNTT_ALL_MONTHS.m11.length) ? CNTT_ALL_MONTHS.m11[0] : '03.11';
+        cnttSelectedSheets.add(todaySheet);
       } else if (type === 'week') {
-        ['29.10', '28.10', '27.10', '26.10', '23-24-25.10'].forEach(s => cnttSelectedSheets.add(s));
+        (CNTT_ALL_MONTHS.m11 || ['03.11', '02.11']).forEach(s => cnttSelectedSheets.add(s));
+      } else if (type === 'm11') {
+        (CNTT_ALL_MONTHS.m11 || []).forEach(s => cnttSelectedSheets.add(s));
       } else if (type === 'm10') {
-        CNTT_ALL_MONTHS.m10.forEach(s => cnttSelectedSheets.add(s));
+        (CNTT_ALL_MONTHS.m10 || []).forEach(s => cnttSelectedSheets.add(s));
       } else if (type === 'm9') {
-        CNTT_ALL_MONTHS.m9.forEach(s => cnttSelectedSheets.add(s));
+        (CNTT_ALL_MONTHS.m9 || []).forEach(s => cnttSelectedSheets.add(s));
       }
       renderCnttSheetGrid();
       fetchOrAggregateCnttSheets();
@@ -6276,7 +6322,7 @@ function handleRequest(e) {
       if (kpiStaff) kpiStaff.textContent = d.staff_count;
       if (kpiOther) kpiOther.textContent = d.other_count;
       if (statusMsg) statusMsg.textContent = `✓ Đã tổng hợp thành công ${d.total_cases} ca từ ${d.selected_sheets_count} sheet!`;
-      if (tabRecCount) tabRecCount.textContent = (cnttRawRecords.filter(r => r.sheet === '29.10').length) || d.total_cases;
+      if (tabRecCount) tabRecCount.textContent = d.total_cases;
 
       // Filters
       const filterCb = (document.getElementById('cntt-filter-staff')?.value || '').trim();
@@ -6499,6 +6545,7 @@ function handleRequest(e) {
 
     async function refreshCnttLive() {
       showCnttToast('⏳ ĐỒNG BỘ', 'Đang nạp dữ liệu mới nhất từ Google Sheets...');
+      await syncLiveSheetListFromGoogle();
       await fetchOrAggregateCnttSheets(true);
       const now = new Date();
       const h = String(now.getHours()).padStart(2, '0');
@@ -8839,13 +8886,13 @@ def dispatch_request(path=""):
         return handle_error_tracker_config()
 
     if "cntt-summary" in matched or request.args.get("action") == "cntt-summary" or request.args.get("action") == "cntt-data":
-        sheets_param = request.args.get("sheets", "29.10,28.10,27.10")
+        sheets_param = request.args.get("sheets", "03.11,02.11")
         force_sync = request.args.get("sync", "0") == "1"
         if force_sync:
             CNTT_MEMORY_CACHE.clear()
         sheets_list = [s.strip() for s in sheets_param.split(",") if s.strip()]
         if not sheets_list:
-            sheets_list = ["29.10", "28.10", "27.10"]
+            sheets_list = ["03.11", "02.11"]
         data = aggregate_cntt_data(sheets_list)
         return jsonify(data)
 
