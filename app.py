@@ -5677,7 +5677,9 @@ function handleRequest(e) {
       formData.append('action', 'get-sheets');
 
       try {
-        const res = await fetch('/api/task-14?action=get-sheets', {
+        formData.append('task', '14');
+      formData.append('sub_action', 'get-sheets');
+      const res = await fetch('/api/task-14?action=task-14&sub_action=get-sheets', {
           method: 'POST',
           body: formData
         });
@@ -5732,7 +5734,9 @@ function handleRequest(e) {
       formData.append('action', 'get-data');
 
       try {
-        const res = await fetch('/api/task-14?action=get-data', {
+        formData.append('task', '14');
+      formData.append('sub_action', 'get-data');
+      const res = await fetch('/api/task-14?action=task-14&sub_action=get-data', {
           method: 'POST',
           body: formData
         });
@@ -5872,7 +5876,9 @@ function handleRequest(e) {
       formData.append('action', 'export-excel');
 
       try {
-        const res = await fetch('/api/task-14?action=export-excel', {
+        formData.append('task', '14');
+      formData.append('sub_action', 'export-excel');
+      const res = await fetch('/api/task-14?action=task-14&sub_action=export-excel', {
           method: 'POST',
           body: formData
         });
@@ -8317,7 +8323,7 @@ def build_bccv_excel(records, sheet_name=""):
 
 def handle_task_14():
     try:
-        action = request.args.get("action") or request.form.get("action") or ""
+        action = request.args.get("sub_action") or request.form.get("sub_action") or request.args.get("action") or request.form.get("action") or ""
         url = request.form.get("url") or request.args.get("url") or DEFAULT_BCCV_GSHEET_URL
         sheet_name = request.form.get("sheet_name") or request.args.get("sheet_name") or ""
 
@@ -9782,7 +9788,9 @@ def dispatch_request(path=""):
             return resp
         return jsonify({"success": False, "error": "Mật khẩu không chính xác!"}), 401
 
-    if "task-14" in matched or "bccv" in matched or request.args.get("action") in ("task-14", "bccv", "bccv-data"):
+    req_act = (request.args.get("action") or request.form.get("action") or "").lower()
+    req_task = str(request.args.get("task") or request.form.get("task") or "")
+    if "task-14" in matched or "bccv" in matched or req_act in ("task-14", "bccv", "bccv-data", "get-bccv") or req_task == "14":
         return handle_task_14()
 
     if request.method == "POST":
@@ -9814,7 +9822,7 @@ def dispatch_request(path=""):
             return handle_task_6()
         if "task-7" in matched or action == "task-7":
             return handle_task_7()
-        if "task-8" in matched or action == "task-8" or "process-cntt" in matched or "sheet_name" in request.form:
+        if "task-8" in matched or action == "task-8" or "process-cntt" in matched or ("sheet_name" in request.form and str(request.form.get("task")) != "14" and "task-14" not in matched):
             return handle_task_8()
         if "task-9" in matched or action == "task-9":
             return handle_task_9()
