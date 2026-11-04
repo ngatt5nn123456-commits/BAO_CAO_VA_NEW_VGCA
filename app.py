@@ -37,6 +37,7 @@ DEFAULT_ORG3 = "BỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2"
 DEFAULT_PROVINCE = "Bắc Ninh"
 
 DEFAULT_FIXED_GSHEET_URL = "https://docs.google.com/spreadsheets/d/1_I7qmDx7mtIOcCLkEkDz_PCaC8KPd_Po-pqEh7krdPA/edit?gid=800962139#gid=800962139"
+DEFAULT_BCCV_GSHEET_URL = "https://docs.google.com/spreadsheets/d/1_I7qmDx7mtIOcCLkEkDz_PCaC8KPd_Po-pqEh7krdPA/edit?gid=1817140062#gid=1817140062"
 DEFAULT_ERROR_TRACKER_URL = "https://docs.google.com/spreadsheets/d/1VJ3_I4ehRDLSbm5w0CHAODtS8Y4fN3b-wsvo4p4ANVI/edit?gid=637670018#gid=637670018"
 _DM_KHOA_CACHE = {}
 _TRACKER_SHEETS_CACHE = {}
@@ -3549,7 +3550,7 @@ HTML_PAGE = """<!DOCTYPE html>
             <div class="group-header-title">
               <span>📊 NHÓM BÁO CÁO & GIÁM ĐỊNH BHYT</span>
             </div>
-            <span class="group-header-badge">6 tác vụ</span>
+            <span class="group-header-badge">7 tác vụ</span>
           </div>
           <ul class="sidebar-menu">
             <li data-task="5" onclick="switchTask(5)">
@@ -3585,6 +3586,15 @@ HTML_PAGE = """<!DOCTYPE html>
               <span class="nav-lock" style="display:none;">🔒</span>
             </li>
             <li data-task="8" onclick="switchTask(8)">
+            <li data-task="14" onclick="switchTask(14)">
+              <div class="nav-icon">📋</div>
+              <div class="nav-text">
+                <span class="nav-title">BC CV hàng ngày P.CNTT</span>
+                <span class="nav-desc">Thống kê lỗi chủ quan & khoa phòng</span>
+              </div>
+              <span class="nav-lock" style="display:none;">🔒</span>
+            </li>
+
               <div class="nav-icon">⚡</div>
               <div class="nav-text">
                 <span class="nav-title">P.CNTT (Sheet Cố Định)</span>
@@ -4080,6 +4090,127 @@ HTML_PAGE = """<!DOCTYPE html>
               </button>
               <div class="alert" id="alert-t8"></div>
             </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== TÁC VỤ 14: BC CV HÀNG NGÀY P.CNTT ==================== -->
+      <div class="page" id="page-task-14">
+        <div class="two-col-grid">
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">📖</span>
+              <h2>Hướng Dẫn Nghiệp Vụ BC CV Hàng Ngày</h2>
+            </div>
+            <div class="guide-box">
+              <h3>🎯 Mục đích:</h3>
+              <p>Tự động đọc dữ liệu nhật ký sửa chữa từ Google Sheets cố định của Phòng CNTT, thống kê tổng hợp số lượng từng <b>Lỗi chủ quan</b> theo thứ hạng giảm dần và liệt kê chi tiết các <b>Khoa/Phòng/Trung tâm phát sinh</b>.</p>
+              <h3>💡 Tiện ích đặc biệt:</h3>
+              <p>Xem bảng xếp hạng trực tiếp trên web với nút <b>Sao Chép (📋)</b> nhanh danh sách khoa phòng cho từng lỗi, hoặc bấm xuất báo cáo Excel chuẩn A4 ngang chỉ với 1 click.</p>
+              <h3>📝 Các bước thực hiện:</h3>
+              <ol>
+                <li><b>Bước 1:</b> Nhấn nút <b>"⚡ Nạp Danh Sách Sheet Ngày"</b> để lấy danh sách các ngày trong Google Sheets.</li>
+                <li><b>Bước 2:</b> Chọn Sheet ngày cần thống kê (mặc định hệ thống tự chọn ngày mới nhất).</li>
+                <li><b>Bước 3:</b> Nhấn <b>"🚀 Xem Báo Cáo Thống Kê"</b> để hiển thị bảng xếp hạng trực tiếp, hoặc nhấn <b>"📄 Xuất Excel (A4 Ngang)"</b> để tải file Excel về máy.</li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">📋</span>
+              <h2>Thao Tác Thực Thi & Chọn Dữ Liệu</h2>
+            </div>
+            <div>
+              <div class="form-group">
+                <label class="form-label">1️⃣ Đường link Google Sheets của viện (Đã nạp sẵn):</label>
+                <input type="text" id="url-t14" class="form-input" value="https://docs.google.com/spreadsheets/d/1_I7qmDx7mtIOcCLkEkDz_PCaC8KPd_Po-pqEh7krdPA/edit?gid=1817140062#gid=1817140062" readonly style="background:#f1f5f9; color:#475569;">
+                <div style="margin-top: 8px;">
+                  <button type="button" class="btn btn-secondary" onclick="fetchGSheetsForTask14()">⚡ Nạp Danh Sách Sheet Ngày</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">2️⃣ Chọn Sheet ngày cần xử lý:</label>
+                <select id="select-t14-sheet" class="form-input" onchange="onTask14SheetChanged()">
+                  <option value="">-- Vui lòng nhấn 'Nạp Danh Sách Sheet Ngày' trước --</option>
+                </select>
+              </div>
+
+              <div style="display: flex; gap: 10px; margin-top: 14px;">
+                <button type="button" class="btn" id="btn-t14-view" onclick="loadTask14Data()" style="flex: 1.2; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);">
+                  <span class="spinner" id="spin-t14-view"></span>
+                  <span id="txt-t14-view">🚀 Xem Báo Cáo Thống Kê</span>
+                </button>
+                <button type="button" class="btn btn-secondary" id="btn-t14-excel" onclick="exportTask14Excel()" style="flex: 1; background: #047857; color: #fff; border: none;">
+                  <span class="spinner" id="spin-t14-excel"></span>
+                  <span id="txt-t14-excel">📄 Xuất Excel (A4 Ngang)</span>
+                </button>
+              </div>
+              <div class="alert" id="alert-t14"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BẢNG THỐNG KÊ & KẾT QUẢ -->
+        <div id="bccv-results-container" style="display: none; margin-top: 24px;">
+          <!-- 3 KPI Cards -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px;">
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 14px;">
+              <div style="font-size: 2rem; background: #eff6ff; width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">📌</div>
+              <div>
+                <div style="font-size: 0.85rem; color: #64748b; font-weight: 600;">TỔNG SỐ CA PHÁT SINH</div>
+                <div id="t14-kpi-total" style="font-size: 1.6rem; font-weight: 800; color: #1e3a8a;">0</div>
+              </div>
+            </div>
+
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 14px;">
+              <div style="font-size: 2rem; background: #f0fdf4; width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">🏷️</div>
+              <div>
+                <div style="font-size: 0.85rem; color: #64748b; font-weight: 600;">SỐ NHÓM LỖI CHỦ QUAN</div>
+                <div id="t14-kpi-types" style="font-size: 1.6rem; font-weight: 800; color: #047857;">0</div>
+              </div>
+            </div>
+
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 14px;">
+              <div style="font-size: 2rem; background: #faf5ff; width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">🏢</div>
+              <div>
+                <div style="font-size: 0.85rem; color: #64748b; font-weight: 600;">KHOA / PHÒNG LIÊN QUAN</div>
+                <div id="t14-kpi-depts" style="font-size: 1.6rem; font-weight: 800; color: #7c3aed;">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Bảng Dữ Liệu -->
+          <div class="card" style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.25rem; font-weight: 700; color: #0f172a;">📊 Bảng Thống Kê Chi Tiết Lỗi Chủ Quan</span>
+                <span id="t14-sheet-badge" style="background: #e0f2fe; color: #0369a1; padding: 3px 10px; border-radius: 12px; font-weight: 700; font-size: 0.85rem;">Ngày ...</span>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="t14-filter-input" oninput="filterTask14Table()" placeholder="🔍 Lọc nhanh lỗi hoặc khoa/phòng..." style="padding: 7px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; width: 240px; outline: none;">
+                <button type="button" class="btn btn-secondary" onclick="copyT14FullTable()" style="padding: 7px 14px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                  📋 Sao Chép Bảng
+                </button>
+              </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+              <table class="bccv-table" style="width: 100%; border-collapse: collapse; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                <thead>
+                  <tr style="background: #f8fafc; border-bottom: 2px solid #cbd5e1;">
+                    <th style="padding: 12px 14px; width: 85px; text-align: center; color: #334155; font-weight: 700; border: 1px solid #cbd5e1;">Thứ hạng</th>
+                    <th style="padding: 12px 14px; width: 320px; text-align: left; color: #334155; font-weight: 700; border: 1px solid #cbd5e1;">Lỗi chủ quan</th>
+                    <th style="padding: 12px 14px; width: 100px; text-align: center; color: #334155; font-weight: 700; border: 1px solid #cbd5e1;">Số lượng</th>
+                    <th style="padding: 12px 14px; text-align: left; color: #334155; font-weight: 700; border: 1px solid #cbd5e1;">Khoa/Phòng/Trung tâm phát sinh</th>
+                  </tr>
+                </thead>
+                <tbody id="t14-table-body">
+                  <tr><td colspan="4" style="text-align: center; padding: 24px; color: #64748b;">Chưa có dữ liệu</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -4839,6 +4970,8 @@ function handleRequest(e) {
       5: { badge: 'CHECK LOG MDINSIGHT', title: '🏥 Check Log MDINSIGHT  ─  Lọc người dùng & xuất Excel A4 ngang' },
       7: { badge: 'VGCA (WORD)', title: '📄 VGCA (Từ File Word)  ─  Đọc nhiều file Word không cần SSO' },
       8: { badge: 'P.CNTT', title: '⚡ P.CNTT (Sheet Cố Định)  ─  Tự động tải Google Sheets của viện' },
+      14: { badge: 'BC CV HÀNG NGÀY', title: '📋 BC CV hàng ngày P.CNTT  ─  Thống Kê Thứ Hạng Lỗi Chủ Quan & Khoa Phòng' },
+
       9: { badge: 'EMAIL CÔNG VỤ', title: '📧 Cấp Email Công Vụ  ─  Tổng hợp danh sách xin cấp Email' },
       10: { badge: 'LỖI XML BHYT', title: '📊 Thống Kê & Lọc Lỗi XML BHYT (Google Sheets) ─ Đọc & Tra Cứu Lỗi Đẩy Cổng BHYT' },
       11: { badge: 'BC SỬA CNTT', title: '🛠 BC Sửa CNTT ─ Tổng Hợp Sheet & Báo Cáo Cán Bộ P.CNTT' },
@@ -4933,7 +5066,9 @@ function handleRequest(e) {
       }
 
       try {
-        if (taskId === 10 && typeof initErrorTracker === 'function') {
+        if (taskId === 14 && typeof initTask14 === 'function') {
+          initTask14();
+        } else if (taskId === 10 && typeof initErrorTracker === 'function') {
           initErrorTracker();
         } else if (taskId === 11 && typeof initCnttDashboard === 'function') {
           initCnttDashboard();
@@ -5514,6 +5649,248 @@ function handleRequest(e) {
         showAlert('alert-t7', 'error', '❌ Lỗi: ' + err.message);
       } finally {
         setLoading('t7', false, '🚀 Bắt Đầu Tổng Hợp VGCA (Xuất Ket_qua.xlsx)');
+      }
+    }
+
+
+    // ============================================================
+    // LOGIC TÁC VỤ 14: BC CV HÀNG NGÀY P.CNTT (XẾP HẠNG LỖI CHỦ QUAN)
+    // ============================================================
+    let t14Records = [];
+    let t14CurrentSheet = '';
+
+    async function initTask14() {
+      const sel = document.getElementById('select-t14-sheet');
+      if (sel && (!sel.options || sel.options.length <= 1)) {
+        await fetchGSheetsForTask14(true);
+      }
+    }
+
+    async function fetchGSheetsForTask14(autoLoadData = false) {
+      const sel = document.getElementById('select-t14-sheet');
+      sel.innerHTML = '<option value="">⏳ Đang nạp danh sách các sheet ngày...</option>';
+      hideAlert('alert-t14');
+      const url = document.getElementById('url-t14').value.trim();
+
+      const formData = new FormData();
+      formData.append('url', url);
+      formData.append('action', 'get-sheets');
+
+      try {
+        const res = await fetch('/api/task-14?action=get-sheets', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          throw new Error(data.error || 'Lỗi nạp sheet ngày');
+        }
+
+        sel.innerHTML = '';
+        if (!data.sheets || data.sheets.length === 0) {
+          throw new Error('Không tìm thấy sheet nào trong file Google Sheets!');
+        }
+
+        data.sheets.forEach((s, idx) => {
+          const opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = `📅 Sheet: ${s}`;
+          if (idx === data.sheets.length - 1) {
+            opt.selected = true;
+          }
+          sel.appendChild(opt);
+        });
+
+        showAlert('alert-t14', 'success', `✅ Đã nạp thành công ${data.sheets.length} sheet ngày! Chọn ngày để xem thống kê.`);
+        if (autoLoadData) {
+          await loadTask14Data();
+        }
+      } catch (err) {
+        sel.innerHTML = '<option value="">❌ Không đọc được sheet. Vui lòng kiểm tra lại!</option>';
+        showAlert('alert-t14', 'error', '❌ Lỗi: ' + err.message);
+      }
+    }
+
+    function onTask14SheetChanged() {
+      // User changed sheet, auto refresh view
+      loadTask14Data();
+    }
+
+    async function loadTask14Data() {
+      const sheet = document.getElementById('select-t14-sheet').value;
+      if (!sheet) {
+        showAlert('alert-t14', 'error', '⚠️ Vui lòng nhấn "Nạp Danh Sách Sheet Ngày" và chọn sheet cần xem!');
+        return;
+      }
+      hideAlert('alert-t14');
+      setLoading('t14-view', true);
+      const container = document.getElementById('bccv-results-container');
+
+      const formData = new FormData();
+      formData.append('url', document.getElementById('url-t14').value);
+      formData.append('sheet_name', sheet);
+      formData.append('action', 'get-data');
+
+      try {
+        const res = await fetch('/api/task-14?action=get-data', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          throw new Error(data.error || 'Lỗi tải dữ liệu báo cáo');
+        }
+
+        t14Records = data.records || [];
+        t14CurrentSheet = data.sheet_name || sheet;
+
+        document.getElementById('t14-kpi-total').textContent = (data.total_cases || 0).toLocaleString();
+        document.getElementById('t14-kpi-types').textContent = (data.total_error_types || 0).toLocaleString();
+        document.getElementById('t14-kpi-depts').textContent = (data.total_departments || 0).toLocaleString();
+        document.getElementById('t14-sheet-badge').textContent = `Ngày ${t14CurrentSheet}`;
+
+        renderTask14Table(t14Records);
+        if (container) container.style.display = 'block';
+
+        showAlert('alert-t14', 'success', `✅ Đã tổng hợp thành công ${data.total_cases} ca từ sheet "${t14CurrentSheet}"!`);
+      } catch (err) {
+        showAlert('alert-t14', 'error', '❌ Lỗi: ' + err.message);
+      } finally {
+        setLoading('t14-view', false, '🚀 Xem Báo Cáo Thống Kê');
+      }
+    }
+
+    function renderTask14Table(records) {
+      const tbody = document.getElementById('t14-table-body');
+      if (!records || records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 24px; color: #64748b;">Không tìm thấy lỗi nào phù hợp</td></tr>';
+        return;
+      }
+
+      let html = '';
+      records.forEach((row) => {
+        const escapedDepts = (row.departments_str || '').replace(/"/g, '&quot;');
+        html += `
+          <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 12px 14px; text-align: center; font-weight: 700; color: #475569; border: 1px solid #e2e8f0;">
+              ${row.rank}
+            </td>
+            <td style="padding: 12px 14px; text-align: left; color: #1e293b; font-weight: 500; border: 1px solid #e2e8f0; line-height: 1.45;">
+              ${row.error_name}
+            </td>
+            <td style="padding: 12px 14px; text-align: center; font-weight: 700; color: #0f172a; border: 1px solid #e2e8f0;">
+              ${row.total}
+            </td>
+            <td style="padding: 12px 14px; text-align: left; color: #334155; border: 1px solid #e2e8f0; line-height: 1.5;">
+              <span>${row.departments_str || '—'}</span>
+              ${row.departments_str ? `
+                <button type="button" class="bccv-copy-btn" onclick="copyT14Dept('${escapedDepts}', this)" title="Sao chép danh sách khoa phòng">
+                  📋
+                </button>
+              ` : ''}
+            </td>
+          </tr>
+        `;
+      });
+
+      // Total summary row
+      const totalSum = records.reduce((acc, r) => acc + (r.total || 0), 0);
+      html += `
+        <tr style="background: #f1f5f9; font-weight: 700; border-top: 2px solid #cbd5e1;">
+          <td style="padding: 12px 14px; text-align: center; border: 1px solid #cbd5e1;"></td>
+          <td style="padding: 12px 14px; text-align: center; color: #0f172a; border: 1px solid #cbd5e1; font-size: 1rem;">TỔNG CỘNG</td>
+          <td style="padding: 12px 14px; text-align: center; color: #1e3a8a; font-size: 1.05rem; border: 1px solid #cbd5e1;">${totalSum}</td>
+          <td style="padding: 12px 14px; color: #475569; font-style: italic; border: 1px solid #cbd5e1;">Đã giải quyết trọn vẹn ${totalSum} yêu cầu phát sinh</td>
+        </tr>
+      `;
+
+      tbody.innerHTML = html;
+    }
+
+    function filterTask14Table() {
+      const q = (document.getElementById('t14-filter-input').value || '').trim().toLowerCase();
+      if (!q) {
+        renderTask14Table(t14Records);
+        return;
+      }
+      const filtered = t14Records.filter(r => {
+        const name = (r.error_name || '').toLowerCase();
+        const depts = (r.departments_str || '').toLowerCase();
+        return name.includes(q) || depts.includes(q);
+      });
+      renderTask14Table(filtered);
+    }
+
+    function copyT14Dept(text, btnElement) {
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        const oldHtml = btnElement.innerHTML;
+        btnElement.innerHTML = '✅';
+        btnElement.style.color = '#10b981';
+        setTimeout(() => {
+          btnElement.innerHTML = oldHtml;
+          btnElement.style.color = '';
+        }, 1200);
+      }).catch(err => {
+        alert('Không thể sao chép: ' + err);
+      });
+    }
+
+    function copyT14FullTable() {
+      if (!t14Records || t14Records.length === 0) return;
+      let text = `BÁO CÁO CÔNG VIỆC HÀNG NGÀY P.CNTT (NGÀY ${t14CurrentSheet})\n`;
+      text += `Thứ hạng\tLỗi chủ quan\tSố lượng\tKhoa/Phòng phát sinh\n`;
+      t14Records.forEach(r => {
+        text += `${r.rank}\t${r.error_name}\t${r.total}\t${r.departments_str}\n`;
+      });
+      navigator.clipboard.writeText(text).then(() => {
+        showAlert('alert-t14', 'success', '📋 Đã sao chép toàn bộ bảng vào bộ nhớ tạm!');
+      }).catch(err => {
+        alert('Lỗi sao chép: ' + err);
+      });
+    }
+
+    async function exportTask14Excel() {
+      const sheet = document.getElementById('select-t14-sheet').value;
+      if (!sheet) {
+        showAlert('alert-t14', 'error', '⚠️ Vui lòng nhấn "Nạp Danh Sách Sheet Ngày" và chọn sheet cần xuất!');
+        return;
+      }
+      hideAlert('alert-t14');
+      setLoading('t14-excel', true);
+
+      const defaultFilename = `BC_CV_HANG_NGAY_PCNTT_${sheet.split('/').join('-')}.xlsx`;
+      const picker = await promptSaveFile(defaultFilename);
+      if (picker.canceled) {
+        setLoading('t14-excel', false, '📄 Xuất Excel (A4 Ngang)');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('url', document.getElementById('url-t14').value);
+      formData.append('sheet_name', sheet);
+      formData.append('action', 'export-excel');
+
+      try {
+        const res = await fetch('/api/task-14?action=export-excel', {
+          method: 'POST',
+          body: formData
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({ error: 'Lỗi máy chủ khi xuất file Excel.' }));
+          throw new Error(errData.error || 'Xuất Excel thất bại.');
+        }
+        const blob = await res.blob();
+        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, defaultFilename);
+        if (picker.handle) {
+          showAlert('alert-t14', 'success', `✅ Đã lưu file Excel "${savedName}" thành công tại thư mục bạn đã chọn!`);
+        } else {
+          showAlert('alert-t14', 'success', `✅ Đã xuất và tải xuống file Excel báo cáo "${defaultFilename}" thành công!`);
+        }
+      } catch (err) {
+        showAlert('alert-t14', 'error', '❌ Lỗi xuất Excel: ' + err.message);
+      } finally {
+        setLoading('t14-excel', false, '📄 Xuất Excel (A4 Ngang)');
       }
     }
 
@@ -7692,6 +8069,297 @@ def handle_task_7():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+# ============================================================
+# LOGIC TÁC VỤ 14: BÁO CÁO CÔNG VIỆC HÀNG NGÀY P.CNTT (XẾP HẠNG LỖI CHỦ QUAN)
+# ============================================================
+def aggregate_sheet_bccv(url=None, sheet_name=""):
+    url = url or DEFAULT_BCCV_GSHEET_URL
+    spreadsheet_id = extract_spreadsheet_id(url)
+    encoded = urllib.parse.quote(sheet_name)
+    csv_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/gviz/tq?tqx=out:csv&sheet={encoded}"
+    req = urllib.request.Request(csv_url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        raw_bytes = resp.read()
+        content = raw_bytes.decode("utf-8", errors="ignore")
+    rows = list(csv.reader(io.StringIO(content)))
+    if not rows:
+        return []
+
+    error_counts = {}
+
+    def add_count(err_name, dept, count):
+        if not dept:
+            dept = "Chưa rõ"
+        dept = dept.strip()
+        if err_name not in error_counts:
+            error_counts[err_name] = {}
+        error_counts[err_name][dept] = error_counts[err_name].get(dept, 0) + count
+
+    COL_MAPPINGS = [
+        (5, "Xóa CLS, PTTT"),
+        (6, "Ép thẻ BH"),
+        (7, "Sửa phí"),
+        (8, "Hủy chữ ký số (CKS)"),
+        (9, "Hủy bệnh án"),
+        (10, "Sửa thông tin bệnh nhân (CCCD, địa chỉ, tuổi, nơi KCB...)"),
+        (11, "Sửa ngày giờ CLS/PTTT, giờ đọc kết quả, người thực hiện"),
+        (12, "Sửa mã bệnh kèm theo, bệnh chính"),
+        (13, "Hỗ trợ ký số PM, QLVBĐH"),
+        (14, "Sửa giấy RV, kết thúc ra viện, chuyển tuyến"),
+        (15, "Đăng bài trên website"),
+        (16, "Sửa cách dùng thuốc, ngày giờ thuốc, vật tư"),
+        (17, "Phân quyền USER, đổi nick user"),
+        (18, "Lỗi không kết thúc được hồ sơ (tồn thuốc, thuốc chưa cấp)"),
+        (19, "Sửa ngày giờ, sửa xóa phiếu xuất khác"),
+        (20, "Sửa, xóa ảnh trên PACS"),
+        (21, "Mở HS ký số bổ sung"),
+        (22, "Sửa xóa giường, cập nhật giường, thêm giường"),
+        (23, "Chuyển thuốc CP-DG"),
+        (24, "Sửa lỗi xuất toán tự động"),
+        # Phần cứng
+        (26, "Đổ mực máy in"),
+        (27, "Cài đặt Windows, phần mềm máy tính"),
+        (28, "Sửa lỗi mạng LAN, Internet"),
+        (29, "Sửa máy tính (phần cứng, linh kiện)"),
+        (30, "Thay / Sửa nguồn máy tính"),
+        (31, "Thay / Nâng cấp ổ cứng"),
+        (32, "Sửa máy in, thay linh kiện"),
+        (33, "Thay lô ép máy in"),
+        (34, "Sửa cảm biến máy in")
+    ]
+
+    for r in rows[1:]:
+        dept = r[1].strip() if len(r) > 1 else ""
+        if not dept or dept.upper() in ("TỔNG CỘNG", "STT", "KHOA, PHÒNG, TRUNG TÂM", "KHOA/PHÒNG"):
+            continue
+
+        other_text = r[34].strip() if len(r) > 34 else ""
+
+        for col_idx, err_label in COL_MAPPINGS:
+            idx0 = col_idx - 1
+            if len(r) > idx0 and r[idx0].strip():
+                v = r[idx0].strip()
+                try:
+                    c = int(float(v))
+                except Exception:
+                    c = 1
+                if c <= 0 or c > 50:
+                    continue
+
+                target_label = err_label
+                if col_idx == 10:
+                    if other_text and ("công khám" in other_text.lower() or "kiểu khám" in other_text.lower()):
+                        target_label = "Sửa công khám, kiểu khám"
+
+                add_count(target_label, dept, c)
+
+        if other_text and other_text not in ("0", "None"):
+            ot_low = other_text.lower()
+            if "công khám" in ot_low or "kiểu khám" in ot_low:
+                if not (len(r) > 9 and r[9].strip()):
+                    add_count("Sửa công khám, kiểu khám", dept, 1)
+            elif "mức hưởng" in ot_low or "muc huong" in ot_low:
+                add_count("Cập nhật / Sửa mức hưởng BH", dept, 1)
+            elif "kcb" in ot_low or "kcbbđ" in ot_low:
+                add_count("Sửa nơi KCB ban đầu / Tuyến BH", dept, 1)
+            elif "ngày hẹn" in ot_low or "ngay hen" in ot_low:
+                add_count("Sửa ngày hẹn khám lại", dept, 1)
+            elif "chuyển khám" in ot_low:
+                add_count("Xóa phiếu chuyển khám chuyên khoa", dept, 1)
+            elif "hướng nhân dân" in ot_low or "hướng nd" in ot_low:
+                add_count("Chuyển sang hướng nhân dân", dept, 1)
+            elif "chữ ký số" in ot_low or "cks" in ot_low:
+                add_count("Hủy chữ ký số (CKS)", dept, 1)
+            elif "bệnh án" in ot_low or "b/án" in ot_low:
+                add_count("Hủy bệnh án", dept, 1)
+            else:
+                clean_ot = other_text[0].upper() + other_text[1:]
+                add_count(clean_ot[:60], dept, 1)
+
+    result_list = []
+    for err_name, depts in error_counts.items():
+        total = sum(depts.values())
+        sorted_depts = sorted(depts.items(), key=lambda x: -x[1])
+        depts_str = ", ".join([f"{d} ({cnt})" for d, cnt in sorted_depts])
+        result_list.append({
+            "error_name": err_name,
+            "total": total,
+            "departments": depts,
+            "departments_str": depts_str
+        })
+
+    result_list.sort(key=lambda x: -x["total"])
+
+    rank = 1
+    for i, item in enumerate(result_list):
+        if i > 0 and item["total"] < result_list[i-1]["total"]:
+            rank = i + 1
+        item["rank"] = rank
+
+    return result_list
+
+def build_bccv_excel(records, sheet_name=""):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = f"BC CV {sheet_name}"[:31]
+
+    thin = Side(style="thin", color="CBD5E1")
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+    header_fill = PatternFill(fill_type="solid", fgColor="1E3A8A")
+    total_fill = PatternFill(fill_type="solid", fgColor="F1F5F9")
+    rank_fill = PatternFill(fill_type="solid", fgColor="F8FAFC")
+
+    # Row 1: Hospital Name
+    ws.merge_cells("A1:D1")
+    ws["A1"] = "BỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2 - PHÒNG CÔNG NGHỆ THÔNG TIN"
+    ws["A1"].font = Font(name="Times New Roman", size=12, italic=True)
+    ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
+    ws.row_dimensions[1].height = 24
+
+    # Row 2: Title
+    ws.merge_cells("A2:D2")
+    ws["A2"] = f"BÁO CÁO CÔNG VIỆC HÀNG NGÀY P.CNTT (NGÀY {sheet_name})"
+    ws["A2"].font = Font(name="Times New Roman", size=16, bold=True, color="1E3A8A")
+    ws["A2"].alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[2].height = 32
+
+    # Row 3: Meta Info
+    total_cases = sum(r["total"] for r in records)
+    ws.merge_cells("A3:D3")
+    ws["A3"] = f"Tổng số ca ghi nhận: {total_cases} ca  |  Tổng số nhóm lỗi: {len(records)} nhóm  |  Nguồn dữ liệu: Google Sheets Phòng CNTT"
+    ws["A3"].font = Font(name="Times New Roman", size=12, italic=True, color="475569")
+    ws["A3"].alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[3].height = 22
+
+    # Row 4: Header
+    headers = [
+        ("A4", "Thứ hạng", 12),
+        ("B4", "Lỗi chủ quan", 40),
+        ("C4", "Số lượng", 14),
+        ("D4", "Khoa/Phòng/Trung tâm phát sinh", 65)
+    ]
+    for coord, text, width in headers:
+        cell = ws[coord]
+        cell.value = text
+        cell.font = Font(name="Times New Roman", size=13, bold=True, color="FFFFFF")
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        cell.border = border
+        col_letter = coord[0]
+        ws.column_dimensions[col_letter].width = width
+
+    ws.row_dimensions[4].height = 28
+
+    current_row = 5
+    for item in records:
+        cA = ws.cell(current_row, 1, item["rank"])
+        cA.font = Font(name="Times New Roman", size=12, bold=True)
+        cA.alignment = Alignment(horizontal="center", vertical="center")
+        cA.border = border
+        cA.fill = rank_fill
+
+        cB = ws.cell(current_row, 2, item["error_name"])
+        cB.font = Font(name="Times New Roman", size=12)
+        cB.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+        cB.border = border
+
+        cC = ws.cell(current_row, 3, item["total"])
+        cC.font = Font(name="Times New Roman", size=12, bold=True)
+        cC.alignment = Alignment(horizontal="center", vertical="center")
+        cC.border = border
+
+        cD = ws.cell(current_row, 4, item["departments_str"])
+        cD.font = Font(name="Times New Roman", size=12)
+        cD.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+        cD.border = border
+
+        ws.row_dimensions[current_row].height = 26
+        current_row += 1
+
+    # Total Row
+    ws.cell(current_row, 1, "").border = border
+    ws.cell(current_row, 1).fill = total_fill
+
+    c_tot_lbl = ws.cell(current_row, 2, "TỔNG CỘNG")
+    c_tot_lbl.font = Font(name="Times New Roman", size=13, bold=True)
+    c_tot_lbl.alignment = Alignment(horizontal="center", vertical="center")
+    c_tot_lbl.border = border
+    c_tot_lbl.fill = total_fill
+
+    c_tot_val = ws.cell(current_row, 3, total_cases)
+    c_tot_val.font = Font(name="Times New Roman", size=13, bold=True, color="1E3A8A")
+    c_tot_val.alignment = Alignment(horizontal="center", vertical="center")
+    c_tot_val.border = border
+    c_tot_val.fill = total_fill
+
+    ws.cell(current_row, 4, f"Đã giải quyết trọn vẹn {total_cases} yêu cầu").border = border
+    ws.cell(current_row, 4).font = Font(name="Times New Roman", size=12, italic=True)
+    ws.cell(current_row, 4).alignment = Alignment(horizontal="left", vertical="center")
+    ws.cell(current_row, 4).fill = total_fill
+    ws.row_dimensions[current_row].height = 28
+
+    ws.print_title_rows = "4:4"
+    ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0
+    ws.page_margins.left = 0.25
+    ws.page_margins.right = 0.25
+    ws.page_margins.top = 0.3
+    ws.page_margins.bottom = 0.3
+
+    out_io = io.BytesIO()
+    wb.save(out_io)
+    out_io.seek(0)
+    return out_io
+
+def handle_task_14():
+    try:
+        action = request.args.get("action") or request.form.get("action") or ""
+        url = request.form.get("url") or request.args.get("url") or DEFAULT_BCCV_GSHEET_URL
+        sheet_name = request.form.get("sheet_name") or request.args.get("sheet_name") or ""
+
+        if action in ("get-sheets", "sheets"):
+            sheets = get_google_sheet_names(url)
+            return jsonify({"success": True, "sheets": sheets})
+
+        if not sheet_name:
+            sheets = get_google_sheet_names(url)
+            if sheets:
+                sheet_name = sheets[-1]
+            else:
+                return jsonify({"error": "Vui lòng chọn Sheet ngày cần thống kê."}), 400
+
+        records = aggregate_sheet_bccv(url, sheet_name)
+
+        if action in ("export-excel", "export"):
+            excel_io = build_bccv_excel(records, sheet_name)
+            safe_name = f"BC_CV_HANG_NGAY_PCNTT_{sheet_name.replace('/', '-')}.xlsx"
+            return send_file(
+                excel_io,
+                as_attachment=True,
+                download_name=safe_name,
+                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
+        total_cases = sum(r["total"] for r in records)
+        all_depts = set()
+        for r in records:
+            all_depts.update(r["departments"].keys())
+
+        return jsonify({
+            "success": True,
+            "sheet_name": sheet_name,
+            "records": records,
+            "total_cases": total_cases,
+            "total_error_types": len(records),
+            "total_departments": len(all_depts)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 def handle_task_8():
     try:
         sheet_name = request.form.get("sheet_name")
@@ -9114,6 +9782,9 @@ def dispatch_request(path=""):
             return resp
         return jsonify({"success": False, "error": "Mật khẩu không chính xác!"}), 401
 
+    if "task-14" in matched or "bccv" in matched or request.args.get("action") in ("task-14", "bccv", "bccv-data"):
+        return handle_task_14()
+
     if request.method == "POST":
         action = request.args.get("action", "")
         # Tạm thời bỏ hết chức năng khóa bảo vệ theo yêu cầu
@@ -9168,6 +9839,8 @@ def dispatch_request(path=""):
 @app.route("/api/task-5", methods=["GET", "POST"])
 @app.route("/api/task-6", methods=["GET", "POST"])
 @app.route("/api/task-7", methods=["GET", "POST"])
+@app.route("/api/task-14", methods=["GET", "POST"])
+@app.route("/api/bccv", methods=["GET", "POST"])
 @app.route("/api/task-8", methods=["GET", "POST"])
 @app.route("/api/task-9", methods=["GET", "POST"])
 @app.route("/api/error-tracker/sheets", methods=["GET", "POST"])
