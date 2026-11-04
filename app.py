@@ -65,12 +65,13 @@ def set_tracker_apps_script_url(url):
     except Exception as e:
         print("Error saving tracker config:", e)
 
-ALLOWED_USERS = {
-    "PHCN", "NGOẠI TH", "XNTT", "NHH", "TTTM", "NGOẠI CT", "DA LIỄU", "PTGMHS",
-    "NỘI TH", "PHỤ SẢN", "MẮT", "TTBVSK", "DƯỢC", "THẬN", "TRUYỀN NHIỄM", "TCKT",
+ALLOWED_USERS_ORDER = [
+    "PHCN", "NGOẠI TH", "NHH", "TTTM", "NGOẠI CT", "DA LIỄU", "PTGMHS",
+    "NỘI TH", "PHỤ SẢN", "MẮT", "TTBVSK", "DƯỢC", "THẬN", "TRUYỀN NHIỄM",
     "NGOẠI UB", "NGOẠI XẠ TRỊ", "RHM", "KB", "CXK", "CSGN", "NGOẠI TN", "HHLS",
     "TMH", "HSTC", "HTL", "NGOẠI TKLN", "NHI", "ĐÔNG Y", "CẤP CỨU", "LKTK"
-}
+]
+ALLOWED_USERS = set(ALLOWED_USERS_ORDER)
 
 def clean_text(value):
     if value is None:
@@ -1097,26 +1098,83 @@ def find_giam_dinh_header_and_cols(ws):
     sheet_names = ", ".join(ws.parent.sheetnames)
     raise Exception(f"Không tìm thấy dòng tiêu đề STT / NGƯỜI DÙNG trong sheet '{ws.title}'. Các sheet trong file gồm: {sheet_names}")
 
-def process_giam_dinh_web(file_stream, start_day, end_day):
-    wb_source = load_workbook(file_stream, data_only=True)
-    source = select_giam_dinh_sheet(wb_source)
+def process_giam_dinh_web(file_streams, start_day, end_day):
+    if not isinstance(file_streams, list):
+        file_streams = [file_streams]
 
-    header_row, stt_col, user_col, day_columns = find_giam_dinh_header_and_cols(source)
+    all_day_meta = {}
+    user_data = {remove_accents(u).upper(): {} for u in ALLOWED_USERS_ORDER}
+    title = "BẢNG HOẠT ĐỘNG TRONG THÁNG"
+    note = "Ghi chú: [X]: Có hoạt động, [-]: Không hoạt động"
 
-    available_days = sorted(day_columns.keys())
+    for f_stream in file_streams:
+        wb_source = load_workbook(f_stream, data_only=True)
+        source = select_giam_dinh_sheet(wb_source)
+
+        header_row, stt_col, user_col, day_columns = find_giam_dinh_header_and_cols(source)
+
+        if source["A1"].value:
+            title = source["A1"].value
+        if source["A2"].value:
+            note = source["A2"].value
+
+        # Thu thập thông tin tiêu đề ngày (Row 4 & Row 5)
+        for d, col_idx in day_columns.items():
+            c4 = source.cell(header_row, col_idx)
+            c5 = source.cell(header_row + 1, col_idx) if header_row + 1 <= source.max_row else None
+            
+            val4 = c4.value if c4.value is not None else f"{d:02d}"
+            val5 = c5.value if (c5 and c5.value is not None) else ""
+            
+            if d not in all_day_meta:
+                all_day_meta[d] = {
+                    'val4': val4,
+                    'val5': val5,
+                    'fill4': copy.copy(c4.fill) if c4.has_style else None,
+                    'fill5': copy.copy(c5.fill) if (c5 and c5.has_style) else None,
+                    'border': copy.copy(c4.border) if c4.has_style else None
+                }
+
+        # Thu thập dữ liệu từng cán bộ/khoa phòng
+        ALLOWED_USERS_NORM = {remove_accents(u).upper(): u for u in ALLOWED_USERS_ORDER}
+        for source_row in range(header_row + 2, source.max_row + 1):
+            raw_user = source.cell(source_row, user_col).value
+            if not raw_user:
+                continue
+            u_clean = clean_text(raw_user).upper()
+            u_norm = remove_accents(u_clean)
+
+            # Bỏ người dùng không thuộc ALLOWED_USERS (loại trừ XNTT và TCKT)
+            if u_norm not in ALLOWED_USERS_NORM:
+                continue
+
+            for d, col_idx in day_columns.items():
+                cell_val = source.cell(source_row, col_idx).value
+                val_str = clean_text(cell_val)
+
+                existing = user_data[u_norm].get(d)
+                if val_str.upper() == 'X':
+                    user_data[u_norm][d] = 'X'
+                elif val_str and val_str != '-':
+                    if existing != 'X':
+                        user_data[u_norm][d] = cell_val
+                else:
+                    if existing is None:
+                        user_data[u_norm][d] = '-'
+
+    available_days = sorted(all_day_meta.keys())
     if not available_days:
-        raise Exception("Không tìm thấy các cột ngày (1-31) trong bảng dữ liệu.")
+        raise Exception("Không tìm thấy các cột ngày (1-31) trong các file dữ liệu.")
 
-    last_available_day = max(available_days)
-    if end_day > last_available_day:
-        end_day = last_available_day
+    last_available = max(available_days)
+    if end_day > last_available:
+        end_day = last_available
 
-    selected_days = [d for d in range(start_day, end_day + 1) if d in day_columns]
+    selected_days = [d for d in range(start_day, end_day + 1) if d in all_day_meta]
     if not selected_days:
         selected_days = available_days
 
-    source_columns = [stt_col, user_col] + [day_columns[d] for d in selected_days]
-    result_last_col = len(source_columns)
+    result_last_col = 2 + len(selected_days)
     result_last_letter = get_column_letter(result_last_col)
 
     result_wb = Workbook()
@@ -1126,117 +1184,133 @@ def process_giam_dinh_web(file_stream, start_day, end_day):
     result = result_wb.active
     result.title = "Người dùng"
 
-    for row in range(1, 6):
-        for new_col, old_col in enumerate(source_columns, start=1):
-            source_cell = source.cell(row, old_col)
-            target_cell = result.cell(row, new_col)
-            target_cell.value = source_cell.value
-            copy_style(source_cell, target_cell)
-            if row in (4, 5):
-                target_cell.font = Font(name="Times New Roman", size=14, bold=True)
+    thin_border = Border(
+        left=Side(style="thin"),
+        right=Side(style="thin"),
+        top=Side(style="thin"),
+        bottom=Side(style="thin")
+    )
 
-    title = source["A1"].value
-    for col in range(1, result_last_col + 1):
-        c_cell = result.cell(1, col)
-        if col > 1:
-            c_cell.value = None
-        c_cell.font = Font(name="Times New Roman", size=14, bold=True)
+    # Row 1: Title
     result["A1"] = title
     result.merge_cells(start_row=1, start_column=1, end_row=1, end_column=result_last_col)
     center_cell(result["A1"], wrap=False)
+    result["A1"].font = Font(name="Times New Roman", size=14, bold=True)
     result.row_dimensions[1].height = 30
 
-    note = source["A2"].value
-    for col in range(1, result_last_col + 1):
-        c_cell = result.cell(2, col)
-        if col > 1:
-            c_cell.value = None
-        c_cell.font = Font(name="Times New Roman", size=14, italic=True)
+    # Row 2: Note
     result["A2"] = note
     result.merge_cells(start_row=2, start_column=1, end_row=2, end_column=result_last_col)
+    result["A2"].font = Font(name="Times New Roman", size=14, italic=True)
     result.row_dimensions[2].height = 24
 
-    result["A5"] = None
+    # Header Row 4 & 5: STT & NGUOI DUNG
+    result["A4"] = "STT"
     result.merge_cells("A4:A5")
     center_cell(result["A4"], wrap=False)
     result["A4"].font = Font(name="Times New Roman", size=14, bold=True)
+    result["A4"].border = thin_border
+    result["A5"].border = thin_border
 
-    result["B5"] = None
+    result["B4"] = "NGƯỜI DÙNG"
     result.merge_cells("B4:B5")
     center_cell(result["B4"], wrap=False)
     result["B4"].font = Font(name="Times New Roman", size=14, bold=True)
+    result["B4"].border = thin_border
+    result["B5"].border = thin_border
+
+    # Days in Header
+    for idx, d in enumerate(selected_days, start=3):
+        meta = all_day_meta[d]
+        c4 = result.cell(4, idx)
+        c4.value = meta['val4']
+        c4.font = Font(name="Times New Roman", size=14, bold=True)
+        center_cell(c4, wrap=False)
+        c4.border = thin_border
+        if meta['fill4']:
+            c4.fill = copy.copy(meta['fill4'])
+
+        c5 = result.cell(5, idx)
+        c5.value = meta['val5']
+        c5.font = Font(name="Times New Roman", size=14, bold=True)
+        center_cell(c5, wrap=False)
+        c5.border = thin_border
+        if meta['fill5']:
+            c5.fill = copy.copy(meta['fill5'])
 
     result.row_dimensions[4].height = 28
     result.row_dimensions[5].height = 26
 
+    # Data Rows (Loại bỏ XNTT và TCKT, giữ chuẩn danh sách 30 người dùng)
     output_row = 6
     stt = 1
-    ALLOWED_USERS_NORM = {remove_accents(u).upper(): u for u in ALLOWED_USERS}
+    for u_name in ALLOWED_USERS_ORDER:
+        u_norm = remove_accents(u_name).upper()
+        # STT
+        c_stt = result.cell(output_row, 1)
+        c_stt.value = stt
+        c_stt.font = Font(name="Times New Roman", size=14)
+        center_cell(c_stt, wrap=False)
+        c_stt.border = thin_border
 
-    for source_row in range(6, source.max_row + 1):
-        raw_user = source.cell(source_row, user_col).value
-        user_name = clean_text(raw_user).upper()
-        user_norm = remove_accents(user_name)
-        if user_name not in ALLOWED_USERS and user_norm not in ALLOWED_USERS_NORM:
-            continue
-        for new_col, old_col in enumerate(source_columns, start=1):
-            source_cell = source.cell(source_row, old_col)
-            target_cell = result.cell(output_row, new_col)
-            target_cell.value = stt if new_col == 1 else source_cell.value
-            copy_style(source_cell, target_cell)
-            target_cell.font = Font(name="Times New Roman", size=14)
-            if new_col == 1:
-                center_cell(target_cell, wrap=False)
-            elif new_col == 2:
-                target_cell.alignment = Alignment(horizontal="left", vertical="center")
-            else:
-                center_cell(target_cell, wrap=False)
+        # User Name
+        c_user = result.cell(output_row, 2)
+        c_user.value = u_name
+        c_user.font = Font(name="Times New Roman", size=14)
+        c_user.alignment = Alignment(horizontal="left", vertical="center")
+        c_user.border = thin_border
+
+        # Days
+        for idx, d in enumerate(selected_days, start=3):
+            cell = result.cell(output_row, idx)
+            val = user_data.get(u_norm, {}).get(d, '-')
+            cell.value = val
+            cell.font = Font(name="Times New Roman", size=14)
+            center_cell(cell, wrap=False)
+            cell.border = thin_border
+
+            # Áp dụng màu nền cuối tuần (T7, CN) nếu có
+            meta = all_day_meta[d]
+            if meta['fill5'] and getattr(meta['fill5'], 'fill_type', None):
+                cell.fill = copy.copy(meta['fill5'])
+
         result.row_dimensions[output_row].height = 25
         stt += 1
         output_row += 1
 
     total_row = output_row
-    result.cell(total_row, 1, "")
-    result.cell(total_row, 2, "Tổng cộng")
-
-    for new_col in range(1, result_last_col + 1):
-        cell = result.cell(total_row, new_col)
-        cell.font = Font(name="Times New Roman", size=14, bold=True)
-        cell.border = Border(left=Side(style="thin"), right=Side(style="thin"), top=Side(style="thin"), bottom=Side(style="thin"))
-
-    center_cell(result.cell(total_row, 2), wrap=False)
+    result.cell(total_row, 1, "").border = thin_border
+    c_tot = result.cell(total_row, 2, "Tổng cộng")
+    c_tot.font = Font(name="Times New Roman", size=14, bold=True)
+    c_tot.border = thin_border
+    center_cell(c_tot, wrap=False)
     result.row_dimensions[total_row].height = 28
 
-    for new_col in range(3, result_last_col + 1):
-        col_letter = get_column_letter(new_col)
-        cell = result.cell(total_row, new_col)
+    for idx, d in enumerate(selected_days, start=3):
+        col_letter = get_column_letter(idx)
+        cell = result.cell(total_row, idx)
         cell.value = f"=SUM({col_letter}6:{col_letter}{total_row - 1})"
         cell.font = Font(name="Times New Roman", size=14, bold=True)
+        cell.border = thin_border
         center_cell(cell, wrap=False)
 
-    # ĐẢM BẢO TUYỆT ĐỐI TOÀN BỘ CÁC Ô ĐỀU LÀ FONT TIMES NEW ROMAN VÀ CỠ 14
-    for r in range(1, total_row + 1):
-        for c in range(1, result_last_col + 1):
-            cell = result.cell(r, c)
-            b = True if r in (1, 4, 5, total_row) else (cell.font.bold if cell.font else False)
-            it = True if r == 2 else (cell.font.italic if cell.font else False)
-            cell.font = Font(name="Times New Roman", size=14, bold=b, italic=it)
-
+    # Column widths
     result.column_dimensions["A"].width = 8
-    result.column_dimensions["B"].width = 28
+    result.column_dimensions["B"].width = 25
     for col in range(3, result_last_col + 1):
-        result.column_dimensions[get_column_letter(col)].width = 9.5
+        result.column_dimensions[get_column_letter(col)].width = 7.5
 
+    # CẤU HÌNH TRANG IN: KHỔ A4 NGANG (LANDSCAPE)
     result.print_title_rows = "4:5"
-    result.page_setup.orientation = result.ORIENTATION_PORTRAIT
+    result.page_setup.orientation = result.ORIENTATION_LANDSCAPE
     result.page_setup.paperSize = result.PAPERSIZE_A4
     result.sheet_properties.pageSetUpPr.fitToPage = True
     result.page_setup.fitToWidth = 1
     result.page_setup.fitToHeight = 0
     result.page_margins.left = 0.25
     result.page_margins.right = 0.25
-    result.page_margins.top = 0.4
-    result.page_margins.bottom = 0.4
+    result.page_margins.top = 0.35
+    result.page_margins.bottom = 0.35
     result.page_margins.header = 0.2
     result.page_margins.footer = 0.2
 
@@ -3576,10 +3650,10 @@ HTML_PAGE = """<!DOCTYPE html>
             </div>
             <div class="guide-box">
               <h3>🎯 Mục đích:</h3>
-              <p>Đọc file Excel báo cáo Check Log MDINSIGHT, lọc danh sách người dùng được phép, xuất ra file <b>'DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM.xlsx'</b> chuẩn khổ A4 dọc, tự động autofit cột và co giãn vừa 1 trang ngang.</p>
+              <p>Đọc file Excel báo cáo Check Log MDINSIGHT, lọc danh sách người dùng được phép, xuất ra file <b>'DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM.xlsx'</b> chuẩn khổ A4 ngang (đã bỏ XNTT, TCKT), tự động autofit cột và co giãn vừa 1 trang ngang.</p>
               <h3>📝 Các bước thực hiện:</h3>
               <ol>
-                <li><b>Bước 1:</b> Tải lên file Excel Check Log MDINSIGHT.</li>
+                <li><b>Bước 1:</b> Tải lên 1 hoặc nhiều file Excel Check Log MDINSIGHT.</li>
                 <li><b>Bước 2:</b> Chọn khoảng ngày cần tổng hợp:
                   <ul>
                     <li><b>Từ ngày 01 đến 14:</b> Lấy nửa đầu tháng.</li>
@@ -3599,11 +3673,11 @@ HTML_PAGE = """<!DOCTYPE html>
             </div>
             <form onsubmit="handleTask5(event)">
               <div class="form-group">
-                <label class="form-label">1️⃣ Tải lên file Excel Check Log MDINSIGHT:</label>
+                <label class="form-label">1️⃣ Tải lên file Excel Check Log MDINSIGHT (có thể chọn nhiều file):</label>
                 <div class="file-dropzone" onclick="document.getElementById('file-t5').click()">
                   <div class="drop-icon">🏥</div>
-                  <div class="drop-text">Nhấp để chọn file Excel Check Log MDINSIGHT</div>
-                  <input type="file" id="file-t5" accept=".xlsx,.xls" onchange="previewFiles(this, 'chosen-t5')">
+                  <div class="drop-text">Nhấp để chọn file Excel Check Log MDINSIGHT (chọn 1 hoặc nhiều file)</div>
+                  <input type="file" id="file-t5" accept=".xlsx,.xls" multiple onchange="previewFiles(this, 'chosen-t5')">
                 </div>
                 <div class="file-chosen-badge" id="chosen-t5"></div>
               </div>
@@ -3637,7 +3711,7 @@ HTML_PAGE = """<!DOCTYPE html>
 
               <button type="submit" class="btn" id="btn-t5">
                 <span class="spinner" id="spin-t5"></span>
-                <span id="txt-t5">🚀 Xử Lý & Xuất Check Log MDINSIGHT (A4 Dọc)</span>
+                <span id="txt-t5">🚀 Xử Lý & Xuất Check Log MDINSIGHT (A4 Ngang)</span>
               </button>
               <div class="alert" id="alert-t5"></div>
             </form>
@@ -4553,7 +4627,7 @@ function handleRequest(e) {
       1: { badge: 'VGCA', title: '🎯 VGCA (Word + Excel SSO)  ─  Đối chiếu cấp CKS Word & Excel SSO' },
       2: { badge: 'MẪU 02', title: '📝 CKS (Công văn Mẫu 02)  ─  Xuất Công văn Word Mẫu 02 chuẩn' },
       3: { badge: 'MẪU 02 (WORD)', title: '📝 CKS (Mẫu CV02 chỉ đọc file Word)  ─  Đọc toàn bộ file Word xuất Mẫu 02' },
-      5: { badge: 'CHECK LOG MDINSIGHT', title: '🏥 Check Log MDINSIGHT  ─  Lọc người dùng & xuất Excel A4 dọc' },
+      5: { badge: 'CHECK LOG MDINSIGHT', title: '🏥 Check Log MDINSIGHT  ─  Lọc người dùng & xuất Excel A4 ngang' },
       7: { badge: 'VGCA (WORD)', title: '📄 VGCA (Từ File Word)  ─  Đọc nhiều file Word không cần SSO' },
       8: { badge: 'P.CNTT', title: '⚡ P.CNTT (Sheet Cố Định)  ─  Tự động tải Google Sheets của viện' },
       9: { badge: 'EMAIL CÔNG VỤ', title: '📧 Cấp Email Công Vụ  ─  Tổng hợp danh sách xin cấp Email' },
@@ -5103,8 +5177,8 @@ function handleRequest(e) {
       e.preventDefault();
       hideAlert('alert-t5');
       const fInput = document.getElementById('file-t5');
-      if (!fInput.files || !fInput.files[0]) {
-        showAlert('alert-t5', 'error', '⚠️ Vui lòng chọn file Excel Check Log MDINSIGHT!');
+      if (!fInput.files || fInput.files.length === 0) {
+        showAlert('alert-t5', 'error', '⚠️ Vui lòng chọn ít nhất 1 file Excel Check Log MDINSIGHT!');
         return;
       }
 
@@ -5116,6 +5190,9 @@ function handleRequest(e) {
 
       const range = document.querySelector('input[name="t5_date_range"]:checked').value;
       const formData = new FormData();
+      for (let i = 0; i < fInput.files.length; i++) {
+        formData.append('files', fInput.files[i]);
+      }
       formData.append('file', fInput.files[0]);
       formData.append('date_range', range);
 
@@ -5131,12 +5208,12 @@ function handleRequest(e) {
         if (picker.handle) {
           showAlert('alert-t5', 'success', `✅ Đã lưu file "${savedName}" thành công tại vị trí bạn đã chọn!`);
         } else {
-          showAlert('alert-t5', 'success', `✅ Đã xuất và tải xuống file "${savedName}" A4 dọc thành công!`);
+          showAlert('alert-t5', 'success', `✅ Đã xuất và tải xuống file "${savedName}" (A4 ngang) thành công!`);
         }
       } catch (err) {
         showAlert('alert-t5', 'error', '❌ Lỗi: ' + err.message);
       } finally {
-        setLoading('t5', false, '🚀 Xử Lý & Xuất Check Log MDINSIGHT (A4 Dọc)');
+        setLoading('t5', false, '🚀 Xử Lý & Xuất Check Log MDINSIGHT (A4 Ngang)');
       }
     }
 
@@ -7283,10 +7360,17 @@ def handle_task_4():
 
 def handle_task_5():
     try:
-        if "file" not in request.files or not request.files["file"].filename:
-            return jsonify({"error": "Vui lòng tải lên file Excel Check Log MDINSIGHT."}), 400
+        files = request.files.getlist("files")
+        if not files or not any(f.filename for f in files):
+            if "file" in request.files and request.files["file"].filename:
+                files = [request.files["file"]]
+            else:
+                return jsonify({"error": "Vui lòng tải lên ít nhất 1 file Excel Check Log MDINSIGHT."}), 400
 
-        f = request.files["file"]
+        valid_files = [f for f in files if f.filename]
+        if not valid_files:
+            return jsonify({"error": "Vui lòng tải lên file Excel hợp lệ."}), 400
+
         date_range = request.form.get("date_range", "01-14")
         if date_range == "01-14":
             start_day, end_day = 1, 14
@@ -7295,7 +7379,7 @@ def handle_task_5():
         else:
             start_day, end_day = 1, 31
 
-        out_io = process_giam_dinh_web(f.stream, start_day, end_day)
+        out_io = process_giam_dinh_web([f.stream for f in valid_files], start_day, end_day)
         return send_file(
             out_io,
             as_attachment=True,

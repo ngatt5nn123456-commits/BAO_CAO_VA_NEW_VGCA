@@ -2155,8 +2155,8 @@ def run_task_8(log_func=print, progress_func=lambda v: None, output_folder=None)
 # LOGIC TÁC VỤ 5: BÁO CÁO CỔNG GIÁM ĐỊNH BẢO HIỂM (Xuất Excel A4 Portrait Fit 1 Page)
 # ============================================================
 ALLOWED_USERS = {
-    "PHCN", "NGOẠI TH", "XNTT", "NHH", "TTTM", "NGOẠI CT", "DA LIỄU", "PTGMHS",
-    "NỘI TH", "PHỤ SẢN", "MẮT", "TTBVSK", "DƯỢC", "THẬN", "TRUYỀN NHIỄM", "TCKT",
+    "PHCN", "NGOẠI TH", "NHH", "TTTM", "NGOẠI CT", "DA LIỄU", "PTGMHS",
+    "NỘI TH", "PHỤ SẢN", "MẮT", "TTBVSK", "DƯỢC", "THẬN", "TRUYỀN NHIỄM",
     "NGOẠI UB", "NGOẠI XẠ TRỊ", "RHM", "KB", "CXK", "CSGN", "NGOẠI TN", "HHLS",
     "TMH", "HSTC", "HTL", "NGOẠI TKLN", "NHI", "ĐÔNG Y", "CẤP CỨU", "LKTK"
 }
@@ -2335,7 +2335,7 @@ def run_task_giam_dinh(excel_input, day_range_choice="7days", log_func=print, pr
         stt += 1
         output_row += 1
 
-    result.page_setup.orientation = result.ORIENTATION_PORTRAIT
+    result.page_setup.orientation = result.ORIENTATION_LANDSCAPE
     result.page_setup.paperSize = result.PAPERSIZE_A4
     result.sheet_properties.pageSetUpPr.fitToPage = True
     result.page_setup.fitToWidth = 1
