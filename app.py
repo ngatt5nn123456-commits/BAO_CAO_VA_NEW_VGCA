@@ -5583,7 +5583,7 @@ function handleRequest(e) {
           const rm = sTag.match(/r:id="([^"]+)"/);
           if (nm && rm) {
             const low = nm[1].toLowerCase();
-            if (low.includes('người dùng') || low.includes('nguoi dung') || low.includes('user')) {
+            if (low.includes('người dùng') || low.includes('nguoi dung') || low.includes('user') || low.includes('chấm công') || low.includes('cham cong') || low.includes('hoạt động') || low.includes('hoat dong')) {
               targetName = nm[1];
               targetRid = rm[1];
               break;
@@ -5613,7 +5613,7 @@ function handleRequest(e) {
 
         // Loại bỏ các sheet phụ (như XML02, XML03, XML04, XML05, v.v.)
         for (const fn of Object.keys(zip.files)) {
-          if (fn.startsWith('xl/worksheets/') && fn !== targetSheetPath) {
+          if (fn.startsWith('xl/worksheets/') && !fn.endsWith('/') && fn !== targetSheetPath) {
             zip.remove(fn);
           }
         }
