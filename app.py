@@ -1994,6 +1994,12 @@ HTML_PAGE = """<!DOCTYPE html>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script>
+    if (typeof JSZip === 'undefined') {
+      document.write('<script src="/static/jszip.min.js"><' + '/script>');
+    }
+  </script>
   <style>
     :root {
       --primary: #2563eb;
@@ -5522,7 +5528,64 @@ function handleRequest(e) {
       }
     }
 
-    // XỬ LÝ TÁC VỤ 5
+    // TỐI ƯU HÓA DUNG LƯỢNG FILE CHECK LOG MDINSIGHT TRƯỚC KHI TẢI LÊN MÁY CHỦ
+    async function pruneXlsxInBrowser(file) {
+      if (!file || !file.name || !file.name.toLowerCase().endsWith('.xlsx') || typeof JSZip === 'undefined') {
+        return file;
+      }
+      try {
+        const zip = await JSZip.loadAsync(file);
+        const wbXmlFile = zip.file('xl/workbook.xml');
+        if (!wbXmlFile) return file;
+        const wbXml = await wbXmlFile.async('text');
+
+        let targetName = null, targetRid = null;
+        let m = wbXml.match(/<sheet[^>]*name=["']([^"']*(?:Người dùng|người dùng|nguoi dung|user)[^"']*)["'][^>]*r:id=["']([^"']+)["']/i);
+        if (!m) {
+          m = wbXml.match(/<sheet[^>]*r:id=["']([^"']+)["'][^>]*name=["']([^"']*(?:Người dùng|người dùng|nguoi dung|user)[^"']*)["']/i);
+          if (m) { targetRid = m[1]; targetName = m[2]; }
+        } else {
+          targetName = m[1]; targetRid = m[2];
+        }
+        if (!targetName || !targetRid) return file;
+
+        const relsFile = zip.file('xl/_rels/workbook.xml.rels');
+        if (!relsFile) return file;
+        const relsXml = await relsFile.async('text');
+        let mRel = relsXml.match(new RegExp('<Relationship[^>]*Id=["\']' + targetRid + '["\'][^>]*Target=["\']([^"\']+)["\']'));
+        if (!mRel) {
+          mRel = relsXml.match(new RegExp('<Relationship[^>]*Target=["\']([^"\']+)["\'][^>]*Id=["\']' + targetRid + '["\']'));
+        }
+        if (!mRel) return file;
+        const targetTarget = mRel[1];
+
+        let targetSheetPath = 'xl/' + targetTarget.replace(/^[/]+/, '');
+        if (!targetSheetPath.startsWith('xl/worksheets/')) {
+          targetSheetPath = 'xl/worksheets/' + targetTarget.split('/').pop();
+        }
+
+        // Loại bỏ các sheet phụ (như XML02, XML03, XML04, XML05, v.v.)
+        for (const fn of Object.keys(zip.files)) {
+          if (fn.startsWith('xl/worksheets/') && fn !== targetSheetPath) {
+            zip.remove(fn);
+          }
+        }
+
+        const newWbXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="' + targetName + '" sheetId="1" r:id="rId1"/></sheets></workbook>';
+        const newRelsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="' + targetTarget + '"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+
+        zip.file('xl/workbook.xml', newWbXml);
+        zip.file('xl/_rels/workbook.xml.rels', newRelsXml);
+
+        const outBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+        return new File([outBlob], file.name, { type: file.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      } catch (err) {
+        console.warn('Tối ưu hóa file phía trình duyệt:', err);
+        return file;
+      }
+    }
+
+    // XỬ LÝ TÁC VỤ 5 (CHECK LOG MDINSIGHT - HỖ TRỢ ĐA FILE VÀ GHÉP 30 NGÀY)
     async function handleTask5(e) {
       e.preventDefault();
       hideAlert('alert-t5');
@@ -5538,19 +5601,32 @@ function handleRequest(e) {
         return;
       }
 
-      const range = document.querySelector('input[name="t5_date_range"]:checked').value;
-      const formData = new FormData();
-      for (let i = 0; i < fInput.files.length; i++) {
-        formData.append('files', fInput.files[i]);
-      }
-      formData.append('date_range', range);
-
       setLoading('t5', true);
+      showAlert('alert-t5', 'info', '⏳ Đang tối ưu hóa dung lượng và phân tích dữ liệu 2 file...');
+
       try {
+        const range = document.querySelector('input[name="t5_date_range"]:checked').value;
+        const formData = new FormData();
+        for (let i = 0; i < fInput.files.length; i++) {
+          const fileToUpload = await pruneXlsxInBrowser(fInput.files[i]);
+          formData.append('files', fileToUpload);
+        }
+        formData.append('date_range', range);
+
         const res = await fetch('/api/task-5?action=task-5', { method: 'POST', body: formData });
         if (!res.ok) {
-          const errData = await res.json().catch(() => ({ error: 'Lỗi máy chủ.' }));
-          throw new Error(errData.error || 'Xử lý thất bại.');
+          let errMsg = '';
+          if (res.status === 413) {
+            errMsg = 'Dung lượng file tải lên vượt quá giới hạn máy chủ (4.5 MB). Vui lòng chọn file nhẹ hơn!';
+          } else {
+            try {
+              const errData = await res.json();
+              errMsg = errData.error || ('Lỗi máy chủ (' + res.status + ').');
+            } catch (_) {
+              errMsg = 'Lỗi máy chủ (' + res.status + '). Vui lòng thử lại!';
+            }
+          }
+          throw new Error(errMsg);
         }
         const blob = await res.blob();
         const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, 'DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM.xlsx');
@@ -9786,6 +9862,11 @@ def dispatch_request(path=""):
             resp.set_cookie("app_auth_pass", "8889", max_age=864000, path="/", samesite="Lax")
             return resp
         return jsonify({"success": False, "error": "Mật khẩu không chính xác!"}), 401
+
+    if "static/jszip.min.js" in matched or path == "static/jszip.min.js":
+        static_file = os.path.join(os.path.dirname(__file__), "static", "jszip.min.js")
+        if os.path.exists(static_file):
+            return send_file(static_file, mimetype="application/javascript")
 
     req_act = (request.args.get("action") or request.form.get("action") or "").lower()
     req_task = str(request.args.get("task") or request.form.get("task") or "")
