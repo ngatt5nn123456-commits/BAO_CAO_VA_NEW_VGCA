@@ -1103,27 +1103,43 @@ def prune_xlsx_for_giam_dinh(file_bytes):
     try:
         with zipfile.ZipFile(io.BytesIO(file_bytes), 'r') as zin:
             wb_xml = zin.read('xl/workbook.xml').decode('utf-8', errors='ignore')
-            m = re.search(r'<sheet[^>]*name=["\']([^"\']*(?:Người dùng|người dùng|nguoi dung|user)[^"\']*)["\'][^>]*r:id=["\']([^"\']+)["\']', wb_xml, re.IGNORECASE)
-            if not m:
-                m = re.search(r'<sheet[^>]*r:id=["\']([^"\']+)["\'][^>]*name=["\']([^"\']*(?:Người dùng|người dùng|nguoi dung|user)[^"\']*)["\']', wb_xml, re.IGNORECASE)
-                if m:
-                    target_rid, target_name = m.group(1), m.group(2)
-                else:
-                    target_name, target_rid = None, None
-            else:
-                target_name, target_rid = m.group(1), m.group(2)
-            
+            target_name, target_rid = None, None
+            sheet_tags = re.findall(r'<sheet[^>]+>', wb_xml)
+            for s_tag in sheet_tags:
+                nm_m = re.search(r'name="([^"]+)"', s_tag)
+                rid_m = re.search(r'r:id="([^"]+)"', s_tag)
+                if nm_m and rid_m:
+                    s_low = remove_accents(nm_m.group(1)).lower()
+                    if any(k in s_low for k in ("nguoi dung", "user", "cham cong", "hoat dong")):
+                        target_name = nm_m.group(1)
+                        target_rid = rid_m.group(1)
+                        break
             if not target_name:
+                for s_tag in sheet_tags:
+                    nm_m = re.search(r'name="([^"]+)"', s_tag)
+                    rid_m = re.search(r'r:id="([^"]+)"', s_tag)
+                    if nm_m and rid_m:
+                        s_low = remove_accents(nm_m.group(1)).lower()
+                        if not any(k in s_low for k in ("xml02", "xml03", "xml04", "xml05", "bac si")):
+                            target_name = nm_m.group(1)
+                            target_rid = rid_m.group(1)
+                            break
+            
+            if not target_name or not target_rid:
                 return file_bytes
             
             rels_xml = zin.read('xl/_rels/workbook.xml.rels').decode('utf-8', errors='ignore')
-            m_rel = re.search(r'<Relationship[^>]*Id=["\']' + re.escape(target_rid) + r'["\'][^>]*Target=["\']([^"\']+)["\']', rels_xml)
-            if not m_rel:
-                m_rel = re.search(r'<Relationship[^>]*Target=["\']([^"\']+)["\'][^>]*Id=["\']' + re.escape(target_rid) + r'["\']', rels_xml)
-            if not m_rel:
+            rel_tags = re.findall(r'<Relationship[^>]+>', rels_xml)
+            target_target = None
+            for r_tag in rel_tags:
+                if f'Id="{target_rid}"' in r_tag:
+                    tm = re.search(r'Target="([^"]+)"', r_tag)
+                    if tm:
+                        target_target = tm.group(1)
+                        break
+            if not target_target:
                 return file_bytes
             
-            target_target = m_rel.group(1)
             target_sheet_path = 'xl/' + target_target.lstrip('/')
             if not target_sheet_path.startswith('xl/worksheets/'):
                 target_sheet_path = 'xl/worksheets/' + target_target.split('/')[-1]
@@ -1148,6 +1164,7 @@ def prune_xlsx_for_giam_dinh(file_bytes):
     except Exception as e:
         print('Prune warning:', e)
         return file_bytes
+
 
 def parse_month_year(title_text):
     if not title_text:
@@ -1194,14 +1211,25 @@ def process_giam_dinh_web(file_inputs, date_range="full", end_day=None):
     for idx, f_bytes in enumerate(file_bytes_list):
         pruned = prune_xlsx_for_giam_dinh(f_bytes)
         wb = openpyxl.load_workbook(io.BytesIO(pruned), data_only=True)
-        source = wb.active
+        source = None
         for sname in wb.sheetnames:
-            if 'người dùng' in sname.lower() or 'user' in sname.lower():
+            s_norm = remove_accents(sname).lower()
+            if any(k in s_norm for k in ("nguoi dung", "user", "cham cong", "hoat dong")):
                 source = wb[sname]
                 break
+        if not source:
+            for sname in wb.sheetnames:
+                s_norm = remove_accents(sname).lower()
+                if not any(k in s_norm for k in ("xml02", "xml03", "xml04", "xml05", "bac si")):
+                    source = wb[sname]
+                    break
+        if not source:
+            source = wb.active or (wb[wb.sheetnames[0]] if wb.sheetnames else None)
+        if not source:
+            raise Exception("File Excel không có sheet dữ liệu người dùng / chấm công hợp lệ.")
 
-        title = source["A1"].value or ""
-        note = source["A2"].value or "Ghi chú: [X]: Có hoạt động, [-]: Không hoạt động"
+        title = source["A1"].value if source["A1"] else ""
+        note = source["A2"].value if source["A2"] else "Ghi chú: [X]: Có hoạt động, [-]: Không hoạt động"
 
         year, month = parse_month_year(title)
         if not month:
