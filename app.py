@@ -2096,95 +2096,286 @@ HTML_PAGE = """<!DOCTYPE html>
     }
 
     /* NHÓM TÁC VỤ CARD BOX */
-    .task-group-card {
+        /* ============================================================
+       CÂY THƯ MỤC CHA - CON (TREE VIEW HIERARCHY)
+       ============================================================ */
+    .sidebar-search-box {
+      padding: 10px 12px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      background: rgba(11, 17, 32, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    .search-input-wrapper .search-icon {
+      position: absolute;
+      left: 10px;
+      font-size: 0.85rem;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    #menu-search-input {
+      width: 100%;
       background: #0f172a;
-      border: 1px solid #1e293b;
-      border-radius: 10px;
-      padding: 8px 6px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      font-size: 0.78rem;
+      padding: 7px 28px 7px 30px;
+      border-radius: 8px;
+      outline: none;
+      transition: all 0.2s ease;
     }
-    .task-group-card.card-cks {
-      border-top: 3px solid #38bdf8;
-      background: linear-gradient(180deg, rgba(56, 189, 248, 0.08) 0%, rgba(15, 23, 42, 0.95) 100%);
+    #menu-search-input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+      background: #131d35;
     }
-    .task-group-card.card-bhyt {
-      border-top: 3px solid #c084fc;
-      background: linear-gradient(180deg, rgba(192, 132, 252, 0.08) 0%, rgba(15, 23, 42, 0.95) 100%);
+    #clear-search-btn {
+      position: absolute;
+      right: 8px;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+    #clear-search-btn:hover { color: #f87171; }
+    .tree-actions-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .tree-act-btn {
+      flex: 1;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 5px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+    .tree-act-btn:hover {
+      background: rgba(51, 65, 85, 0.9);
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.35);
     }
 
-    .group-header-box {
+    /* TREE FOLDER GROUP (PARENT NODE) */
+    .tree-folder-group {
+      margin-bottom: 10px;
+      border-radius: 10px;
+      background: #0b1120;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tree-folder-group.card-cks {
+      border-left: 3px solid #38bdf8;
+    }
+    .tree-folder-group.card-bhyt {
+      border-left: 3px solid #c084fc;
+    }
+
+    .tree-folder-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 4px 6px 8px 6px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      margin-bottom: 6px;
+      padding: 10px 12px;
+      background: linear-gradient(90deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
     }
-    .group-header-title {
+    .tree-folder-header:hover {
+      background: linear-gradient(90deg, rgba(51, 65, 85, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+    }
+    .folder-title-wrap {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 0.73rem;
+      gap: 8px;
+    }
+    .folder-chevron {
+      font-size: 0.65rem;
+      color: #94a3b8;
+      transition: transform 0.25s ease;
+      display: inline-block;
+    }
+    .tree-folder-group.collapsed .folder-chevron {
+      transform: rotate(-90deg);
+    }
+    .folder-icon {
+      font-size: 1.05rem;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    }
+    .folder-title {
+      font-size: 0.74rem;
       font-weight: 800;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.5px;
       text-transform: uppercase;
     }
-    .card-cks .group-header-title { color: #38bdf8; }
-    .card-bhyt .group-header-title { color: #c084fc; }
+    .card-cks .folder-title { color: #7dd3fc; }
+    .card-bhyt .folder-title { color: #d8b4fe; }
 
-    .group-header-badge {
+    .folder-badge {
       font-size: 0.62rem;
       font-weight: 700;
       padding: 2px 7px;
       border-radius: 999px;
     }
-    .card-cks .group-header-badge {
-      background: rgba(56, 189, 248, 0.18);
-      color: #7dd3fc;
+    .badge-cks {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
       border: 1px solid rgba(56, 189, 248, 0.35);
     }
-    .card-bhyt .group-header-badge {
-      background: rgba(192, 132, 252, 0.18);
-      color: #e9d5ff;
+    .badge-bhyt {
+      background: rgba(192, 132, 252, 0.15);
+      color: #c084fc;
       border: 1px solid rgba(192, 132, 252, 0.35);
     }
 
-    .sidebar-menu { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
-    .sidebar-menu li {
-      display: flex; align-items: center; gap: 10px;
-      padding: 8px 10px;
-      border-radius: 7px;
-      background: rgba(30, 41, 59, 0.45);
+    /* TREE CHILDREN CONTAINER (CHILD NODES) */
+    .tree-children-list {
+      list-style: none;
+      padding: 8px 10px 10px 18px;
+      margin: 0;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      transition: max-height 0.3s ease, opacity 0.25s ease;
+      max-height: 1200px;
+      opacity: 1;
+    }
+    /* Vertical Trunk Line of Tree */
+    .tree-children-list::before {
+      content: '';
+      position: absolute;
+      left: 22px;
+      top: 8px;
+      bottom: 20px;
+      width: 2px;
+      background: rgba(56, 189, 248, 0.3);
+      border-radius: 1px;
+    }
+    .card-bhyt .tree-children-list::before {
+      background: rgba(192, 132, 252, 0.3);
+    }
+
+    .tree-folder-group.collapsed .tree-children-list {
+      max-height: 0;
+      opacity: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      overflow: hidden;
+    }
+
+    /* TREE CHILD ITEM */
+    .tree-child-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px 8px 12px;
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.65);
       border: 1px solid rgba(255, 255, 255, 0.04);
       cursor: pointer;
-      transition: all 0.2s ease;
       position: relative;
+      margin-left: 14px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .sidebar-menu li:hover {
-      background: rgba(51, 65, 85, 0.7);
-      transform: translateX(2px);
-      border-color: rgba(255, 255, 255, 0.1);
+    /* Horizontal Connector Branch */
+    .tree-child-item::before {
+      content: '';
+      position: absolute;
+      left: -14px;
+      top: 50%;
+      width: 12px;
+      height: 2px;
+      background: rgba(56, 189, 248, 0.35);
+      border-bottom-left-radius: 3px;
     }
-    .sidebar-menu li.active {
-      background: #2563eb;
-      box-shadow: 0 3px 10px rgba(37, 99, 235, 0.4);
-      border-color: #3b82f6;
+    .card-bhyt .tree-child-item::before {
+      background: rgba(192, 132, 252, 0.35);
     }
-    .sidebar-menu li .nav-icon { font-size: 1.15rem; flex-shrink: 0; }
-    .sidebar-menu li .nav-text { display: flex; flex-direction: column; overflow: hidden; }
-    .sidebar-menu li .nav-title { font-size: 0.84rem; font-weight: 700; color: #e2e8f0; }
-    .sidebar-menu li.active .nav-title { color: #ffffff; }
-    .sidebar-menu li .nav-desc { font-size: 0.70rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sidebar-menu li.active .nav-desc { color: #dbeafe; }
-    .sidebar-menu li .nav-lock {
-      margin-left: auto;
-      font-size: 0.78rem;
-      opacity: 0.65;
+    .tree-child-item:hover {
+      background: rgba(30, 41, 59, 0.95);
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .tree-child-item.active {
+      background: linear-gradient(90deg, #1d4ed8 0%, #2563eb 100%);
+      border-color: #60a5fa;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
+      transform: translateX(4px);
+    }
+    .tree-child-item.active::before {
+      background: #60a5fa;
+      box-shadow: 0 0 6px rgba(96, 165, 250, 0.8);
+    }
+    .tree-child-item .nav-icon {
+      font-size: 1.12rem;
       flex-shrink: 0;
-      transition: all 0.2s ease;
+      transition: transform 0.2s ease;
     }
-    .sidebar-menu li:hover .nav-lock { opacity: 1; transform: scale(1.15); }
-    .sidebar-menu li.active .nav-lock { opacity: 0.95; }
+    .tree-child-item:hover .nav-icon {
+      transform: scale(1.15);
+    }
+    .tree-child-item .nav-text {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .tree-child-item .nav-title {
+      font-size: 0.83rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      letter-spacing: 0.2px;
+    }
+    .tree-child-item.active .nav-title {
+      color: #ffffff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .tree-child-item .nav-desc {
+      font-size: 0.69rem;
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+    .tree-child-item.active .nav-desc {
+      color: #dbeafe;
+    }
+    .tree-child-item.search-hidden {
+      display: none !important;
+    }
+    .tree-child-item.search-match {
+      animation: highlightGlow 1.2s infinite alternate;
+    }
+    @keyframes highlightGlow {
+      from { border-color: rgba(56, 189, 248, 0.4); }
+      to { border-color: rgba(56, 189, 248, 0.95); box-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
+    }
     @keyframes authShake {
       0%, 100% { transform: translateX(0); }
       20%, 60% { transform: translateX(-6px); }
@@ -3508,129 +3699,139 @@ HTML_PAGE = """<!DOCTYPE html>
   <!-- MAIN BODY: SIDEBAR + CONTENT -->
   <div class="app-container">
 
-    <!-- SIDEBAR ĐƯỢC CHIA THÀNH 2 NHÓM -->
+    <!-- SIDEBAR DẠNG CÂY THƯ MỤC CHA - CON -->
     <div class="sidebar">
-<div class="sidebar-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="sidebar-header" style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <div class="sidebar-title">📋 DANH MỤC TÁC VỤ</div>
-          <div class="sidebar-subtitle">Hệ thống phân thành 2 nhóm chuyên biệt</div>
+          <div class="sidebar-title">📁 CÂY DANH MỤC TÁC VỤ</div>
+          <div class="sidebar-subtitle">Hệ thống phân cấp Cha ─ Con trực quan</div>
         </div>
         <button type="button" onclick="window.location.href='/?v=' + Date.now() + window.location.hash;" title="Tải mới giao diện và xóa bộ nhớ đệm" style="background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.4); color:#93c5fd; border-radius:6px; padding:4px 8px; font-size:11px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:4px; transition:all 0.2s;">
           🔄 Tải mới
         </button>
       </div>
 
+      <!-- THANH TÌM KIẾM NHANH & ĐIỀU KHIỂN CÂY -->
+      <div class="sidebar-search-box">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="menu-search-input" placeholder="Tìm kiếm tác vụ (gõ tên hoặc lỗi)..." oninput="filterSidebarTree(this.value)">
+          <button type="button" id="clear-search-btn" onclick="clearTreeSearch()" style="display:none;" title="Xóa tìm kiếm">✕</button>
+        </div>
+        <div class="tree-actions-row">
+          <button type="button" class="tree-act-btn" onclick="expandAllTreeGroups()" title="Mở rộng tất cả thư mục">
+            📂 Mở rộng tất cả
+          </button>
+          <button type="button" class="tree-act-btn" onclick="collapseAllTreeGroups()" title="Thu gọn tất cả thư mục">
+            📁 Thu gọn tất cả
+          </button>
+        </div>
+      </div>
+
       <div class="sidebar-scrollable">
-        <!-- NHÓM 1: CHỨNG THƯ SỐ + EMAIL CÔNG VỤ -->
-        <div class="task-group-card card-cks">
-          <div class="group-header-box">
-            <div class="group-header-title">
-              <span>🔐 NHÓM CKS & MAIL CÔNG VỤ</span>
+        <!-- THƯ MỤC CHA 1: CHỨNG THƯ SỐ + EMAIL CÔNG VỤ -->
+        <div class="tree-folder-group card-cks" id="folder-grp-1">
+          <div class="tree-folder-header" onclick="toggleTreeFolder('folder-grp-1')">
+            <div class="folder-title-wrap">
+              <span class="folder-chevron">▼</span>
+              <span class="folder-icon">📂</span>
+              <span class="folder-title">NHÓM CKS & MAIL CÔNG VỤ</span>
             </div>
-            <span class="group-header-badge">5 tác vụ</span>
+            <span class="folder-badge badge-cks">5 tác vụ</span>
           </div>
-          <ul class="sidebar-menu">
-            <li data-task="1" onclick="switchTask(1)">
+          <ul class="tree-children-list sidebar-menu">
+            <li data-task="1" onclick="switchTask(1)" class="tree-child-item">
               <div class="nav-icon">🎯</div>
               <div class="nav-text">
                 <span class="nav-title">VGCA (Word + Excel SSO)</span>
                 <span class="nav-desc">Đối chiếu cấp CKS Word & Excel SSO</span>
               </div>
-              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
-            <li data-task="2" onclick="switchTask(2)">
+            <li data-task="2" onclick="switchTask(2)" class="tree-child-item">
               <div class="nav-icon">📝</div>
               <div class="nav-text">
                 <span class="nav-title">CKS (Công văn Mẫu 02)</span>
                 <span class="nav-desc">Xuất Công văn Mẫu 02 (Có Excel SSO)</span>
               </div>
-              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
-            <li data-task="3" onclick="switchTask(3)">
+            <li data-task="3" onclick="switchTask(3)" class="tree-child-item">
               <div class="nav-icon">📝</div>
               <div class="nav-text">
                 <span class="nav-title">CKS (Mẫu CV02 chỉ đọc file Word)</span>
                 <span class="nav-desc">Đọc toàn bộ file Word xuất Mẫu 02</span>
               </div>
-              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
-            <li data-task="7" onclick="switchTask(7)">
+            <li data-task="7" onclick="switchTask(7)" class="tree-child-item">
               <div class="nav-icon">📄</div>
               <div class="nav-text">
                 <span class="nav-title">VGCA (Từ File Word)</span>
                 <span class="nav-desc">Đọc nhiều file Word không cần SSO</span>
               </div>
-              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
-            <li data-task="9" onclick="switchTask(9)">
+            <li data-task="9" onclick="switchTask(9)" class="tree-child-item">
               <div class="nav-icon">📧</div>
               <div class="nav-text">
                 <span class="nav-title">Cấp Email Công Vụ</span>
                 <span class="nav-desc">Tổng hợp danh sách xin cấp Email</span>
               </div>
-              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
           </ul>
         </div>
 
-        <!-- NHÓM 2: BÁO CÁO VÀ GIÁM ĐỊNH BHYT -->
-        <div class="task-group-card card-bhyt">
-          <div class="group-header-box">
-            <div class="group-header-title">
-              <span>📊 NHÓM BÁO CÁO & GIÁM ĐỊNH BHYT</span>
+        <!-- THƯ MỤC CHA 2: BÁO CÁO VÀ GIÁM ĐỊNH BHYT -->
+        <div class="tree-folder-group card-bhyt" id="folder-grp-2">
+          <div class="tree-folder-header" onclick="toggleTreeFolder('folder-grp-2')">
+            <div class="folder-title-wrap">
+              <span class="folder-chevron">▼</span>
+              <span class="folder-icon">📂</span>
+              <span class="folder-title">BÁO CÁO & GIÁM ĐỊNH BHYT</span>
             </div>
-            <span class="group-header-badge">7 tác vụ</span>
+            <span class="folder-badge badge-bhyt">7 tác vụ</span>
           </div>
-          <ul class="sidebar-menu">
-            <li data-task="5" onclick="switchTask(5)">
+          <ul class="tree-children-list sidebar-menu">
+            <li data-task="5" onclick="switchTask(5)" class="tree-child-item">
               <div class="nav-icon">🏥</div>
               <div class="nav-text">
                 <span class="nav-title">Check Log MDINSIGHT</span>
                 <span class="nav-desc">Lọc người dùng & xuất Excel A4</span>
               </div>
-              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
-            <li data-task="11" onclick="switchTask(11)">
+            <li data-task="11" onclick="switchTask(11)" class="tree-child-item">
               <div class="nav-icon">🛠</div>
               <div class="nav-text">
                 <span class="nav-title">BC Sửa CNTT</span>
                 <span class="nav-desc">Tổng hợp ca tiếp nhận & báo cáo cán bộ</span>
               </div>
-              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
-            <li data-task="12" onclick="switchTask(12)">
+            <li data-task="12" onclick="switchTask(12)" class="tree-child-item">
               <div class="nav-icon">📈</div>
               <div class="nav-text">
                 <span class="nav-title">Thống Kê Lỗi Tháng</span>
                 <span class="nav-desc">Tần suất lỗi BHYT & hồ sơ mới nhất</span>
               </div>
-              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
-            <li data-task="13" onclick="switchTask(13)">
+            <li data-task="13" onclick="switchTask(13)" class="tree-child-item">
               <div class="nav-icon">⚡</div>
               <div class="nav-text">
                 <span class="nav-title">Check Khoa, Phòng BHYT</span>
                 <span class="nav-desc">Câu lệnh check khoa, phòng bảo hiểm</span>
               </div>
-              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
-            <li data-task="14" onclick="switchTask(14)">
+            <li data-task="14" onclick="switchTask(14)" class="tree-child-item">
               <div class="nav-icon">📋</div>
               <div class="nav-text">
                 <span class="nav-title">BC CV hàng ngày P.CNTT</span>
                 <span class="nav-desc">Thống kê lỗi chủ quan & khoa phòng</span>
               </div>
-              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
-            <li data-task="8" onclick="switchTask(8)">
+            <li data-task="8" onclick="switchTask(8)" class="tree-child-item">
               <div class="nav-icon">⚡</div>
               <div class="nav-text">
                 <span class="nav-title">P.CNTT (Sheet Cố Định)</span>
                 <span class="nav-desc">Tự động tải Google Sheets của viện</span>
               </div>
-              <span class="nav-lock" style="display:none;">🔒</span>
             </li>
-            <li data-task="10" onclick="switchTask(10)">
+            <li data-task="10" onclick="switchTask(10)" class="tree-child-item">
               <div class="nav-icon">📊</div>
               <div class="nav-text">
                 <span class="nav-title">Thống Kê Lỗi XML BHYT</span>
@@ -5059,6 +5260,69 @@ function handleRequest(e) {
       }
     }
 
+    // HÀM ĐIỀU KHIỂN CÂY THƯ MỤC CHA - CON (TREE VIEW)
+    function toggleTreeFolder(folderId) {
+      const el = document.getElementById(folderId);
+      if (!el) return;
+      el.classList.toggle('collapsed');
+      const icon = el.querySelector('.folder-icon');
+      if (icon) {
+        icon.textContent = el.classList.contains('collapsed') ? '📁' : '📂';
+      }
+    }
+
+    function expandAllTreeGroups() {
+      document.querySelectorAll('.tree-folder-group').forEach(el => {
+        el.classList.remove('collapsed');
+        const icon = el.querySelector('.folder-icon');
+        if (icon) icon.textContent = '📂';
+      });
+    }
+
+    function collapseAllTreeGroups() {
+      document.querySelectorAll('.tree-folder-group').forEach(el => {
+        el.classList.add('collapsed');
+        const icon = el.querySelector('.folder-icon');
+        if (icon) icon.textContent = '📁';
+      });
+    }
+
+    function filterSidebarTree(query) {
+      query = (query || '').trim().toLowerCase();
+      const clearBtn = document.getElementById('clear-search-btn');
+      if (clearBtn) clearBtn.style.display = query ? 'block' : 'none';
+
+      document.querySelectorAll('.tree-folder-group').forEach(folder => {
+        let matchCount = 0;
+        folder.querySelectorAll('.tree-child-item').forEach(item => {
+          const title = (item.querySelector('.nav-title')?.textContent || '').toLowerCase();
+          const desc = (item.querySelector('.nav-desc')?.textContent || '').toLowerCase();
+          const matches = !query || title.includes(query) || desc.includes(query);
+          item.classList.toggle('search-hidden', !matches);
+          item.classList.toggle('search-match', query.length > 0 && matches);
+          if (matches) matchCount++;
+        });
+
+        if (query) {
+          folder.classList.toggle('collapsed', matchCount === 0);
+          const icon = folder.querySelector('.folder-icon');
+          if (icon) icon.textContent = matchCount > 0 ? '📂' : '📁';
+          folder.style.display = matchCount > 0 ? 'block' : 'none';
+        } else {
+          folder.style.display = 'block';
+        }
+      });
+    }
+
+    function clearTreeSearch() {
+      const input = document.getElementById('menu-search-input');
+      if (input) {
+        input.value = '';
+        filterSidebarTree('');
+        input.focus();
+      }
+    }
+
     function switchTask(taskId) {
       taskId = parseInt(taskId) || 10;
       executeSwitchTask(taskId);
@@ -5075,9 +5339,18 @@ function handleRequest(e) {
         }
       } catch (e) {}
 
-      document.querySelectorAll('.sidebar-menu li[data-task]').forEach((el) => {
+      document.querySelectorAll('[data-task]').forEach((el) => {
         const id = parseInt(el.getAttribute('data-task'));
-        el.classList.toggle('active', id === taskId);
+        const isActive = (id === taskId);
+        el.classList.toggle('active', isActive);
+        if (isActive) {
+          const parentFolder = el.closest('.tree-folder-group');
+          if (parentFolder && parentFolder.classList.contains('collapsed')) {
+            parentFolder.classList.remove('collapsed');
+            const icon = parentFolder.querySelector('.folder-icon');
+            if (icon) icon.textContent = '📂';
+          }
+        }
       });
       document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
       const activePage = document.getElementById('page-task-' + taskId);
