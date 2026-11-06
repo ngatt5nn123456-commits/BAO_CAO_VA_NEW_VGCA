@@ -1995,11 +1995,6 @@ HTML_PAGE = """<!DOCTYPE html>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script>
-    if (typeof JSZip === 'undefined') {
-      document.write('<script src="/static/jszip.min.js"><' + '/script>');
-    }
-  </script>
   <style>
     :root {
       --primary: #2563eb;
@@ -5530,7 +5525,21 @@ function handleRequest(e) {
 
     // TỐI ƯU HÓA DUNG LƯỢNG FILE CHECK LOG MDINSIGHT TRƯỚC KHI TẢI LÊN MÁY CHỦ
     async function pruneXlsxInBrowser(file) {
-      if (!file || !file.name || !file.name.toLowerCase().endsWith('.xlsx') || typeof JSZip === 'undefined') {
+      if (!file || !file.name || !file.name.toLowerCase().endsWith('.xlsx')) {
+        return file;
+      }
+      if (typeof JSZip === 'undefined') {
+        try {
+          await new Promise((resolve) => {
+            const s = document.createElement('script');
+            s.src = '/static/jszip.min.js';
+            s.onload = resolve;
+            s.onerror = () => resolve();
+            document.head.appendChild(s);
+          });
+        } catch (_) {}
+      }
+      if (typeof JSZip === 'undefined') {
         return file;
       }
       try {
@@ -5540,24 +5549,34 @@ function handleRequest(e) {
         const wbXml = await wbXmlFile.async('text');
 
         let targetName = null, targetRid = null;
-        let m = wbXml.match(/<sheet[^>]*name=["']([^"']*(?:Người dùng|người dùng|nguoi dung|user)[^"']*)["'][^>]*r:id=["']([^"']+)["']/i);
-        if (!m) {
-          m = wbXml.match(/<sheet[^>]*r:id=["']([^"']+)["'][^>]*name=["']([^"']*(?:Người dùng|người dùng|nguoi dung|user)[^"']*)["']/i);
-          if (m) { targetRid = m[1]; targetName = m[2]; }
-        } else {
-          targetName = m[1]; targetRid = m[2];
+        const sheetMatches = wbXml.match(/<sheet[^>]+>/g) || [];
+        for (const sTag of sheetMatches) {
+          const nm = sTag.match(/name="([^"]+)"/);
+          const rm = sTag.match(/r:id="([^"]+)"/);
+          if (nm && rm) {
+            const low = nm[1].toLowerCase();
+            if (low.includes('người dùng') || low.includes('nguoi dung') || low.includes('user')) {
+              targetName = nm[1];
+              targetRid = rm[1];
+              break;
+            }
+          }
         }
         if (!targetName || !targetRid) return file;
 
         const relsFile = zip.file('xl/_rels/workbook.xml.rels');
         if (!relsFile) return file;
         const relsXml = await relsFile.async('text');
-        let mRel = relsXml.match(new RegExp('<Relationship[^>]*Id=["\']' + targetRid + '["\'][^>]*Target=["\']([^"\']+)["\']'));
-        if (!mRel) {
-          mRel = relsXml.match(new RegExp('<Relationship[^>]*Target=["\']([^"\']+)["\'][^>]*Id=["\']' + targetRid + '["\']'));
+
+        let targetTarget = null;
+        const relMatches = relsXml.match(/<Relationship[^>]+>/g) || [];
+        for (const rTag of relMatches) {
+          if (rTag.includes('Id="' + targetRid + '"')) {
+            const tm = rTag.match(/Target="([^"]+)"/);
+            if (tm) { targetTarget = tm[1]; break; }
+          }
         }
-        if (!mRel) return file;
-        const targetTarget = mRel[1];
+        if (!targetTarget) return file;
 
         let targetSheetPath = 'xl/' + targetTarget.replace(/^[/]+/, '');
         if (!targetSheetPath.startsWith('xl/worksheets/')) {
@@ -6640,12 +6659,7 @@ function handleRequest(e) {
     window.addEventListener('popstate', () => {
       if (isProgrammaticSwitch) return;
       const targetTask = getTaskFromUrl();
-      if (targetTask === 10 || unlockedTasks.has(targetTask)) {
-        executeSwitchTask(targetTask);
-      } else {
-        pendingTaskId = targetTask;
-        openAuthModal(targetTask);
-      }
+      executeSwitchTask(targetTask);
     });
   
 
