@@ -12,6 +12,7 @@ import urllib.request
 import urllib.parse
 import http.client
 from datetime import datetime
+import tempfile
 from concurrent.futures import ThreadPoolExecutor
 
 import openpyxl
