@@ -6075,11 +6075,11 @@ function handleRequest(e) {
         }
 
         // 2. Nếu IndexedDB chưa có, truy vấn từ server
-        const res = await fetch('/api/task-5/fixed-file');
+        const res = await fetch('/api/task-5/fixed-file?action=task-5-fixed-file');
         if (res.ok) {
           const meta = await res.json();
           if (meta.exists) {
-            const dlRes = await fetch('/api/task-5/fixed-file?download=1');
+            const dlRes = await fetch('/api/task-5/fixed-file?action=task-5-fixed-file&download=1');
             if (dlRes.ok) {
               const blob = await dlRes.blob();
               const f = new File([blob], meta.filename || 'fixed_prev_month.xlsx', {
@@ -6133,7 +6133,7 @@ function handleRequest(e) {
       try {
         const fd = new FormData();
         fd.append('fixed_file', file);
-        await fetch('/api/task-5/fixed-file', { method: 'POST', body: fd });
+        await fetch('/api/task-5/fixed-file?action=task-5-fixed-file', { method: 'POST', body: fd });
       } catch (_) {}
 
       renderFixedFileActive(file.name, file.size);
@@ -6144,7 +6144,7 @@ function handleRequest(e) {
       if (!confirm('Bạn có chắc chắn muốn gỡ bỏ file cố định này khỏi hệ thống không?')) return;
       await deleteFixedMDInsightFromIDB();
       try {
-        await fetch('/api/task-5/fixed-file', { method: 'DELETE' });
+        await fetch('/api/task-5/fixed-file?action=task-5-fixed-file&sub_action=delete', { method: 'POST' });
       } catch (_) {}
       const input = document.getElementById('file-t5-fixed-input');
       if (input) input.value = '';
@@ -8715,15 +8715,16 @@ def delete_fixed_mdinsight_file():
 
 def handle_task_5_fixed_file():
     try:
-        if request.method == "POST":
+        sub_act = (request.args.get("sub_action") or request.form.get("sub_action") or "").lower()
+        if request.method == "DELETE" or sub_act == "delete" or request.args.get("action") == "delete" or request.form.get("action") == "delete":
+            delete_fixed_mdinsight_file()
+            return jsonify({"success": True, "message": "Đã gỡ bỏ file cố định."})
+        elif request.method == "POST":
             file = request.files.get("fixed_file") or request.files.get("file")
             if not file or not file.filename:
                 return jsonify({"error": "Không tìm thấy file hợp lệ để lưu."}), 400
             meta = save_fixed_mdinsight_file(file)
             return jsonify({"success": True, "meta": meta})
-        elif request.method == "DELETE" or request.args.get("action") == "delete" or request.form.get("action") == "delete":
-            delete_fixed_mdinsight_file()
-            return jsonify({"success": True, "message": "Đã gỡ bỏ file cố định."})
         else:
             meta = get_fixed_mdinsight_meta()
             if request.args.get("download") == "1":
