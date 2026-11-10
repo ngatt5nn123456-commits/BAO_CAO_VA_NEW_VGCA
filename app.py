@@ -4112,17 +4112,16 @@ HTML_PAGE = """<!DOCTYPE html>
             <div class="guide-box">
               <h3>🎯 Mục đích:</h3>
               <p>Đọc file Excel báo cáo Check Log MDINSIGHT, lọc danh sách người dùng được phép, xuất ra file <b>'DANH SÁCH THEO DÕI GIÁM ĐỊNH BẢO HIỂM.xlsx'</b> chuẩn khổ A4 ngang (đầy đủ 32 người dùng bao gồm XNTT, TCKT), tự động autofit cột và co giãn vừa 1 trang ngang.</p>
+              <h3>💡 Tiện ích lưu file cố định:</h3>
+              <p style="background: rgba(59, 130, 246, 0.15); border-left: 3px solid #3b82f6; padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #cbd5e1; margin-bottom: 12px;">
+                Hệ thống hỗ trợ <b>Lưu cố định File tháng trước</b> bền vững (kể cả khi <b>Ctrl + F5</b> hoặc tải lại trang). Hàng ngày bạn chỉ cần tải 1 file của tháng hiện tại lên, hệ thống sẽ tự động ghép với file cố định để xuất báo cáo 30 ngày.
+              </p>
               <h3>📝 Các bước thực hiện:</h3>
               <ol>
-                <li><b>Bước 1:</b> Tải lên 1 hoặc nhiều file Excel Check Log MDINSIGHT.</li>
-                <li><b>Bước 2:</b> Chọn khoảng ngày cần tổng hợp:
-                  <ul>
-                    <li><b>Từ ngày 01 đến 14:</b> Lấy nửa đầu tháng.</li>
-                    <li><b>Từ ngày 15 đến cuối tháng:</b> Lấy nửa cuối tháng.</li>
-                    <li><b>Toàn bộ tháng (01 đến hết tháng):</b> Lấy trọn vẹn dữ liệu.</li>
-                  </ul>
-                </li>
-                <li><b>Bước 3:</b> Nhấn nút <b>"🚀 Xử Lý & Xuất Check Log MDINSIGHT"</b>.</li>
+                <li><b>Bước 1:</b> Tải file tháng trước vào ô <b>"File Tháng Trước (Cố Định)"</b> để lưu vào hệ thống (chỉ cần thực hiện 1 lần mỗi tháng).</li>
+                <li><b>Bước 2:</b> Hàng ngày, chỉ cần tải file tháng hiện tại vào ô <b>"File Tháng Hiện Tại (Cập Nhật Theo Ngày)"</b>.</li>
+                <li><b>Bước 3:</b> Chọn khoảng ngày cần tổng hợp (Lựa chọn 1, 2 hoặc 3).</li>
+                <li><b>Bước 4:</b> Nhấn nút <b>"🚀 Xử Lý & Xuất Check Log MDINSIGHT"</b>.</li>
               </ol>
             </div>
           </div>
@@ -4133,18 +4132,62 @@ HTML_PAGE = """<!DOCTYPE html>
               <h2>Thao Tác Thực Thi & Chọn Dữ Liệu</h2>
             </div>
             <form onsubmit="handleTask5(event)">
-              <div class="form-group">
-                <label class="form-label">1️⃣ Tải lên file Excel Check Log MDINSIGHT (có thể chọn nhiều file):</label>
-                <div class="file-dropzone" onclick="document.getElementById('file-t5').click()">
+              <!-- PHẦN 1: FILE THÁNG TRƯỚC (CỐ ĐỊNH & LƯU HỆ THỐNG) -->
+              <div class="form-group" style="background: rgba(15, 23, 42, 0.6); border: 1px dashed rgba(59, 130, 246, 0.45); border-radius: 12px; padding: 14px; margin-bottom: 18px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                  <label class="form-label" style="margin-bottom: 0; font-weight: 700; color: #93c5fd; display: flex; align-items: center; gap: 8px;">
+                    <span>📌</span> 1️⃣ File Tháng Trước (Lưu Cố Định Trên Hệ Thống):
+                  </label>
+                  <span style="font-size: 11px; background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 3px 8px; border-radius: 6px; font-weight: 600;">Bền vững qua Ctrl+F5</span>
+                </div>
+                <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">
+                  Tải 1 lần để lưu cố định. File này được ghi nhớ vĩnh viễn (kể cả khi nhấn <b>Ctrl + F5</b>) cho đến khi bạn thay thế file khác.
+                </div>
+
+                <!-- Khi đã có file cố định -->
+                <div id="t5-fixed-active-box" style="display: none; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 10px; padding: 12px; margin-bottom: 6px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <span style="font-size: 24px;">📁</span>
+                      <div>
+                        <div style="font-weight: 700; color: #34d399; font-size: 14px;" id="t5-fixed-filename">Chamcong_Thang10.xlsx</div>
+                        <div style="font-size: 11px; color: #a7f3d0;" id="t5-fixed-meta">1.2 MB • Đã lưu cố định trên hệ thống</div>
+                      </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                      <button type="button" class="btn" style="padding: 6px 12px; font-size: 12px; background: rgba(59, 130, 246, 0.25); border: 1px solid rgba(59, 130, 246, 0.5); color: #bfdbfe; margin-top: 0;" onclick="document.getElementById('file-t5-fixed-input').click()">🔄 Thay file khác</button>
+                      <button type="button" class="btn" style="padding: 6px 12px; font-size: 12px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; margin-top: 0;" onclick="removeFixedMDInsightFile()">🗑️ Gỡ bỏ</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Khi chưa có file cố định -->
+                <div id="t5-fixed-empty-box">
+                  <div class="file-dropzone" style="padding: 16px 12px; border-color: rgba(59, 130, 246, 0.4);" onclick="document.getElementById('file-t5-fixed-input').click()">
+                    <div class="drop-icon" style="font-size: 24px; margin-bottom: 4px;">📥</div>
+                    <div class="drop-text" style="font-size: 13px;">Nhấp để tải lên & <b>LƯU CỐ ĐỊNH FILE THÁNG TRƯỚC</b></div>
+                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;">(Hệ thống tự động lưu giữ file này kể cả khi Ctrl + F5)</div>
+                  </div>
+                </div>
+                <input type="file" id="file-t5-fixed-input" accept=".xlsx,.xls" style="display: none;" onchange="onFixedMDInsightFileSelected(this)">
+              </div>
+
+              <!-- PHẦN 2: FILE THÁNG HIỆN TẠI (THAY ĐỔI THEO NGÀY) -->
+              <div class="form-group" style="margin-bottom: 18px;">
+                <label class="form-label" style="font-weight: 700; color: #f1f5f9;">
+                  2️⃣ Tải lên File Tháng Hiện Tại (Cập nhật thay đổi theo ngày):
+                </label>
+                <div class="file-dropzone" onclick="document.getElementById('file-t5-daily').click()">
                   <div class="drop-icon">🏥</div>
-                  <div class="drop-text">Nhấp để chọn file Check Log MDINSIGHT (hỗ trợ chọn 2 file cross-tháng để ghép 30 ngày)</div>
-                  <input type="file" id="file-t5" accept=".xlsx,.xls" multiple onchange="previewFiles(this, 'chosen-t5')">
+                  <div class="drop-text">Nhấp để chọn file tháng hiện tại (hệ thống sẽ tự động ghép với File Cố Định ở trên)</div>
+                  <input type="file" id="file-t5-daily" accept=".xlsx,.xls" multiple onchange="previewFiles(this, 'chosen-t5')">
                 </div>
                 <div class="file-chosen-badge" id="chosen-t5"></div>
               </div>
 
+              <!-- PHẦN 3: PHẠM VI NGÀY CẦN LẤY BÁO CÁO -->
               <div class="form-group">
-                <label class="form-label">2️⃣ Chọn phạm vi ngày cần lấy báo cáo:</label>
+                <label class="form-label">3️⃣ Chọn phạm vi ngày cần lấy báo cáo:</label>
                 <div class="radio-group">
                   <label class="radio-card">
                     <input type="radio" name="t5_date_range" value="01-14" checked>
@@ -4164,7 +4207,7 @@ HTML_PAGE = """<!DOCTYPE html>
                     <input type="radio" name="t5_date_range" value="full">
                     <div>
                       <div class="radio-title">Lựa chọn 3: Lấy full tháng / Ghép 30 ngày gần nhất</div>
-                      <div class="radio-desc">Tổng hợp toàn bộ các ngày có dữ liệu trong tháng (hoặc tự động ghép 30 ngày khi tải 2 file tháng trước và tháng này)</div>
+                      <div class="radio-desc">Tổng hợp toàn bộ các ngày có dữ liệu trong tháng (hoặc tự động ghép 30 ngày khi kết hợp 2 file tháng trước và tháng này)</div>
                     </div>
                   </label>
                 </div>
@@ -5384,6 +5427,8 @@ function handleRequest(e) {
       try {
         if (taskId === 14 && typeof initTask14 === 'function') {
           initTask14();
+        } else if (taskId === 5 && typeof initFixedMDInsightUI === 'function') {
+          initFixedMDInsightUI();
         } else if (taskId === 10 && typeof initErrorTracker === 'function') {
           initErrorTracker();
         } else if (taskId === 11 && typeof initCnttDashboard === 'function') {
@@ -5920,13 +5965,219 @@ function handleRequest(e) {
       }
     }
 
-    // XỬ LÝ TÁC VỤ 5 (CHECK LOG MDINSIGHT - HỖ TRỢ ĐA FILE VÀ GHÉP 30 NGÀY)
+    /* ============================================================
+       QUẢN LÝ LƯU TRỮ CỐ ĐỊNH FILE THÁNG TRƯỚC (CHECK LOG MDINSIGHT)
+       Sử dụng IndexedDB: Bền vững tuyệt đối qua Ctrl + F5, F5, đóng mở trình duyệt
+       ============================================================ */
+    const MD_IDB_NAME = 'BVDK2_StorageDB';
+    const MD_IDB_STORE = 'mdinsight_files';
+    const MD_IDB_KEY = 'fixed_prev_month_file';
+
+    let cachedFixedMDInsightFile = null;
+
+    function openMDInsightDB() {
+      return new Promise((resolve) => {
+        if (!window.indexedDB) {
+          resolve(null);
+          return;
+        }
+        try {
+          const req = window.indexedDB.open(MD_IDB_NAME, 1);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(MD_IDB_STORE)) {
+              db.createObjectStore(MD_IDB_STORE);
+            }
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => resolve(null);
+        } catch (_) {
+          resolve(null);
+        }
+      });
+    }
+
+    async function saveFixedMDInsightToIDB(file) {
+      try {
+        const db = await openMDInsightDB();
+        if (!db) return false;
+        return new Promise((resolve) => {
+          const tx = db.transaction(MD_IDB_STORE, 'readwrite');
+          const store = tx.objectStore(MD_IDB_STORE);
+          const record = {
+            blob: file,
+            name: file.name,
+            size: file.size,
+            type: file.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            savedAt: new Date().toISOString()
+          };
+          const putReq = store.put(record, MD_IDB_KEY);
+          putReq.onsuccess = () => resolve(true);
+          putReq.onerror = () => resolve(false);
+        });
+      } catch (err) {
+        console.warn('IDB save error:', err);
+        return false;
+      }
+    }
+
+    async function getFixedMDInsightFromIDB() {
+      try {
+        const db = await openMDInsightDB();
+        if (!db) return null;
+        return new Promise((resolve) => {
+          const tx = db.transaction(MD_IDB_STORE, 'readonly');
+          const store = tx.objectStore(MD_IDB_STORE);
+          const getReq = store.get(MD_IDB_KEY);
+          getReq.onsuccess = () => {
+            const rec = getReq.result;
+            if (rec && rec.blob) {
+              const f = new File([rec.blob], rec.name || 'file_thang_truoc.xlsx', {
+                type: rec.type,
+                lastModified: rec.savedAt ? new Date(rec.savedAt).getTime() : Date.now()
+              });
+              resolve({ file: f, meta: rec });
+            } else {
+              resolve(null);
+            }
+          };
+          getReq.onerror = () => resolve(null);
+        });
+      } catch (err) {
+        console.warn('IDB get error:', err);
+        return null;
+      }
+    }
+
+    async function deleteFixedMDInsightFromIDB() {
+      try {
+        const db = await openMDInsightDB();
+        if (!db) return;
+        return new Promise((resolve) => {
+          const tx = db.transaction(MD_IDB_STORE, 'readwrite');
+          const store = tx.objectStore(MD_IDB_STORE);
+          const delReq = store.delete(MD_IDB_KEY);
+          delReq.onsuccess = () => resolve(true);
+          delReq.onerror = () => resolve(false);
+        });
+      } catch (_) {}
+    }
+
+    async function initFixedMDInsightUI() {
+      try {
+        // 1. Kiểm tra IndexedDB trong trình duyệt (bền vững qua Ctrl+F5)
+        const local = await getFixedMDInsightFromIDB();
+        if (local && local.file) {
+          cachedFixedMDInsightFile = local.file;
+          renderFixedFileActive(local.meta.name, local.meta.size);
+          return;
+        }
+
+        // 2. Nếu IndexedDB chưa có, truy vấn từ server
+        const res = await fetch('/api/task-5/fixed-file');
+        if (res.ok) {
+          const meta = await res.json();
+          if (meta.exists) {
+            const dlRes = await fetch('/api/task-5/fixed-file?download=1');
+            if (dlRes.ok) {
+              const blob = await dlRes.blob();
+              const f = new File([blob], meta.filename || 'fixed_prev_month.xlsx', {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+              });
+              await saveFixedMDInsightToIDB(f);
+              cachedFixedMDInsightFile = f;
+              renderFixedFileActive(meta.filename, meta.size);
+              return;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('initFixedMDInsightUI error:', e);
+      }
+      renderFixedFileEmpty();
+    }
+
+    function renderFixedFileActive(name, size) {
+      const activeBox = document.getElementById('t5-fixed-active-box');
+      const emptyBox = document.getElementById('t5-fixed-empty-box');
+      const nameEl = document.getElementById('t5-fixed-filename');
+      const metaEl = document.getElementById('t5-fixed-meta');
+      if (activeBox) activeBox.style.display = 'block';
+      if (emptyBox) emptyBox.style.display = 'none';
+      if (nameEl) nameEl.textContent = name;
+      if (metaEl) {
+        const mb = (size / (1024 * 1024)).toFixed(2);
+        metaEl.textContent = `${mb} MB • Đã lưu cố định trên hệ thống (bền vững qua Ctrl+F5)`;
+      }
+    }
+
+    function renderFixedFileEmpty() {
+      const activeBox = document.getElementById('t5-fixed-active-box');
+      const emptyBox = document.getElementById('t5-fixed-empty-box');
+      if (activeBox) activeBox.style.display = 'none';
+      if (emptyBox) emptyBox.style.display = 'block';
+      cachedFixedMDInsightFile = null;
+    }
+
+    async function onFixedMDInsightFileSelected(input) {
+      if (!input.files || input.files.length === 0) return;
+      const file = input.files[0];
+      showAlert('alert-t5', 'info', `⏳ Đang lưu cố định file "${file.name}" vào hệ thống...`);
+
+      // 1. Lưu vào IndexedDB (trình duyệt)
+      await saveFixedMDInsightToIDB(file);
+      cachedFixedMDInsightFile = file;
+
+      // 2. Gửi lưu lên server disk
+      try {
+        const fd = new FormData();
+        fd.append('fixed_file', file);
+        await fetch('/api/task-5/fixed-file', { method: 'POST', body: fd });
+      } catch (_) {}
+
+      renderFixedFileActive(file.name, file.size);
+      showAlert('alert-t5', 'success', `✅ Đã lưu cố định file "${file.name}" lên hệ thống thành công! Dù bạn có nhấn Ctrl + F5 thì file này vẫn được ghi nhớ.`);
+    }
+
+    async function removeFixedMDInsightFile() {
+      if (!confirm('Bạn có chắc chắn muốn gỡ bỏ file cố định này khỏi hệ thống không?')) return;
+      await deleteFixedMDInsightFromIDB();
+      try {
+        await fetch('/api/task-5/fixed-file', { method: 'DELETE' });
+      } catch (_) {}
+      const input = document.getElementById('file-t5-fixed-input');
+      if (input) input.value = '';
+      renderFixedFileEmpty();
+      showAlert('alert-t5', 'info', 'ℹ️ Đã gỡ bỏ file cố định. Bạn có thể chọn file mới hoặc tải trực tiếp file hàng ngày.');
+    }
+
+    // XỬ LÝ TÁC VỤ 5 (CHECK LOG MDINSIGHT - HỖ TRỢ GHÉP FILE CỐ ĐỊNH VÀ FILE HÀNG NGÀY)
     async function handleTask5(e) {
       e.preventDefault();
       hideAlert('alert-t5');
-      const fInput = document.getElementById('file-t5');
-      if (!fInput.files || fInput.files.length === 0) {
-        showAlert('alert-t5', 'error', '⚠️ Vui lòng chọn ít nhất 1 file Excel Check Log MDINSIGHT!');
+
+      const dailyInput = document.getElementById('file-t5-daily');
+      const dailyFiles = (dailyInput && dailyInput.files) ? Array.from(dailyInput.files) : [];
+      
+      const filesToProcess = [];
+
+      if (dailyFiles.length >= 2) {
+        // Người dùng chọn trực tiếp 2 file trong ô hàng ngày
+        filesToProcess.push(...dailyFiles);
+      } else if (dailyFiles.length === 1) {
+        // Người dùng chọn 1 file tháng hiện tại:
+        // Nếu có file cố định tháng trước, tự động ghép 2 file!
+        if (cachedFixedMDInsightFile) {
+          filesToProcess.push(cachedFixedMDInsightFile);
+        }
+        filesToProcess.push(dailyFiles[0]);
+      } else if (cachedFixedMDInsightFile) {
+        // Chỉ có file cố định
+        filesToProcess.push(cachedFixedMDInsightFile);
+      }
+
+      if (filesToProcess.length === 0) {
+        showAlert('alert-t5', 'error', '⚠️ Vui lòng tải lên file Excel Check Log MDINSIGHT!');
         return;
       }
 
@@ -5937,14 +6188,18 @@ function handleRequest(e) {
       }
 
       setLoading('t5', true);
-      showAlert('alert-t5', 'info', '⏳ Đang tối ưu hóa dung lượng và phân tích dữ liệu 2 file...');
+      if (filesToProcess.length >= 2) {
+        showAlert('alert-t5', 'info', `⏳ Đang tối ưu và ghép dữ liệu 2 file: "${filesToProcess[0].name}" và "${filesToProcess[1].name}"...`);
+      } else {
+        showAlert('alert-t5', 'info', `⏳ Đang tối ưu hóa dung lượng và phân tích dữ liệu file "${filesToProcess[0].name}"...`);
+      }
 
       try {
         const range = document.querySelector('input[name="t5_date_range"]:checked').value;
         const formData = new FormData();
-        for (let i = 0; i < fInput.files.length; i++) {
-          const fileToUpload = await pruneXlsxInBrowser(fInput.files[i]);
-          formData.append('files', fileToUpload);
+        for (let i = 0; i < filesToProcess.length; i++) {
+          const fileToUpload = await pruneXlsxInBrowser(filesToProcess[i]);
+          formData.append('files', fileToUpload, filesToProcess[i].name || 'file.xlsx');
         }
         formData.append('date_range', range);
 
@@ -6962,6 +7217,7 @@ function handleRequest(e) {
 
     function initPageRouter() {
       try { updateAuthUI(); } catch (e) {}
+      try { initFixedMDInsightUI(); } catch (e) {}
       const targetTask = getTaskFromUrl();
       executeSwitchTask(targetTask);
     }
@@ -8406,21 +8662,111 @@ def handle_task_4():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ============================================================
+# LƯU TRỮ CỐ ĐỊNH FILE THÁNG TRƯỚC (CHECK LOG MDINSIGHT) PHÍA SERVER
+# ============================================================
+MDINSIGHT_STORAGE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scratch", "mdinsight")
+try:
+    os.makedirs(MDINSIGHT_STORAGE_DIR, exist_ok=True)
+except Exception:
+    MDINSIGHT_STORAGE_DIR = os.path.join(tempfile.gettempdir(), "mdinsight")
+    os.makedirs(MDINSIGHT_STORAGE_DIR, exist_ok=True)
+
+FIXED_MDINSIGHT_FILE_PATH = os.path.join(MDINSIGHT_STORAGE_DIR, "fixed_prev_month.xlsx")
+FIXED_MDINSIGHT_META_PATH = os.path.join(MDINSIGHT_STORAGE_DIR, "fixed_prev_month.json")
+
+def save_fixed_mdinsight_file(file_storage):
+    os.makedirs(MDINSIGHT_STORAGE_DIR, exist_ok=True)
+    filename = file_storage.filename or "fixed_prev_month.xlsx"
+    file_storage.seek(0)
+    file_bytes = file_storage.read()
+    with open(FIXED_MDINSIGHT_FILE_PATH, "wb") as f:
+        f.write(file_bytes)
+    meta = {
+        "filename": filename,
+        "size": len(file_bytes),
+        "saved_at": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    }
+    with open(FIXED_MDINSIGHT_META_PATH, "w", encoding="utf-8") as f:
+        json.dump(meta, f, ensure_ascii=False)
+    return meta
+
+def get_fixed_mdinsight_meta():
+    if os.path.exists(FIXED_MDINSIGHT_FILE_PATH) and os.path.exists(FIXED_MDINSIGHT_META_PATH):
+        try:
+            with open(FIXED_MDINSIGHT_META_PATH, "r", encoding="utf-8") as f:
+                meta = json.load(f)
+            meta["exists"] = True
+            return meta
+        except Exception:
+            pass
+    return {"exists": False}
+
+def delete_fixed_mdinsight_file():
+    try:
+        if os.path.exists(FIXED_MDINSIGHT_FILE_PATH):
+            os.unlink(FIXED_MDINSIGHT_FILE_PATH)
+        if os.path.exists(FIXED_MDINSIGHT_META_PATH):
+            os.unlink(FIXED_MDINSIGHT_META_PATH)
+        return True
+    except Exception:
+        return False
+
+def handle_task_5_fixed_file():
+    try:
+        if request.method == "POST":
+            file = request.files.get("fixed_file") or request.files.get("file")
+            if not file or not file.filename:
+                return jsonify({"error": "Không tìm thấy file hợp lệ để lưu."}), 400
+            meta = save_fixed_mdinsight_file(file)
+            return jsonify({"success": True, "meta": meta})
+        elif request.method == "DELETE" or request.args.get("action") == "delete" or request.form.get("action") == "delete":
+            delete_fixed_mdinsight_file()
+            return jsonify({"success": True, "message": "Đã gỡ bỏ file cố định."})
+        else:
+            meta = get_fixed_mdinsight_meta()
+            if request.args.get("download") == "1":
+                if meta.get("exists") and os.path.exists(FIXED_MDINSIGHT_FILE_PATH):
+                    return send_file(
+                        FIXED_MDINSIGHT_FILE_PATH,
+                        as_attachment=True,
+                        download_name=meta.get("filename", "fixed_file.xlsx")
+                    )
+                return jsonify({"error": "File cố định không tồn tại."}), 404
+            return jsonify(meta)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 def handle_task_5():
     try:
         files = request.files.getlist("files")
         if not files or not any(f.filename for f in files):
             if "file" in request.files and request.files["file"].filename:
                 files = [request.files["file"]]
-            else:
-                return jsonify({"error": "Vui lòng tải lên ít nhất 1 file Excel Check Log MDINSIGHT."}), 400
 
-        valid_files = [f for f in files if f.filename]
+        valid_files = [f for f in files if getattr(f, "filename", None) or hasattr(f, "read")]
+
+        # Nếu người dùng chỉ gửi 1 file, kiểm tra xem server có file cố định không để tự động bổ sung
+        if len(valid_files) == 1:
+            meta = get_fixed_mdinsight_meta()
+            if meta.get("exists") and os.path.exists(FIXED_MDINSIGHT_FILE_PATH):
+                with open(FIXED_MDINSIGHT_FILE_PATH, "rb") as fp:
+                    fixed_bytes = fp.read()
+                fixed_stream = io.BytesIO(fixed_bytes)
+                setattr(fixed_stream, "filename", meta.get("filename", "fixed_prev_month.xlsx"))
+                valid_files.insert(0, fixed_stream)
+
         if not valid_files:
-            return jsonify({"error": "Vui lòng tải lên file Excel hợp lệ."}), 400
+            return jsonify({"error": "Vui lòng tải lên ít nhất 1 file Excel Check Log MDINSIGHT."}), 400
 
         date_range = request.form.get("date_range", "full")
-        file_bytes_list = [f.read() for f in valid_files]
+        file_bytes_list = []
+        for f in valid_files:
+            if hasattr(f, "read"):
+                f.seek(0) if hasattr(f, "seek") else None
+                file_bytes_list.append(f.read())
+            elif isinstance(f, bytes):
+                file_bytes_list.append(f)
 
         out_io = process_giam_dinh_web(file_bytes_list, date_range=date_range)
         return send_file(
@@ -10203,6 +10549,9 @@ def dispatch_request(path=""):
     if "task-14" in matched or "bccv" in matched or req_act in ("task-14", "bccv", "bccv-data", "get-bccv") or req_task == "14":
         return handle_task_14()
 
+    if "task-5/fixed-file" in matched or "fixed-file" in matched or req_act == "task-5-fixed-file":
+        return handle_task_5_fixed_file()
+
     if request.method == "POST":
         action = request.args.get("action", "")
         # Tạm thời bỏ hết chức năng khóa bảo vệ theo yêu cầu
@@ -10226,6 +10575,8 @@ def dispatch_request(path=""):
             return handle_task_3()
         if "task-4" in matched or action == "task-4":
             return handle_task_4()
+        if "task-5/fixed-file" in matched or action == "task-5-fixed-file" or "fixed-file" in path:
+            return handle_task_5_fixed_file()
         if "task-5" in matched or action == "task-5" or "process-giam-dinh" in matched or "date_range" in request.form:
             return handle_task_5()
         if "task-6" in matched or action == "task-6":
@@ -10255,6 +10606,7 @@ def dispatch_request(path=""):
 @app.route("/api/task-3", methods=["GET", "POST"])
 @app.route("/api/task-4", methods=["GET", "POST"])
 @app.route("/api/task-5", methods=["GET", "POST"])
+@app.route("/api/task-5/fixed-file", methods=["GET", "POST", "DELETE"])
 @app.route("/api/task-6", methods=["GET", "POST"])
 @app.route("/api/task-7", methods=["GET", "POST"])
 @app.route("/api/task-14", methods=["GET", "POST"])
