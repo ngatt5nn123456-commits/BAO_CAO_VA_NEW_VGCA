@@ -1771,7 +1771,7 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
 
         # Col 18 (R): Sửa lỗi khác
         err_list = other_errors.get(dept, [])
-        err_lines = []
+        distinct_items = []
         for e in err_list:
             e_str = str(e).strip()
             if not e_str:
@@ -1786,11 +1786,19 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
                     continue
                 if re.search(r"\b\d{6,}\b", sub_line):
                     continue
-                if sub_line.startswith("+") or sub_line.startswith("-"):
-                    err_lines.append(sub_line)
-                else:
-                    err_lines.append(f"+ {sub_line}")
-        err_text = "\n".join(err_lines) if err_lines else None
+                # Chuẩn hóa, làm sạch ký tự gạch đầu dòng dư thừa ở đầu mỗi mục (+, -, *, •)
+                clean_item = re.sub(r"^[\s+\-•*]+", "", sub_line).strip()
+                if clean_item and clean_item not in distinct_items:
+                    distinct_items.append(clean_item)
+
+        if not distinct_items:
+            err_text = None
+        elif len(distinct_items) > 2:
+            # Khi khoa phòng có nhiều hơn 2 lỗi: trình bày theo hướng liệt kê, không xuống dòng và phân cách nhau bởi dấu phẩy
+            err_text = ", ".join(distinct_items)
+        else:
+            # Khoa phòng có 1 hoặc 2 lỗi: trình bày xuống dòng có dấu đầu dòng +
+            err_text = "\n".join(f"+ {item}" for item in distinct_items)
 
         c_err = ws.cell(r_idx, 18, err_text)
         c_err.font = Font(name="Times New Roman", size=14)
@@ -1799,8 +1807,15 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
 
         line_count = 1
         if err_text:
-            line_count = max(len(err_text.split('\n')), (len(err_text) // 35) + 1)
-        ws.row_dimensions[r_idx].height = max(35.1, line_count * 26)
+            if len(distinct_items) > 2:
+                # Không ngắt dòng cứng; chiều cao co giãn theo độ dài ký tự
+                line_count = max(1, (len(err_text) // 40) + 1)
+                ws.row_dimensions[r_idx].height = max(35.1, line_count * 22)
+            else:
+                line_count = max(1, len(distinct_items))
+                ws.row_dimensions[r_idx].height = max(35.1, line_count * 26)
+        else:
+            ws.row_dimensions[r_idx].height = 35.1
 
     # 4. Summary Row (TỔNG CỘNG)
     total_row = data_start_row + len(valid_departments)
