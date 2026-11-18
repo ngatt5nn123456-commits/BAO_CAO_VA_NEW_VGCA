@@ -1,8 +1,8 @@
 {
   "version": "2025.1",
   "title": "DANH BẠ ĐIỆN THOẠI BỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2 - NĂM 2025",
-  "updated_at": "2026-11-18T14:55:00",
-  "total_staff": 1020,
+  "updated_at": "2026-11-18 15:28:09",
+  "total_staff": 1021,
   "departments": [
     {
       "id": "01_BAN GIÁM ĐỐC",
@@ -14614,6 +14614,20 @@
       "dept_order": 46,
       "group": "B. KHỐI NỘI",
       "dept_hotline": "Trực khoa: 0385.022.285 Hotline:0385.022.285"
+    },
+    {
+      "id": "nv_1021_1794990489",
+      "stt": 1021,
+      "name": "Nguyễn Văn Test Tự Động",
+      "role": "Kỹ sư CNTT",
+      "phone1": "0988.123.456",
+      "phone1_clean": "0988123456",
+      "phone2": "0222.333.444",
+      "phone2_clean": "0222333444",
+      "dept": "PHÒNG CÔNG NGHỆ THÔNG TIN",
+      "dept_order": 99,
+      "group": "I. CÁC PHÒNG CHỨC NĂNG",
+      "dept_hotline": ""
     }
   ]
 }
