@@ -3696,6 +3696,493 @@ HTML_PAGE = """<!DOCTYPE html>
       text-decoration: underline;
     }
 
+    /* ========================================================================== */
+    /* MODULE TRA CỨU DANH BẠ NHÂN VIÊN (TÁC VỤ 15)                              */
+    /* ========================================================================== */
+    .danhba-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    .danhba-header-bar {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+    .danhba-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+    }
+    .danhba-kpi-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .danhba-kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: #3b82f6;
+    }
+    .danhba-kpi-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      flex-shrink: 0;
+    }
+    .danhba-kpi-val {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #f8fafc;
+      line-height: 1.2;
+    }
+    .danhba-kpi-lbl {
+      font-size: 0.76rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+    .danhba-toolbar {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .danhba-actions-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .danhba-filter-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .danhba-search-wrap {
+      flex: 1;
+      min-width: 260px;
+      position: relative;
+    }
+    .danhba-search-input {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 10px 36px 10px 36px;
+      font-size: 0.88rem;
+      color: #f8fafc;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .danhba-search-input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    }
+    .danhba-search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      color: #64748b;
+      pointer-events: none;
+    }
+    .danhba-search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #334155;
+      color: #94a3b8;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .danhba-select {
+      background: #0f172a;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 0.84rem;
+      color: #f8fafc;
+      outline: none;
+      min-width: 160px;
+      cursor: pointer;
+    }
+    .danhba-select:focus {
+      border-color: #38bdf8;
+    }
+    .danhba-view-switch {
+      display: inline-flex;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 3px;
+      gap: 3px;
+    }
+    .danhba-view-btn {
+      background: none;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .danhba-view-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .danhba-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .danhba-btn-primary {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+    }
+    .danhba-btn-primary:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      transform: translateY(-1px);
+    }
+    .danhba-btn-secondary {
+      background: #334155;
+      color: #e2e8f0;
+      border: 1px solid #475569;
+    }
+    .danhba-btn-secondary:hover {
+      background: #475569;
+      color: #ffffff;
+    }
+    .danhba-btn-success {
+      background: #059669;
+      color: #ffffff;
+    }
+    .danhba-btn-success:hover {
+      background: #047857;
+    }
+    .danhba-btn-indigo {
+      background: #4f46e5;
+      color: #ffffff;
+    }
+    .danhba-btn-indigo:hover {
+      background: #4338ca;
+    }
+    /* TABLE VIEW */
+    .danhba-table-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+    .danhba-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+      text-align: left;
+    }
+    .danhba-table th {
+      background: #0f172a;
+      color: #94a3b8;
+      font-weight: 700;
+      padding: 12px 14px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #334155;
+      white-space: nowrap;
+    }
+    .danhba-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #293548;
+      color: #e2e8f0;
+      vertical-align: middle;
+    }
+    .danhba-table tbody tr:hover {
+      background: rgba(51, 65, 85, 0.5);
+    }
+    .danhba-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.82rem;
+      flex-shrink: 0;
+    }
+    .danhba-staff-name-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .danhba-staff-name {
+      font-weight: 700;
+      color: #f8fafc;
+      font-size: 0.9rem;
+    }
+    .danhba-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .badge-role {
+      background: rgba(59, 130, 246, 0.18);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    .badge-dept {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    .badge-hotline {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    .phone-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(14, 165, 233, 0.12);
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      color: #38bdf8;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .phone-pill:hover {
+      background: rgba(14, 165, 233, 0.28);
+      color: #bae6fd;
+      transform: translateY(-1px);
+    }
+    .action-btn-sm {
+      background: none;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: background 0.2s;
+    }
+    .action-btn-sm:hover {
+      background: #334155;
+    }
+    /* CARD VIEW */
+    .danhba-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 14px;
+    }
+    .danhba-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .danhba-card:hover {
+      transform: translateY(-2px);
+      border-color: #38bdf8;
+      box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.3);
+    }
+    .danhba-card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .danhba-card-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .danhba-card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 4px;
+    }
+    .danhba-card-dept {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .danhba-card-phones {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-top: 6px;
+      border-top: 1px solid #334155;
+    }
+    .danhba-card-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 8px;
+      border-top: 1px solid #293548;
+    }
+    /* PAGINATION */
+    .danhba-pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 12px 16px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+    }
+    .danhba-page-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .danhba-page-btn {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .danhba-page-btn:hover:not(:disabled) {
+      background: #334155;
+      color: #ffffff;
+    }
+    .danhba-page-btn.active {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #ffffff;
+    }
+    .danhba-page-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    /* MODALS */
+    .danhba-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(5px);
+      z-index: 999999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .danhba-modal-box {
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 14px;
+      max-width: 580px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 22px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+      color: #f8fafc;
+    }
+    .danhba-form-group {
+      margin-bottom: 12px;
+    }
+    .danhba-form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 5px;
+    }
+    .danhba-form-input {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 0.86rem;
+      color: #f8fafc;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .danhba-form-input:focus {
+      border-color: #38bdf8;
+    }
+
 </style>
 </head>
 <body>
@@ -3856,6 +4343,28 @@ HTML_PAGE = """<!DOCTYPE html>
             </li>
           </ul>
         </div>
+
+        <!-- THƯ MỤC CHA 3: TIỆN ÍCH & DANH BẠ NỘI BỘ -->
+        <div class="tree-folder-group card-danhba" id="folder-grp-3">
+          <div class="tree-folder-header" onclick="toggleTreeFolder('folder-grp-3')">
+            <div class="folder-title-wrap">
+              <span class="folder-chevron">▼</span>
+              <span class="folder-icon">📂</span>
+              <span class="folder-title">TIỆN ÍCH & DANH BẠ NỘI BỘ</span>
+            </div>
+            <span class="folder-badge badge-danhba" style="background:#0284c7; color:#fff; font-size:0.7rem; padding:2px 8px; border-radius:10px;">1 tác vụ</span>
+          </div>
+          <ul class="tree-children-list sidebar-menu">
+            <li data-task="15" onclick="switchTask(15)" class="tree-child-item">
+              <div class="nav-icon">📱</div>
+              <div class="nav-text">
+                <span class="nav-title">Tra Cứu Danh Bạ</span>
+                <span class="nav-desc">Danh bạ 47 khoa/phòng & 1.020 CB</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
       </div>
 
       <div class="sidebar-footer">
@@ -5094,7 +5603,200 @@ HTML_PAGE = """<!DOCTYPE html>
   </div>
 
     <!-- TOAST THÔNG BÁO TOÀN HỆ THỐNG -->
-  <div class="cntt-toast-popup" id="cntt-toast">
+        <!-- ============================================================== -->
+      <!-- TÁC VỤ 15: TRA CỨU DANH BẠ NHÂN VIÊN & KHOA PHÒNG              -->
+      <!-- ============================================================== -->
+      <div class="page" id="page-task-15">
+        <div class="danhba-container">
+          
+          <!-- Top Header Bar -->
+          <div class="danhba-header-bar">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-size:1.6rem;">📱</span>
+              <div>
+                <div style="font-size:1.25rem; font-weight:800; color:#f8fafc; display:flex; align-items:center; gap:10px;">
+                  Tra Cứu Danh Bạ Cán Bộ Nhân Viên
+                  <span class="badge-dept" id="danhba-badge-live" style="font-size:11px;">🟢 Dữ liệu trực tuyến</span>
+                  <span class="badge-role" id="danhba-badge-github" style="font-size:11px;" title="Cơ sở dữ liệu lưu trữ trực tiếp trên GitHub repository">☁️ GitHub DB Sync</span>
+                </div>
+                <div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">
+                  Hệ thống quản lý, tra cứu số điện thoại 47 Khoa/Phòng và hơn 1.000 cán bộ • BVĐK Bắc Ninh số 2
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button type="button" class="danhba-btn danhba-btn-primary" onclick="openStaffModal()">
+                ➕ Thêm Nhân Viên
+              </button>
+              <button type="button" class="danhba-btn danhba-btn-secondary" onclick="openGitHubSyncModal()">
+                🔄 Đồng Bộ GitHub
+              </button>
+              <button type="button" class="danhba-btn danhba-btn-success" onclick="exportDanhBaExcel()">
+                📥 Xuất Excel
+              </button>
+              <button type="button" class="danhba-btn danhba-btn-indigo" onclick="openImportModal()">
+                📤 Nhập Excel
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI Summary Cards -->
+          <div class="danhba-kpi-grid">
+            <div class="danhba-kpi-card">
+              <div class="danhba-kpi-icon" style="background:rgba(59,130,246,0.15); color:#60a5fa;">👥</div>
+              <div>
+                <div class="danhba-kpi-val" id="kpi-total-staff">1,020</div>
+                <div class="danhba-kpi-lbl">Tổng Số Cán Bộ</div>
+              </div>
+            </div>
+            <div class="danhba-kpi-card">
+              <div class="danhba-kpi-icon" style="background:rgba(16,185,129,0.15); color:#34d399;">🏢</div>
+              <div>
+                <div class="danhba-kpi-val" id="kpi-total-depts">47</div>
+                <div class="danhba-kpi-lbl">Khoa / Phòng / Ban</div>
+              </div>
+            </div>
+            <div class="danhba-kpi-card">
+              <div class="danhba-kpi-icon" style="background:rgba(245,158,11,0.15); color:#fbbf24;">📞</div>
+              <div>
+                <div class="danhba-kpi-val" id="kpi-total-hotlines">35</div>
+                <div class="danhba-kpi-lbl">Hotline Khoa Trực</div>
+              </div>
+            </div>
+            <div class="danhba-kpi-card">
+              <div class="danhba-kpi-icon" style="background:rgba(168,85,247,0.15); color:#c084fc;">☁️</div>
+              <div>
+                <div class="danhba-kpi-val" style="font-size:1.15rem; color:#e2e8f0;" id="kpi-github-status">main (ae1dd2b)</div>
+                <div class="danhba-kpi-lbl">GitHub Repository DB</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Toolbar: Search, Filters & View Mode -->
+          <div class="danhba-toolbar">
+            <div class="danhba-filter-row">
+              <!-- Smart Search -->
+              <div class="danhba-search-wrap">
+                <span class="danhba-search-icon">🔍</span>
+                <input type="text" id="danhba-search-input" class="danhba-search-input" placeholder="Tìm theo Tên, Chức vụ, Số ĐT, Khoa/Phòng (không dấu tiếng Việt)..." oninput="onDanhBaSearchChange()">
+                <button type="button" id="danhba-search-clear" class="danhba-search-clear" onclick="clearDanhBaSearch()">✕</button>
+              </div>
+
+              <!-- Filter by Group -->
+              <select id="danhba-filter-group" class="danhba-select" onchange="onDanhBaFilterChange()">
+                <option value="">Tất cả Khối / Nhóm</option>
+                <option value="I. CÁC PHÒNG CHỨC NĂNG">I. Các Phòng Chức Năng</option>
+                <option value="II. CÁC KHOA LÂM SÀNG">II. Các Khoa Lâm Sàng</option>
+                <option value="III. CÁC KHOA CẬN LÂM SÀNG">III. Các Khoa Cận Lâm Sàng</option>
+                <option value="IV. CÁC ĐƠN VỊ KHÁC">IV. Các Đơn Vị Khác</option>
+              </select>
+
+              <!-- Filter by Dept -->
+              <select id="danhba-filter-dept" class="danhba-select" onchange="onDanhBaFilterChange()" style="max-width:240px;">
+                <option value="">Tất cả Khoa / Phòng (47)</option>
+              </select>
+
+              <!-- View Switcher -->
+              <div class="danhba-view-switch">
+                <button type="button" class="danhba-view-btn active" id="btn-view-table" onclick="setDanhBaView('table')">
+                  📄 Bảng
+                </button>
+                <button type="button" class="danhba-view-btn" id="btn-view-cards" onclick="setDanhBaView('cards')">
+                  🎴 Thẻ
+                </button>
+                <button type="button" class="danhba-view-btn" id="btn-view-hotlines" onclick="setDanhBaView('hotlines')">
+                  ☎️ Hotline Khoa
+                </button>
+              </div>
+
+              <!-- Page Size -->
+              <select id="danhba-page-size" class="danhba-select" onchange="onDanhBaPageSizeChange()" style="min-width:90px; width:100px;">
+                <option value="25">25 / trang</option>
+                <option value="50">50 / trang</option>
+                <option value="100">100 / trang</option>
+                <option value="all">Tất cả</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- VIEW 1: TABLE VIEW -->
+          <div id="danhba-view-table-wrap" class="danhba-table-card">
+            <div style="overflow-x:auto;">
+              <table class="danhba-table">
+                <thead>
+                  <tr>
+                    <th style="width:50px; text-align:center;">STT</th>
+                    <th style="min-width:200px;">Họ Và Tên</th>
+                    <th style="min-width:140px;">Chức Vụ</th>
+                    <th style="min-width:180px;">Khoa / Phòng</th>
+                    <th style="min-width:150px;">Số Điện Thoại Chính</th>
+                    <th style="min-width:120px;">Số ĐT Phụ</th>
+                    <th style="min-width:180px;">Hotline Khoa</th>
+                    <th style="width:100px; text-align:center;">Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="danhba-table-body">
+                  <tr>
+                    <td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">
+                      ⏳ Đang tải cơ sở dữ liệu danh bạ...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- VIEW 2: CARDS GRID VIEW -->
+          <div id="danhba-view-cards-wrap" style="display:none;">
+            <div class="danhba-cards-grid" id="danhba-cards-container">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- VIEW 3: HOTLINES DUTY VIEW -->
+          <div id="danhba-view-hotlines-wrap" class="danhba-table-card" style="display:none;">
+            <div style="padding:14px 18px; background:#0f172a; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-weight:700; color:#f8fafc; font-size:0.95rem;">
+                ☎️ Danh Sách Số Trực & Đường Dây Nóng 47 Khoa, Phòng, Trung Tâm
+              </div>
+              <div style="font-size:0.8rem; color:#94a3b8;">
+                Nhấp vào nút <b style="color:#38bdf8;">Sửa Hotline</b> để cập nhật và tự động đồng bộ sang tất cả cán bộ trong khoa
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="danhba-table">
+                <thead>
+                  <tr>
+                    <th style="width:50px; text-align:center;">STT</th>
+                    <th style="min-width:220px;">Tên Khoa / Phòng</th>
+                    <th style="min-width:180px;">Khối Đơn Vị</th>
+                    <th style="min-width:100px; text-align:center;">Số Cán Bộ</th>
+                    <th style="min-width:240px;">Số Hotline / Trực</th>
+                    <th style="width:110px; text-align:center;">Cập Nhật</th>
+                  </tr>
+                </thead>
+                <tbody id="danhba-hotlines-body">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div class="danhba-pagination" id="danhba-pagination-bar">
+            <div style="font-size:0.82rem; color:#94a3b8;" id="danhba-page-info">
+              Đang hiển thị <b id="danhba-info-showing" style="color:#f8fafc;">0</b> trong tổng số <b id="danhba-info-total" style="color:#38bdf8;">0</b> cán bộ
+            </div>
+            <div class="danhba-page-nav" id="danhba-page-nav-btns">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+
+    <div class="cntt-toast-popup" id="cntt-toast">
     <div class="cntt-toast-icon">✓</div>
     <div>
       <div class="cntt-toast-title" id="cntt-toast-title">THÀNH CÔNG</div>
@@ -5250,6 +5952,194 @@ function handleRequest(e) {
         </div>
       </div>
 
+  <!-- ============================================================== -->
+  <!-- MODALS CHO TÁC VỤ 15: DANH BẠ NHÂN VIÊN                        -->
+  <!-- ============================================================== -->
+
+  <!-- 1. MODAL THÊM / SỬA NHÂN VIÊN -->
+  <div id="danhba-modal-staff" class="danhba-modal-overlay" onclick="if(event.target===this) closeStaffModal()">
+    <div class="danhba-modal-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:12px; margin-bottom:14px;">
+        <h3 style="margin:0; font-size:1.15rem; color:#f8fafc; display:flex; align-items:center; gap:8px;">
+          <span id="staff-modal-icon">➕</span>
+          <span id="staff-modal-title">Thêm Mới Cán Bộ Nhân Viên</span>
+        </h3>
+        <button type="button" onclick="closeStaffModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#94a3b8;">&times;</button>
+      </div>
+
+      <input type="hidden" id="staff-form-id" value="">
+
+      <div class="danhba-form-group">
+        <label class="danhba-form-label">Họ và Tên Cán Bộ <span style="color:#ef4444;">*</span></label>
+        <input type="text" id="staff-form-name" class="danhba-form-input" placeholder="Ví dụ: Nguyễn Văn A..." required>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <div class="danhba-form-group">
+          <label class="danhba-form-label">Chức Vụ</label>
+          <input type="text" id="staff-form-role" class="danhba-form-input" placeholder="Ví dụ: Trưởng khoa, Bác sĩ, ĐD...">
+        </div>
+        <div class="danhba-form-group">
+          <label class="danhba-form-label">Khoa / Phòng / Ban <span style="color:#ef4444;">*</span></label>
+          <input list="danhba-dept-datalist" id="staff-form-dept" class="danhba-form-input" placeholder="Chọn hoặc nhập tên khoa..." required onchange="onStaffDeptChange()">
+          <datalist id="danhba-dept-datalist">
+            <!-- Populated via JS -->
+          </datalist>
+        </div>
+      </div>
+
+      <div class="danhba-form-group">
+        <label class="danhba-form-label">Khối Đơn Vị</label>
+        <select id="staff-form-group" class="danhba-form-input">
+          <option value="I. CÁC PHÒNG CHỨC NĂNG">I. CÁC PHÒNG CHỨC NĂNG</option>
+          <option value="II. CÁC KHOA LÂM SÀNG">II. CÁC KHOA LÂM SÀNG</option>
+          <option value="III. CÁC KHOA CẬN LÂM SÀNG">III. CÁC KHOA CẬN LÂM SÀNG</option>
+          <option value="IV. CÁC ĐƠN VỊ KHÁC">IV. CÁC ĐƠN VỊ KHÁC</option>
+        </select>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <div class="danhba-form-group">
+          <label class="danhba-form-label">Số Điện Thoại Chính</label>
+          <input type="text" id="staff-form-phone1" class="danhba-form-input" placeholder="Ví dụ: 0912.345.678">
+        </div>
+        <div class="danhba-form-group">
+          <label class="danhba-form-label">Số Điện Thoại Phụ</label>
+          <input type="text" id="staff-form-phone2" class="danhba-form-input" placeholder="Ví dụ: 0222.xxx.xxx">
+        </div>
+      </div>
+
+      <div id="staff-form-error" style="display:none; color:#f87171; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:6px; padding:8px 12px; font-size:0.82rem; margin-bottom:12px;"></div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+        <button type="button" class="danhba-btn danhba-btn-secondary" onclick="closeStaffModal()">Hủy Bỏ</button>
+        <button type="button" class="danhba-btn danhba-btn-primary" id="btn-save-staff" onclick="submitStaffForm()">
+          💾 Lưu Cán Bộ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. MODAL CẬP NHẬT HOTLINE KHOA/PHÒNG -->
+  <div id="danhba-modal-hotline" class="danhba-modal-overlay" onclick="if(event.target===this) closeHotlineModal()">
+    <div class="danhba-modal-box" style="max-width:500px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:12px; margin-bottom:14px;">
+        <h3 style="margin:0; font-size:1.15rem; color:#f8fafc; display:flex; align-items:center; gap:8px;">
+          <span>📞</span>
+          <span>Cập Nhật Số Hotline / Trực Khoa Phòng</span>
+        </h3>
+        <button type="button" onclick="closeHotlineModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#94a3b8;">&times;</button>
+      </div>
+
+      <div class="danhba-form-group">
+        <label class="danhba-form-label">Khoa / Phòng / Ban</label>
+        <input type="text" id="hotline-form-dept" class="danhba-form-input" readonly style="background:#0f172a; color:#94a3b8; font-weight:700;">
+      </div>
+
+      <div class="danhba-form-group">
+        <label class="danhba-form-label">Số Điện Thoại Trực & Hotline</label>
+        <textarea id="hotline-form-val" class="danhba-form-input" rows="3" placeholder="Ví dụ: Trực: 02223.821.242 • Hotline: 0946.058.866"></textarea>
+        <p style="font-size:0.75rem; color:#94a3b8; margin-top:4px; margin-bottom:0;">
+          💡 <i>Số hotline này sẽ tự động hiển thị trên tất cả cán bộ thuộc khoa này trong danh bạ.</i>
+        </p>
+      </div>
+
+      <div id="hotline-form-error" style="display:none; color:#f87171; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:6px; padding:8px 12px; font-size:0.82rem; margin-bottom:12px;"></div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+        <button type="button" class="danhba-btn danhba-btn-secondary" onclick="closeHotlineModal()">Đóng</button>
+        <button type="button" class="danhba-btn danhba-btn-primary" onclick="submitHotlineForm()">
+          💾 Lưu Hotline
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. MODAL ĐỒNG BỘ GITHUB -->
+  <div id="danhba-modal-sync" class="danhba-modal-overlay" onclick="if(event.target===this) closeGitHubSyncModal()">
+    <div class="danhba-modal-box" style="max-width:540px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:12px; margin-bottom:14px;">
+        <h3 style="margin:0; font-size:1.15rem; color:#f8fafc; display:flex; align-items:center; gap:8px;">
+          <span>☁️</span>
+          <span>Quản Lý & Đồng Bộ GitHub Database</span>
+        </h3>
+        <button type="button" onclick="closeGitHubSyncModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#94a3b8;">&times;</button>
+      </div>
+
+      <div style="font-size:0.86rem; color:#cbd5e1; line-height:1.6; margin-bottom:14px;">
+        Cơ sở dữ liệu danh bạ được lưu trữ an toàn dưới dạng JSON trong kho mã nguồn:
+        <div style="margin:8px 0; padding:10px; background:#0f172a; border-radius:8px; font-family:monospace; font-size:0.8rem; color:#38bdf8; word-break:break-all;">
+          📦 ngatt5nn123456-commits/BAO_CAO_VA_NEW_VGCA<br>
+          📄 data/danh_ba_nhan_vien.json (main)
+        </div>
+      </div>
+
+      <div style="background:#0f172a; border-radius:8px; padding:12px; margin-bottom:14px; font-size:0.82rem;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span style="color:#94a3b8;">Lần cập nhật cuối:</span>
+          <span id="sync-last-time" style="font-weight:700; color:#f8fafc;">---</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span style="color:#94a3b8;">Tổng số cán bộ trong DB:</span>
+          <span id="sync-staff-count" style="font-weight:700; color:#34d399;">1,020</span>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span style="color:#94a3b8;">Cơ chế đồng bộ:</span>
+          <span style="font-weight:700; color:#60a5fa;">Tự động (Desktop Git & GitHub API)</span>
+        </div>
+      </div>
+
+      <div class="danhba-form-group">
+        <label class="danhba-form-label">GitHub Personal Access Token (Dành cho bản Web Vercel):</label>
+        <input type="password" id="github-token-input" class="danhba-form-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx (Tùy chọn nếu dùng trên Web)">
+        <p style="font-size:0.75rem; color:#94a3b8; margin-top:4px; margin-bottom:0;">
+          💡 <i>Trên máy Desktop cục bộ, hệ thống tự động đẩy mã qua Git CLI không cần token. Trên bản Web Vercel, bạn có thể nhập Token có quyền `repo` để hệ thống tự động commit & push trực tiếp.</i>
+        </p>
+      </div>
+
+      <div id="sync-modal-result" style="display:none; padding:10px; border-radius:6px; font-size:0.82rem; margin-bottom:12px;"></div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" class="danhba-btn danhba-btn-secondary" onclick="closeGitHubSyncModal()">Đóng</button>
+        <button type="button" class="danhba-btn danhba-btn-primary" id="btn-trigger-sync" onclick="submitGitHubSync()">
+          🚀 Đẩy Ngay Lên GitHub
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. MODAL NHẬP DỮ LIỆU EXCEL -->
+  <div id="danhba-modal-import" class="danhba-modal-overlay" onclick="if(event.target===this) closeImportModal()">
+    <div class="danhba-modal-box" style="max-width:520px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:12px; margin-bottom:14px;">
+        <h3 style="margin:0; font-size:1.15rem; color:#f8fafc; display:flex; align-items:center; gap:8px;">
+          <span>📤</span>
+          <span>Nhập Danh Bạ Từ File Excel</span>
+        </h3>
+        <button type="button" onclick="closeImportModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#94a3b8;">&times;</button>
+      </div>
+
+      <p style="font-size:0.85rem; color:#cbd5e1; line-height:1.5; margin-top:0;">
+        Hệ thống hỗ trợ đọc trực tiếp file Excel danh bạ (như file <code>DANH BẠ 2025.xlsx</code>). Cán bộ đã có sẵn sẽ được cập nhật thông tin mới; cán bộ mới sẽ được thêm vào danh bạ và tự động đồng bộ lên GitHub.
+      </p>
+
+      <div class="danhba-form-group">
+        <label class="danhba-form-label">Chọn File Excel (.xlsx, .xls):</label>
+        <input type="file" id="danhba-import-file" accept=".xlsx,.xls" class="danhba-form-input" style="padding:7px;">
+      </div>
+
+      <div id="import-modal-result" style="display:none; padding:10px; border-radius:6px; font-size:0.82rem; margin-bottom:12px;"></div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+        <button type="button" class="danhba-btn danhba-btn-secondary" onclick="closeImportModal()">Hủy Bỏ</button>
+        <button type="button" class="danhba-btn danhba-btn-indigo" id="btn-submit-import" onclick="submitExcelImport()">
+          ⚡ Tiến Hành Nhập & Lưu
+        </button>
+      </div>
+    </div>
+  </div>
+
+
   <script>
     const taskMeta = {
       1: { badge: 'VGCA', title: '🎯 VGCA (Word + Excel SSO)  ─  Đối chiếu cấp CKS Word & Excel SSO' },
@@ -5264,7 +6154,8 @@ function handleRequest(e) {
       10: { badge: 'LỖI XML BHYT', title: '📊 Thống Kê & Lọc Lỗi XML BHYT (Google Sheets) ─ Đọc & Tra Cứu Lỗi Đẩy Cổng BHYT' },
       11: { badge: 'BC SỬA CNTT', title: '🛠 BC Sửa CNTT ─ Tổng Hợp Sheet & Báo Cáo Cán Bộ P.CNTT' },
       12: { badge: 'THỐNG KÊ LỖI THÁNG', title: '📈 Thống Kê Lỗi XML BHYT Theo Tháng ─ Tần Suất & Hồ Sơ Gần Nhất' },
-      13: { badge: 'CHECK KHOA PHÒNG BHYT', title: '⚡ Câu Lệnh Check Khoa, Phòng Bảo Hiểm ─ Tự Động Thêm Dấu Phẩy & Điền Mảng Hồ Sơ SQL' }
+      13: { badge: 'CHECK KHOA PHÒNG BHYT', title: '⚡ Câu Lệnh Check Khoa, Phòng Bảo Hiểm ─ Tự Động Thêm Dấu Phẩy & Điền Mảng Hồ Sơ SQL' },
+      15: { badge: 'DANH BẠ', title: '📱 Tra Cứu Danh Bạ Nhân Viên ─ Danh bạ 47 Khoa/Phòng & 1.020 Cán bộ' },
     };
 
     const UNLOCK_PASSWORD = "8889";
@@ -5438,6 +6329,8 @@ function handleRequest(e) {
           initMonthlyErrorDashboard();
         } else if (taskId === 13 && typeof initCheckKhoaPhongSql === 'function') {
           initCheckKhoaPhongSql();
+        } else if (taskId === 15 && typeof initDanhBaModule === 'function') {
+          initDanhBaModule();
         }
       } catch (err) {
         console.error('Lỗi khởi tạo module task ' + taskId, err);
@@ -8482,6 +9375,836 @@ ORDER BY t.ord;`;
     }
 
 
+        /* ========================================================================== */
+    /* JAVASCRIPT CONTROLLER: TÁC VỤ 15 - TRA CỨU DANH BẠ NHÂN VIÊN              */
+    /* ========================================================================== */
+    const danhBaState = {
+      staff: [],
+      departments: [],
+      filteredStaff: [],
+      viewMode: 'table',
+      currentPage: 1,
+      pageSize: 25,
+      searchTerm: '',
+      filterGroup: '',
+      filterDept: '',
+      isLoaded: false,
+      isLoading: false
+    };
+
+    function removeVietnameseTones(str) {
+      if (!str) return '';
+      str = str.toLowerCase();
+      str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a');
+      str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e');
+      str = str.replace(/ì|í|ị|ỉ|ĩ/g, 'i');
+      str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o');
+      str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u');
+      str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, 'y');
+      str = str.replace(/đ/g, 'd');
+      str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, '');
+      str = str.replace(/\u02C6|\u0306|\u031B/g, '');
+      return str.trim();
+    }
+
+    function initDanhBaModule() {
+      if (!danhBaState.isLoaded) {
+        loadDanhBaData();
+      }
+      // Load saved token
+      const savedToken = safeStorageGet('danhba_github_token');
+      if (savedToken) {
+        const inp = document.getElementById('github-token-input');
+        if (inp) inp.value = savedToken;
+      }
+    }
+
+    async function loadDanhBaData(forceReload = false) {
+      if (danhBaState.isLoading) return;
+      danhBaState.isLoading = true;
+      
+      const tbody = document.getElementById('danhba-table-body');
+      if (tbody && !danhBaState.isLoaded) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">⏳ Đang tải dữ liệu 1.020 cán bộ từ GitHub Database...</td></tr>`;
+      }
+
+      try {
+        const token = safeStorageGet('danhba_github_token') || '';
+        const headers = {};
+        if (token) headers['X-GitHub-Token'] = token;
+        
+        const url = `/api/danh-ba?action=danh-ba-list${forceReload ? '&reload=1' : ''}`;
+        const res = await fetch(url, { headers });
+        const data = await res.json();
+        
+        if (data && data.success) {
+          danhBaState.staff = data.staff || [];
+          danhBaState.departments = data.departments || [];
+          danhBaState.isLoaded = true;
+
+          // Update KPI
+          const kpiStaff = document.getElementById('kpi-total-staff');
+          const kpiDepts = document.getElementById('kpi-total-depts');
+          const kpiHotlines = document.getElementById('kpi-total-hotlines');
+          const kpiGithub = document.getElementById('kpi-github-status');
+          const syncLastTime = document.getElementById('sync-last-time');
+          const syncStaffCount = document.getElementById('sync-staff-count');
+
+          if (kpiStaff) kpiStaff.textContent = danhBaState.staff.length.toLocaleString('vi-VN');
+          if (kpiDepts) kpiDepts.textContent = danhBaState.departments.length;
+          
+          const hotlinesCount = danhBaState.departments.filter(d => (d.hotline || '').trim()).length;
+          if (kpiHotlines) kpiHotlines.textContent = hotlinesCount;
+          if (kpiGithub) kpiGithub.textContent = `main (${data.version || '2025'})`;
+          if (syncLastTime) syncLastTime.textContent = data.updated_at || 'Vừa xong';
+          if (syncStaffCount) syncStaffCount.textContent = danhBaState.staff.length.toLocaleString('vi-VN');
+
+          populateDeptSelects();
+          applyDanhBaFilters();
+        } else {
+          if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:#f87171;">❌ Không thể nạp dữ liệu: ${data.error || 'Lỗi không xác định'}</td></tr>`;
+        }
+      } catch (err) {
+        console.error('Lỗi nạp danh bạ:', err);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:#f87171;">❌ Lỗi kết nối API Danh bạ: ${err.message}</td></tr>`;
+      } finally {
+        danhBaState.isLoading = false;
+      }
+    }
+
+    function populateDeptSelects() {
+      const deptFilter = document.getElementById('danhba-filter-dept');
+      const datalist = document.getElementById('danhba-dept-datalist');
+      
+      if (deptFilter) {
+        const curVal = deptFilter.value;
+        let html = `<option value="">Tất cả Khoa / Phòng (${danhBaState.departments.length})</option>`;
+        danhBaState.departments.forEach(d => {
+          html += `<option value="${d.name}">${d.order ? d.order + '. ' : ''}${d.name}</option>`;
+        });
+        deptFilter.innerHTML = html;
+        deptFilter.value = curVal;
+      }
+
+      if (datalist) {
+        let opts = '';
+        danhBaState.departments.forEach(d => {
+          opts += `<option value="${d.name}">`;
+        });
+        datalist.innerHTML = opts;
+      }
+    }
+
+    function onDanhBaSearchChange() {
+      const input = document.getElementById('danhba-search-input');
+      const clearBtn = document.getElementById('danhba-search-clear');
+      danhBaState.searchTerm = (input.value || '').trim();
+      
+      if (clearBtn) {
+        clearBtn.style.display = danhBaState.searchTerm ? 'inline-flex' : 'none';
+      }
+      applyDanhBaFilters();
+    }
+
+    function clearDanhBaSearch() {
+      const input = document.getElementById('danhba-search-input');
+      const clearBtn = document.getElementById('danhba-search-clear');
+      if (input) input.value = '';
+      if (clearBtn) clearBtn.style.display = 'none';
+      danhBaState.searchTerm = '';
+      applyDanhBaFilters();
+    }
+
+    function onDanhBaFilterChange() {
+      const grp = document.getElementById('danhba-filter-group');
+      const dept = document.getElementById('danhba-filter-dept');
+      danhBaState.filterGroup = grp ? grp.value : '';
+      danhBaState.filterDept = dept ? dept.value : '';
+      applyDanhBaFilters();
+    }
+
+    function onDanhBaPageSizeChange() {
+      const sel = document.getElementById('danhba-page-size');
+      if (sel) {
+        danhBaState.pageSize = sel.value === 'all' ? 999999 : parseInt(sel.value) || 25;
+        danhBaState.currentPage = 1;
+        renderCurrentView();
+        renderPagination();
+      }
+    }
+
+    function setDanhBaView(mode) {
+      danhBaState.viewMode = mode;
+      document.getElementById('btn-view-table').classList.toggle('active', mode === 'table');
+      document.getElementById('btn-view-cards').classList.toggle('active', mode === 'cards');
+      document.getElementById('btn-view-hotlines').classList.toggle('active', mode === 'hotlines');
+
+      document.getElementById('danhba-view-table-wrap').style.display = (mode === 'table') ? 'block' : 'none';
+      document.getElementById('danhba-view-cards-wrap').style.display = (mode === 'cards') ? 'block' : 'none';
+      document.getElementById('danhba-view-hotlines-wrap').style.display = (mode === 'hotlines') ? 'block' : 'none';
+
+      document.getElementById('danhba-pagination-bar').style.display = (mode === 'hotlines') ? 'none' : 'flex';
+
+      renderCurrentView();
+    }
+
+    function applyDanhBaFilters() {
+      const termRaw = danhBaState.searchTerm.toLowerCase();
+      const termClean = removeVietnameseTones(termRaw);
+      const groupFilter = danhBaState.filterGroup;
+      const deptFilter = danhBaState.filterDept;
+
+      if (!termClean && !groupFilter && !deptFilter) {
+        danhBaState.filteredStaff = danhBaState.staff.slice();
+      } else {
+        danhBaState.filteredStaff = danhBaState.staff.filter(s => {
+          if (deptFilter && s.dept !== deptFilter) return false;
+          if (groupFilter && s.group !== groupFilter) return false;
+          if (termClean) {
+            const nameClean = removeVietnameseTones(s.name || '');
+            const roleClean = removeVietnameseTones(s.role || '');
+            const deptClean = removeVietnameseTones(s.dept || '');
+            const phone1 = (s.phone1 || '').replace(/[\\s\\.]/g, '');
+            const phone2 = (s.phone2 || '').replace(/[\\s\\.]/g, '');
+            const termDigits = termRaw.replace(/[\\s\\.]/g, '');
+
+            const matchName = nameClean.includes(termClean);
+            const matchRole = roleClean.includes(termClean);
+            const matchDept = deptClean.includes(termClean);
+            const matchPhone = (termDigits && (phone1.includes(termDigits) || phone2.includes(termDigits)));
+
+            if (!matchName && !matchRole && !matchDept && !matchPhone) return false;
+          }
+          return true;
+        });
+      }
+
+      danhBaState.currentPage = 1;
+      renderCurrentView();
+      renderPagination();
+    }
+
+    function renderCurrentView() {
+      if (danhBaState.viewMode === 'table') {
+        renderTableView();
+      } else if (danhBaState.viewMode === 'cards') {
+        renderCardView();
+      } else if (danhBaState.viewMode === 'hotlines') {
+        renderHotlineView();
+      }
+    }
+
+    function getAvatarInitial(name) {
+      if (!name) return '?';
+      const parts = name.trim().split(/\\s+/);
+      const last = parts[parts.length - 1];
+      return (last[0] || '?').toUpperCase();
+    }
+
+    function renderTableView() {
+      const tbody = document.getElementById('danhba-table-body');
+      if (!tbody) return;
+
+      const total = danhBaState.filteredStaff.length;
+      if (total === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:35px; color:#94a3b8;">
+          <div style="font-size:1.8rem; margin-bottom:8px;">🔍</div>
+          <div>Không tìm thấy cán bộ nào phù hợp với điều kiện tìm kiếm!</div>
+          <button type="button" class="danhba-btn danhba-btn-secondary" onclick="clearDanhBaSearch()" style="margin-top:12px;">Xóa bộ lọc tìm kiếm</button>
+        </td></tr>`;
+        return;
+      }
+
+      const start = (danhBaState.currentPage - 1) * danhBaState.pageSize;
+      const end = Math.min(start + danhBaState.pageSize, total);
+      const pageItems = danhBaState.filteredStaff.slice(start, end);
+
+      let html = '';
+      pageItems.forEach((s, idx) => {
+        const rowIdx = start + idx + 1;
+        const initial = getAvatarInitial(s.name);
+        const p1 = (s.phone1 || '').trim();
+        const p2 = (s.phone2 || '').trim();
+        const p1Clean = s.phone1_clean || p1.replace(/\\D/g, '');
+        const p2Clean = s.phone2_clean || p2.replace(/\\D/g, '');
+        const hotline = (s.dept_hotline || '').trim();
+
+        let phone1Html = '<span style="color:#64748b; font-size:0.8rem;">---</span>';
+        if (p1) {
+          phone1Html = `<a href="tel:${p1Clean}" class="phone-pill" title="Nhấp gọi điện hoặc sao chép" onclick="copyPhoneNumber('${p1}', event)">
+            <span>📞</span> ${p1}
+          </a>`;
+        }
+
+        let phone2Html = '<span style="color:#64748b; font-size:0.8rem;">---</span>';
+        if (p2) {
+          phone2Html = `<a href="tel:${p2Clean}" class="phone-pill" style="color:#94a3b8; border-color:#475569;" title="Nhấp gọi điện hoặc sao chép" onclick="copyPhoneNumber('${p2}', event)">
+            <span>📱</span> ${p2}
+          </a>`;
+        }
+
+        let hotlineHtml = '<span style="color:#64748b; font-size:0.8rem;">---</span>';
+        if (hotline) {
+          hotlineHtml = `<span class="badge-hotline" title="${hotline}">☎️ ${hotline}</span>`;
+        }
+
+        html += `<tr>
+          <td style="text-align:center; color:#94a3b8; font-size:0.8rem;">${rowIdx}</td>
+          <td>
+            <div class="danhba-staff-name-wrap">
+              <div class="danhba-avatar">${initial}</div>
+              <div>
+                <div class="danhba-staff-name">${s.name}</div>
+                <div style="font-size:0.75rem; color:#94a3b8;">${s.group || ''}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="badge-role">${s.role || 'Cán bộ'}</span>
+          </td>
+          <td>
+            <span class="badge-dept">${s.dept || '---'}</span>
+          </td>
+          <td>${phone1Html}</td>
+          <td>${phone2Html}</td>
+          <td>${hotlineHtml}</td>
+          <td style="text-align:center; white-space:nowrap;">
+            <button type="button" class="action-btn-sm" title="Chỉnh sửa" onclick="openStaffModal('${s.id}')" style="color:#38bdf8;">✏️</button>
+            <button type="button" class="action-btn-sm" title="Xóa cán bộ" onclick="confirmDeleteStaff('${s.id}', '${s.name.replace(/'/g, "\\'")}')" style="color:#f87171;">🗑️</button>
+          </td>
+        </tr>`;
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    function renderCardView() {
+      const container = document.getElementById('danhba-cards-container');
+      if (!container) return;
+
+      const total = danhBaState.filteredStaff.length;
+      if (total === 0) {
+        container.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; padding:40px; color:#94a3b8; background:#1e293b; border-radius:12px;">
+          <div style="font-size:2rem; margin-bottom:8px;">🔍</div>
+          <div>Không tìm thấy cán bộ nào!</div>
+        </div>`;
+        return;
+      }
+
+      const start = (danhBaState.currentPage - 1) * danhBaState.pageSize;
+      const end = Math.min(start + danhBaState.pageSize, total);
+      const pageItems = danhBaState.filteredStaff.slice(start, end);
+
+      let html = '';
+      pageItems.forEach(s => {
+        const initial = getAvatarInitial(s.name);
+        const p1 = (s.phone1 || '').trim();
+        const p2 = (s.phone2 || '').trim();
+        const p1Clean = s.phone1_clean || p1.replace(/\\D/g, '');
+        const p2Clean = s.phone2_clean || p2.replace(/\\D/g, '');
+
+        let phonesHtml = '';
+        if (p1) {
+          phonesHtml += `<div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:0.75rem; color:#94a3b8;">Số chính:</span>
+            <a href="tel:${p1Clean}" class="phone-pill" onclick="copyPhoneNumber('${p1}', event)">📞 ${p1}</a>
+          </div>`;
+        }
+        if (p2) {
+          phonesHtml += `<div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:0.75rem; color:#94a3b8;">Số phụ:</span>
+            <a href="tel:${p2Clean}" class="phone-pill" style="color:#94a3b8; border-color:#475569;" onclick="copyPhoneNumber('${p2}', event)">📱 ${p2}</a>
+          </div>`;
+        }
+        if (!p1 && !p2) {
+          phonesHtml += `<div style="color:#64748b; font-size:0.78rem;">Chưa cập nhật số điện thoại</div>`;
+        }
+
+        html += `<div class="danhba-card">
+          <div class="danhba-card-top">
+            <div class="danhba-card-avatar">${initial}</div>
+            <div style="flex:1; min-width:0;">
+              <div class="danhba-card-title">${s.name}</div>
+              <span class="badge-role">${s.role || 'Cán bộ'}</span>
+              <div class="danhba-card-dept">🏢 ${s.dept}</div>
+            </div>
+          </div>
+          
+          <div class="danhba-card-phones">
+            ${phonesHtml}
+          </div>
+
+          <div class="danhba-card-actions">
+            <span style="font-size:0.72rem; color:#64748b;">${s.group || ''}</span>
+            <div style="display:flex; gap:4px;">
+              <button type="button" class="action-btn-sm" onclick="openStaffModal('${s.id}')" title="Sửa thông tin" style="color:#38bdf8;">✏️ Sửa</button>
+              <button type="button" class="action-btn-sm" onclick="confirmDeleteStaff('${s.id}', '${s.name.replace(/'/g, "\\'")}')" title="Xóa" style="color:#f87171;">🗑️</button>
+            </div>
+          </div>
+        </div>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderHotlineView() {
+      const tbody = document.getElementById('danhba-hotlines-body');
+      if (!tbody) return;
+
+      // Group staff count by dept
+      const counts = {};
+      danhBaState.staff.forEach(s => {
+        counts[s.dept] = (counts[s.dept] || 0) + 1;
+      });
+
+      let html = '';
+      danhBaState.departments.forEach((d, idx) => {
+        const staffCount = counts[d.name] || 0;
+        const hotline = (d.hotline || '').trim();
+        let hotlineDisplay = '<span style="color:#64748b; font-style:italic;">Chưa cấu hình hotline trực</span>';
+        if (hotline) {
+          hotlineDisplay = `<span class="badge-hotline" style="font-size:0.84rem; padding:4px 10px;">☎️ ${hotline}</span>`;
+        }
+
+        html += `<tr>
+          <td style="text-align:center; color:#94a3b8; font-size:0.8rem;">${idx + 1}</td>
+          <td>
+            <div style="font-weight:700; color:#f8fafc; font-size:0.9rem;">${d.name}</div>
+          </td>
+          <td>
+            <span style="font-size:0.8rem; color:#94a3b8;">${d.group || ''}</span>
+          </td>
+          <td style="text-align:center;">
+            <span class="badge-role" style="font-weight:700;">👥 ${staffCount}</span>
+          </td>
+          <td>${hotlineDisplay}</td>
+          <td style="text-align:center;">
+            <button type="button" class="danhba-btn danhba-btn-secondary" style="padding:4px 10px; font-size:0.78rem;" onclick="openHotlineModal('${d.name.replace(/'/g, "\\'")}', '${(d.hotline || '').replace(/'/g, "\\'")}')">
+              ✏️ Sửa Hotline
+            </button>
+          </td>
+        </tr>`;
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    function renderPagination() {
+      const infoEl = document.getElementById('danhba-page-info');
+      const showingEl = document.getElementById('danhba-info-showing');
+      const totalEl = document.getElementById('danhba-info-total');
+      const navContainer = document.getElementById('danhba-page-nav-btns');
+      if (!navContainer) return;
+
+      const total = danhBaState.filteredStaff.length;
+      const totalPages = Math.ceil(total / danhBaState.pageSize) || 1;
+      const cur = danhBaState.currentPage;
+
+      const start = total === 0 ? 0 : (cur - 1) * danhBaState.pageSize + 1;
+      const end = Math.min(cur * danhBaState.pageSize, total);
+
+      if (showingEl) showingEl.textContent = `${start} - ${end}`;
+      if (totalEl) totalEl.textContent = total.toLocaleString('vi-VN');
+
+      let btns = '';
+      btns += `<button class="danhba-page-btn" ${cur === 1 ? 'disabled' : ''} onclick="goToDanhBaPage(1)" title="Trang đầu">«</button>`;
+      btns += `<button class="danhba-page-btn" ${cur === 1 ? 'disabled' : ''} onclick="goToDanhBaPage(${cur - 1})" title="Trang trước">‹</button>`;
+
+      let startP = Math.max(1, cur - 2);
+      let endP = Math.min(totalPages, cur + 2);
+      if (cur <= 3) endP = Math.min(5, totalPages);
+      if (cur >= totalPages - 2) startP = Math.max(1, totalPages - 4);
+
+      for (let p = startP; p <= endP; p++) {
+        btns += `<button class="danhba-page-btn ${p === cur ? 'active' : ''}" onclick="goToDanhBaPage(${p})">${p}</button>`;
+      }
+
+      btns += `<button class="danhba-page-btn" ${cur === totalPages ? 'disabled' : ''} onclick="goToDanhBaPage(${cur + 1})" title="Trang sau">›</button>`;
+      btns += `<button class="danhba-page-btn" ${cur === totalPages ? 'disabled' : ''} onclick="goToDanhBaPage(${totalPages})" title="Trang cuối">»</button>`;
+
+      navContainer.innerHTML = btns;
+    }
+
+    function goToDanhBaPage(page) {
+      const total = danhBaState.filteredStaff.length;
+      const totalPages = Math.ceil(total / danhBaState.pageSize) || 1;
+      if (page < 1) page = 1;
+      if (page > totalPages) page = totalPages;
+      danhBaState.currentPage = page;
+      renderCurrentView();
+      renderPagination();
+      
+      const wrap = document.getElementById('danhba-view-table-wrap');
+      if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function copyPhoneNumber(phone, event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      if (!phone) return;
+      navigator.clipboard.writeText(phone).then(() => {
+        showGlobalToast(`📋 Đã sao chép số điện thoại: ${phone}`);
+      }).catch(() => {
+        showGlobalToast(`📞 Số điện thoại: ${phone}`);
+      });
+    }
+
+    function showGlobalToast(msg) {
+      const toast = document.getElementById('cntt-toast');
+      const toastMsg = document.getElementById('cntt-toast-msg');
+      if (toast && toastMsg) {
+        toastMsg.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      } else {
+        alert(msg);
+      }
+    }
+
+    /* STAFF MODAL (ADD / EDIT) */
+    function openStaffModal(staffId = null) {
+      const modal = document.getElementById('danhba-modal-staff');
+      const title = document.getElementById('staff-modal-title');
+      const icon = document.getElementById('staff-modal-icon');
+      const formId = document.getElementById('staff-form-id');
+      const formName = document.getElementById('staff-form-name');
+      const formRole = document.getElementById('staff-form-role');
+      const formDept = document.getElementById('staff-form-dept');
+      const formGroup = document.getElementById('staff-form-group');
+      const formP1 = document.getElementById('staff-form-phone1');
+      const formP2 = document.getElementById('staff-form-phone2');
+      const errBox = document.getElementById('staff-form-error');
+
+      if (errBox) errBox.style.display = 'none';
+
+      if (staffId) {
+        const s = danhBaState.staff.find(x => String(x.id) === String(staffId));
+        if (s) {
+          if (title) title.textContent = 'Chỉnh Sửa Thông Tin Cán Bộ';
+          if (icon) icon.textContent = '✏️';
+          formId.value = s.id;
+          formName.value = s.name || '';
+          formRole.value = s.role || '';
+          formDept.value = s.dept || '';
+          formGroup.value = s.group || 'I. CÁC PHÒNG CHỨC NĂNG';
+          formP1.value = s.phone1 || '';
+          formP2.value = s.phone2 || '';
+        }
+      } else {
+        if (title) title.textContent = 'Thêm Mới Cán Bộ Nhân Viên';
+        if (icon) icon.textContent = '➕';
+        formId.value = '';
+        formName.value = '';
+        formRole.value = '';
+        formDept.value = danhBaState.filterDept || '';
+        formGroup.value = danhBaState.filterGroup || 'I. CÁC PHÒNG CHỨC NĂNG';
+        formP1.value = '';
+        formP2.value = '';
+      }
+
+      if (modal) modal.style.display = 'flex';
+      setTimeout(() => formName.focus(), 100);
+    }
+
+    function closeStaffModal() {
+      const modal = document.getElementById('danhba-modal-staff');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function onStaffDeptChange() {
+      const deptName = (document.getElementById('staff-form-dept').value || '').trim();
+      const d = danhBaState.departments.find(x => x.name.toLowerCase() === deptName.toLowerCase());
+      if (d && d.group) {
+        const grpEl = document.getElementById('staff-form-group');
+        if (grpEl) grpEl.value = d.group;
+      }
+    }
+
+    async function submitStaffForm() {
+      const formId = document.getElementById('staff-form-id').value;
+      const name = (document.getElementById('staff-form-name').value || '').trim();
+      const role = (document.getElementById('staff-form-role').value || '').trim();
+      const dept = (document.getElementById('staff-form-dept').value || '').trim();
+      const group = document.getElementById('staff-form-group').value;
+      const phone1 = (document.getElementById('staff-form-phone1').value || '').trim();
+      const phone2 = (document.getElementById('staff-form-phone2').value || '').trim();
+      const errBox = document.getElementById('staff-form-error');
+      const btn = document.getElementById('btn-save-staff');
+
+      if (!name) {
+        if (errBox) { errBox.textContent = 'Vui lòng nhập Họ và Tên cán bộ!'; errBox.style.display = 'block'; }
+        return;
+      }
+      if (!dept) {
+        if (errBox) { errBox.textContent = 'Vui lòng chọn hoặc nhập Khoa / Phòng!'; errBox.style.display = 'block'; }
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Đang lưu & đẩy lên GitHub...';
+
+      try {
+        const token = safeStorageGet('danhba_github_token') || '';
+        const action = formId ? 'danh-ba-update' : 'danh-ba-add';
+        const payload = { id: formId, name, role, dept, group, phone1, phone2 };
+
+        const res = await fetch(`/api/danh-ba?action=${action}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-GitHub-Token': token
+          },
+          body: JSON.stringify(payload)
+        });
+        const resData = await res.json();
+
+        if (resData && resData.success) {
+          closeStaffModal();
+          showGlobalToast(`✓ ${resData.message}`);
+          await loadDanhBaData(true);
+        } else {
+          if (errBox) { errBox.textContent = resData.error || 'Lỗi khi lưu dữ liệu!'; errBox.style.display = 'block'; }
+        }
+      } catch (err) {
+        if (errBox) { errBox.textContent = 'Lỗi kết nối máy chủ: ' + err.message; errBox.style.display = 'block'; }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Lưu Cán Bộ';
+      }
+    }
+
+    async function confirmDeleteStaff(staffId, staffName) {
+      if (!confirm(`Bạn có chắc chắn muốn xóa cán bộ "${staffName}" khỏi cơ sở dữ liệu danh bạ không?\n\nThao tác này sẽ tự động cập nhật và đồng bộ lên GitHub.`)) {
+        return;
+      }
+
+      try {
+        const token = safeStorageGet('danhba_github_token') || '';
+        const res = await fetch(`/api/danh-ba?action=danh-ba-delete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-GitHub-Token': token
+          },
+          body: JSON.stringify({ id: staffId })
+        });
+        const resData = await res.json();
+        if (resData && resData.success) {
+          showGlobalToast(`✓ Đã xóa cán bộ "${staffName}" thành công!`);
+          await loadDanhBaData(true);
+        } else {
+          alert('Lỗi: ' + (resData.error || 'Không thể xóa cán bộ'));
+        }
+      } catch (err) {
+        alert('Lỗi kết nối: ' + err.message);
+      }
+    }
+
+    /* HOTLINE MODAL */
+    function openHotlineModal(deptName, currentHotline) {
+      const modal = document.getElementById('danhba-modal-hotline');
+      const deptInp = document.getElementById('hotline-form-dept');
+      const valInp = document.getElementById('hotline-form-val');
+      const errBox = document.getElementById('hotline-form-error');
+
+      if (errBox) errBox.style.display = 'none';
+      if (deptInp) deptInp.value = deptName;
+      if (valInp) valInp.value = currentHotline;
+
+      if (modal) modal.style.display = 'flex';
+      setTimeout(() => valInp.focus(), 100);
+    }
+
+    function closeHotlineModal() {
+      const modal = document.getElementById('danhba-modal-hotline');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function submitHotlineForm() {
+      const dept = document.getElementById('hotline-form-dept').value;
+      const hotline = (document.getElementById('hotline-form-val').value || '').trim();
+      const errBox = document.getElementById('hotline-form-error');
+
+      try {
+        const token = safeStorageGet('danhba_github_token') || '';
+        const res = await fetch('/api/danh-ba?action=danh-ba-hotline', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-GitHub-Token': token
+          },
+          body: JSON.stringify({ dept, hotline })
+        });
+        const resData = await res.json();
+        if (resData && resData.success) {
+          closeHotlineModal();
+          showGlobalToast(`✓ Đã cập nhật hotline cho khoa "${dept}"`);
+          await loadDanhBaData(true);
+        } else {
+          if (errBox) { errBox.textContent = resData.error || 'Lỗi cập nhật hotline!'; errBox.style.display = 'block'; }
+        }
+      } catch (err) {
+        if (errBox) { errBox.textContent = 'Lỗi kết nối: ' + err.message; errBox.style.display = 'block'; }
+      }
+    }
+
+    /* GITHUB SYNC MODAL */
+    function openGitHubSyncModal() {
+      const modal = document.getElementById('danhba-modal-sync');
+      const resBox = document.getElementById('sync-modal-result');
+      if (resBox) resBox.style.display = 'none';
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeGitHubSyncModal() {
+      const modal = document.getElementById('danhba-modal-sync');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function submitGitHubSync() {
+      const tokenInp = document.getElementById('github-token-input');
+      const resBox = document.getElementById('sync-modal-result');
+      const btn = document.getElementById('btn-trigger-sync');
+      const token = tokenInp ? tokenInp.value.trim() : '';
+
+      if (token) {
+        safeStorageSet('danhba_github_token', token);
+      }
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Đang đồng bộ lên GitHub...';
+      if (resBox) resBox.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/danh-ba?action=danh-ba-sync', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-GitHub-Token': token
+          }
+        });
+        const resData = await res.json();
+        if (resBox) {
+          resBox.style.display = 'block';
+          if (resData && resData.success) {
+            resBox.style.background = 'rgba(16,185,129,0.15)';
+            resBox.style.border = '1px solid rgba(16,185,129,0.3)';
+            resBox.style.color = '#34d399';
+            resBox.innerHTML = `<b>✓ Đồng bộ thành công!</b><br>Dữ liệu đã được commit & push lên GitHub repository.`;
+            showGlobalToast('✓ Đồng bộ GitHub hoàn tất!');
+          } else {
+            resBox.style.background = 'rgba(239,68,68,0.15)';
+            resBox.style.border = '1px solid rgba(239,68,68,0.3)';
+            resBox.style.color = '#f87171';
+            resBox.innerHTML = `<b>⚠️ Kết quả đồng bộ:</b><br>${resData.sync?.error || resData.error || 'Kiểm tra lại quyền truy cập Git / Token'}`;
+          }
+        }
+      } catch (err) {
+        if (resBox) {
+          resBox.style.display = 'block';
+          resBox.style.background = 'rgba(239,68,68,0.15)';
+          resBox.style.border = '1px solid rgba(239,68,68,0.3)';
+          resBox.style.color = '#f87171';
+          resBox.textContent = 'Lỗi kết nối: ' + err.message;
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 Đẩy Ngay Lên GitHub';
+      }
+    }
+
+    /* EXCEL EXPORT */
+    function exportDanhBaExcel() {
+      const q = encodeURIComponent(danhBaState.searchTerm || '');
+      const dept = encodeURIComponent(danhBaState.filterDept || '');
+      const group = encodeURIComponent(danhBaState.filterGroup || '');
+      const url = `/api/danh-ba?action=danh-ba-export&q=${q}&dept=${dept}&group=${group}`;
+      showGlobalToast('📥 Đang khởi tạo file Excel chuẩn A4...');
+      window.location.href = url;
+    }
+
+    /* EXCEL IMPORT */
+    function openImportModal() {
+      const modal = document.getElementById('danhba-modal-import');
+      const resBox = document.getElementById('import-modal-result');
+      const fileInp = document.getElementById('danhba-import-file');
+      if (resBox) resBox.style.display = 'none';
+      if (fileInp) fileInp.value = '';
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeImportModal() {
+      const modal = document.getElementById('danhba-modal-import');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function submitExcelImport() {
+      const fileInp = document.getElementById('danhba-import-file');
+      const resBox = document.getElementById('import-modal-result');
+      const btn = document.getElementById('btn-submit-import');
+
+      if (!fileInp || !fileInp.files || fileInp.files.length === 0) {
+        if (resBox) {
+          resBox.style.display = 'block';
+          resBox.style.background = 'rgba(239,68,68,0.15)';
+          resBox.style.border = '1px solid rgba(239,68,68,0.3)';
+          resBox.style.color = '#f87171';
+          resBox.textContent = 'Vui lòng chọn 1 file Excel (.xlsx)!';
+        }
+        return;
+      }
+
+      const file = fileInp.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Đang đọc file Excel & xử lý...';
+      if (resBox) resBox.style.display = 'none';
+
+      try {
+        const token = safeStorageGet('danhba_github_token') || '';
+        const res = await fetch('/api/danh-ba?action=danh-ba-import', {
+          method: 'POST',
+          headers: { 'X-GitHub-Token': token },
+          body: formData
+        });
+        const resData = await res.json();
+
+        if (resBox) {
+          resBox.style.display = 'block';
+          if (resData && resData.success) {
+            resBox.style.background = 'rgba(16,185,129,0.15)';
+            resBox.style.border = '1px solid rgba(16,185,129,0.3)';
+            resBox.style.color = '#34d399';
+            resBox.innerHTML = `<b>✓ Nhập dữ liệu thành công!</b><br>${resData.message}`;
+            showGlobalToast('✓ Đã nhập và cập nhật dữ liệu từ file Excel!');
+            await loadDanhBaData(true);
+            setTimeout(() => closeImportModal(), 2000);
+          } else {
+            resBox.style.background = 'rgba(239,68,68,0.15)';
+            resBox.style.border = '1px solid rgba(239,68,68,0.3)';
+            resBox.style.color = '#f87171';
+            resBox.textContent = resData.error || 'Lỗi khi nhập file Excel!';
+          }
+        }
+      } catch (err) {
+        if (resBox) {
+          resBox.style.display = 'block';
+          resBox.style.background = 'rgba(239,68,68,0.15)';
+          resBox.style.border = '1px solid rgba(239,68,68,0.3)';
+          resBox.style.color = '#f87171';
+          resBox.textContent = 'Lỗi kết nối: ' + err.message;
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '⚡ Tiến Hành Nhập & Lưu';
+      }
+    }
+
+
     // Khởi chạy ngay lập tức chuyển hướng menu theo URL
     try { initPageRouter(); } catch (e) { console.error('Router init error:', e); }
   </script>
@@ -10487,6 +12210,644 @@ def handle_export_monthly_errors():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+# ==============================================================================
+# TÁC VỤ 15: TRA CỨU DANH BẠ NHÂN VIÊN & KHOA PHÒNG (GITHUB DB SYNC)
+# ==============================================================================
+import os
+import json
+import io
+import time
+import subprocess
+import threading
+from flask import request, jsonify, send_file
+
+DANH_BA_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "danh_ba_nhan_vien.json")
+DANH_BA_CACHE = None
+DANH_BA_LOCK = threading.Lock()
+
+def get_danh_ba_path():
+    p = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "danh_ba_nhan_vien.json"))
+    if not os.path.exists(os.path.dirname(p)):
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+    return p
+
+def load_danh_ba_data(reload=False):
+    global DANH_BA_CACHE
+    with DANH_BA_LOCK:
+        if DANH_BA_CACHE is not None and not reload:
+            return DANH_BA_CACHE
+        p = get_danh_ba_path()
+        if os.path.exists(p):
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    DANH_BA_CACHE = json.load(f)
+                    return DANH_BA_CACHE
+            except Exception as e:
+                print(f"[DANH_BA] Lỗi đọc {p}: {e}")
+        # Default empty fallback
+        DANH_BA_CACHE = {
+            "version": "2025.1",
+            "title": "DANH BẠ ĐIỆN THOẠI CÁN BỘ NHÂN VIÊN BVĐK BẮC NINH SỐ 2 NĂM 2025",
+            "updated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "total_staff": 0,
+            "departments": [],
+            "staff": []
+        }
+        return DANH_BA_CACHE
+
+def save_danh_ba_data(data, commit_msg="Cập nhật danh bạ nhân viên", github_token=None):
+    global DANH_BA_CACHE
+    with DANH_BA_LOCK:
+        data["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+        data["total_staff"] = len(data.get("staff", []))
+        DANH_BA_CACHE = data
+        p = get_danh_ba_path()
+        try:
+            with open(p, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"[DANH_BA] Không thể ghi file ra đĩa (môi trường read-only Vercel): {e}")
+
+    # Đồng bộ GitHub (nền)
+    sync_res = sync_danh_ba_to_github(data, commit_msg=commit_msg, token=github_token)
+    return sync_res
+
+def git_sync_local(commit_msg="Cập nhật danh bạ nhân viên"):
+    try:
+        repo_dir = os.path.abspath(os.path.dirname(__file__))
+        if not os.path.exists(os.path.join(repo_dir, ".git")):
+            return {"success": False, "error": "Thư mục .git không tồn tại (môi trường serverless)"}
+        subprocess.run(["git", "add", "data/danh_ba_nhan_vien.json"], cwd=repo_dir, capture_output=True, text=True, timeout=10)
+        c_res = subprocess.run(["git", "commit", "-m", commit_msg], cwd=repo_dir, capture_output=True, text=True, timeout=15)
+        p_res = subprocess.run(["git", "push", "origin", "main"], cwd=repo_dir, capture_output=True, text=True, timeout=30)
+        return {
+            "success": p_res.returncode == 0,
+            "commit_out": c_res.stdout + c_res.stderr,
+            "push_out": p_res.stdout + p_res.stderr
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+def git_sync_github_api(content_str, commit_msg="Cập nhật danh bạ nhân viên", token=None):
+    token = token or os.environ.get("GITHUB_TOKEN")
+    if not token:
+        return {"success": False, "error": "Chưa có GitHub Token. Vui lòng cấu hình token để đồng bộ trực tiếp qua web."}
+    
+    import base64
+    import urllib.request
+    import urllib.error
+    
+    owner = "ngatt5nn123456-commits"
+    repo = "BAO_CAO_VA_NEW_VGCA"
+    path = "data/danh_ba_nhan_vien.json"
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "BVDK-BacNinh-App"
+    }
+    
+    sha = None
+    try:
+        req = urllib.request.Request(url, headers=headers, method="GET")
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            sha = data.get("sha")
+    except urllib.error.HTTPError as e:
+        if e.code != 404:
+            return {"success": False, "error": f"Lỗi lấy thông tin file từ GitHub: HTTP {e.code}"}
+    except Exception as e:
+        return {"success": False, "error": f"Lỗi kết nối GitHub: {str(e)}"}
+        
+    encoded_bytes = base64.b64encode(content_str.encode("utf-8")).decode("utf-8")
+    payload = {
+        "message": commit_msg,
+        "content": encoded_bytes,
+        "branch": "main"
+    }
+    if sha:
+        payload["sha"] = sha
+        
+    try:
+        req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="PUT")
+        req.add_header("Content-Type", "application/json")
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            res_data = json.loads(resp.read().decode("utf-8"))
+            commit_sha = res_data.get("commit", {}).get("sha", "")[:7]
+            return {"success": True, "commit_sha": commit_sha, "message": f"Đã đồng bộ lên GitHub thành công (Commit: {commit_sha})"}
+    except urllib.error.HTTPError as e:
+        err_msg = e.read().decode("utf-8")
+        return {"success": False, "error": f"Lỗi GitHub API HTTP {e.code}: {err_msg}"}
+    except Exception as e:
+        return {"success": False, "error": f"Lỗi đồng bộ GitHub: {str(e)}"}
+
+def sync_danh_ba_to_github(data_dict, commit_msg="Cập nhật danh bạ nhân viên", token=None):
+    repo_dir = os.path.abspath(os.path.dirname(__file__))
+    if os.path.exists(os.path.join(repo_dir, ".git")):
+        res = git_sync_local(commit_msg)
+        if res.get("success"):
+            return {"success": True, "method": "local_git", "output": res.get("push_out", "")}
+    content_str = json.dumps(data_dict, ensure_ascii=False, indent=2)
+    api_res = git_sync_github_api(content_str, commit_msg, token=token)
+    return api_res
+
+def build_danh_ba_excel(staff_list):
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Danh Bạ Cán Bộ 2025"
+    ws.views.sheetView[0].showGridLines = True
+    
+    ws.merge_cells("A1:H1")
+    ws["A1"] = "BỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2 - PHÒNG CÔNG NGHỆ THÔNG TIN"
+    ws["A1"].font = Font(name="Times New Roman", size=11, bold=True, color="1E3A8A")
+    ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
+    
+    ws.merge_cells("A2:H2")
+    ws["A2"] = "DANH BẠ ĐIỆN THOẠI CÁN BỘ NHÂN VIÊN NĂM 2025"
+    ws["A2"].font = Font(name="Times New Roman", size=15, bold=True, color="1E40AF")
+    ws["A2"].alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[2].height = 28
+    
+    ws.merge_cells("A3:H3")
+    ws["A3"] = f"Tổng số: {len(staff_list)} cán bộ • 47 Khoa, Phòng, Trung tâm • Tự động trích xuất từ hệ thống"
+    ws["A3"].font = Font(name="Times New Roman", size=10, italic=True, color="475569")
+    ws["A3"].alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[3].height = 18
+
+    headers = [
+        ("STT", 6),
+        ("HỌ VÀ TÊN", 26),
+        ("CHỨC VỤ", 24),
+        ("KHOA / PHÒNG", 32),
+        ("NHÓM KHỐI", 28),
+        ("SỐ ĐIỆN THOẠI CHÍNH", 22),
+        ("SỐ ĐT PHỤ", 18),
+        ("HOTLINE KHOA / PHÒNG", 35)
+    ]
+    
+    header_font = Font(name="Times New Roman", size=11, bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
+    header_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    
+    thin_border = Border(
+        left=Side(style='thin', color='CBD5E1'),
+        right=Side(style='thin', color='CBD5E1'),
+        top=Side(style='thin', color='CBD5E1'),
+        bottom=Side(style='thin', color='CBD5E1')
+    )
+    
+    ws.row_dimensions[5].height = 26
+    for col_idx, (h_name, width) in enumerate(headers, 1):
+        cell = ws.cell(row=5, column=col_idx, value=h_name)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_align
+        cell.border = thin_border
+        col_letter = get_column_letter(col_idx)
+        ws.column_dimensions[col_letter].width = width
+
+    data_font = Font(name="Times New Roman", size=11)
+    stripe_fill = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+    phone_font = Font(name="Times New Roman", size=11, bold=True, color="0369A1")
+
+    for i, s in enumerate(staff_list, start=1):
+        r = 5 + i
+        ws.row_dimensions[r].height = 20
+        use_stripe = (i % 2 == 0)
+        
+        row_data = [
+            (i, Alignment(horizontal="center", vertical="center")),
+            (s.get("name", ""), Alignment(horizontal="left", vertical="center")),
+            (s.get("role", ""), Alignment(horizontal="left", vertical="center")),
+            (s.get("dept", ""), Alignment(horizontal="left", vertical="center")),
+            (s.get("group", ""), Alignment(horizontal="left", vertical="center")),
+            (s.get("phone1", ""), Alignment(horizontal="center", vertical="center")),
+            (s.get("phone2", ""), Alignment(horizontal="center", vertical="center")),
+            (s.get("dept_hotline", ""), Alignment(horizontal="left", vertical="center")),
+        ]
+        
+        for c_idx, (val, align) in enumerate(row_data, 1):
+            c = ws.cell(row=r, column=c_idx, value=val)
+            c.font = phone_font if c_idx in (6, 7) and val else data_font
+            c.alignment = align
+            c.border = thin_border
+            if use_stripe:
+                c.fill = stripe_fill
+
+    out = io.BytesIO()
+    wb.save(out)
+    out.seek(0)
+    return out
+
+
+import os
+import json
+import io
+import time
+import subprocess
+import threading
+import openpyxl
+from flask import request, jsonify, send_file
+
+def handle_danh_ba_api():
+    act = (request.args.get("action") or request.form.get("action") or "").lower()
+    
+    # Subpath or action parameter normalization
+    if "export" in request.path or act == "danh-ba-export":
+        act = "danh-ba-export"
+    elif "import" in request.path or act == "danh-ba-import":
+        act = "danh-ba-import"
+    elif "sync" in request.path or act == "danh-ba-sync":
+        act = "danh-ba-sync"
+    elif "add" in request.path or act == "danh-ba-add":
+        act = "danh-ba-add"
+    elif "update" in request.path or act == "danh-ba-update":
+        act = "danh-ba-update"
+    elif "delete" in request.path or act == "danh-ba-delete":
+        act = "danh-ba-delete"
+    elif "hotline" in request.path or act == "danh-ba-hotline":
+        act = "danh-ba-hotline"
+    elif not act or act == "danh-ba" or act == "danh-ba-list":
+        act = "danh-ba-list"
+
+    github_token = (
+        request.headers.get("X-GitHub-Token") or
+        request.form.get("github_token") or
+        request.args.get("github_token") or
+        os.environ.get("GITHUB_TOKEN") or ""
+    ).strip()
+
+    try:
+        # 1. LIST
+        if act == "danh-ba-list":
+            reload_flag = request.args.get("reload", "0") == "1"
+            data = load_danh_ba_data(reload=reload_flag)
+            return jsonify({
+                "success": True,
+                "version": data.get("version", "2025.1"),
+                "updated_at": data.get("updated_at", ""),
+                "total_staff": len(data.get("staff", [])),
+                "total_depts": len(data.get("departments", [])),
+                "departments": data.get("departments", []),
+                "staff": data.get("staff", [])
+            })
+
+        # 2. EXPORT EXCEL
+        elif act == "danh-ba-export":
+            data = load_danh_ba_data()
+            staff_list = data.get("staff", [])
+            q = (request.args.get("q") or "").strip().lower()
+            dept = (request.args.get("dept") or "").strip()
+            group = (request.args.get("group") or "").strip()
+            
+            if q or dept or group:
+                filtered = []
+                for s in staff_list:
+                    if dept and s.get("dept") != dept:
+                        continue
+                    if group and s.get("group") != group:
+                        continue
+                    if q:
+                        comb = f"{s.get('name','')} {s.get('role','')} {s.get('phone1','')} {s.get('dept','')}".lower()
+                        if q not in comb:
+                            continue
+                    filtered.append(s)
+                staff_list = filtered
+
+            out_io = build_danh_ba_excel(staff_list)
+            return send_file(
+                out_io,
+                as_attachment=True,
+                download_name="Danh_Ba_Nhan_Vien_BVDK_BacNinh2_2025.xlsx",
+                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
+        # 3. ADD STAFF
+        elif act == "danh-ba-add":
+            req_data = request.get_json(silent=True) or request.form.to_dict() or {}
+            name = (req_data.get("name") or "").strip()
+            if not name:
+                return jsonify({"success": False, "error": "Vui lòng nhập họ và tên cán bộ!"}), 400
+            
+            role = (req_data.get("role") or "").strip()
+            dept = (req_data.get("dept") or "").strip()
+            group = (req_data.get("group") or "").strip()
+            phone1 = (req_data.get("phone1") or "").strip()
+            phone2 = (req_data.get("phone2") or "").strip()
+            
+            data = load_danh_ba_data()
+            staff_list = data.get("staff", [])
+            depts = data.get("departments", [])
+            
+            # Find dept info & hotline
+            dept_hotline = ""
+            dept_order = 99
+            for d in depts:
+                if d.get("name") == dept:
+                    dept_hotline = d.get("hotline", "")
+                    dept_order = d.get("order", 99)
+                    if not group:
+                        group = d.get("group", "")
+                    break
+
+            new_stt = len(staff_list) + 1
+            new_id = f"nv_{new_stt:04d}_{int(time.time())}"
+            p1_clean = "".join(filter(str.isdigit, phone1))
+            p2_clean = "".join(filter(str.isdigit, phone2))
+            
+            new_member = {
+                "id": new_id,
+                "stt": new_stt,
+                "name": name,
+                "role": role,
+                "phone1": phone1,
+                "phone1_clean": p1_clean,
+                "phone2": phone2,
+                "phone2_clean": p2_clean,
+                "dept": dept,
+                "dept_order": dept_order,
+                "group": group,
+                "dept_hotline": dept_hotline
+            }
+            
+            staff_list.append(new_member)
+            data["staff"] = staff_list
+            sync_res = save_danh_ba_data(data, commit_msg=f"Thêm cán bộ: {name} - {dept}", github_token=github_token)
+            
+            return jsonify({
+                "success": True,
+                "message": f"Đã thêm mới cán bộ {name} thành công!",
+                "member": new_member,
+                "sync": sync_res
+            })
+
+        # 4. UPDATE STAFF
+        elif act == "danh-ba-update":
+            req_data = request.get_json(silent=True) or request.form.to_dict() or {}
+            sid = str(req_data.get("id") or "").strip()
+            name = (req_data.get("name") or "").strip()
+            if not sid:
+                return jsonify({"success": False, "error": "Thiếu mã định danh cán bộ (id)!"}), 400
+            if not name:
+                return jsonify({"success": False, "error": "Họ và tên không được để trống!"}), 400
+
+            role = (req_data.get("role") or "").strip()
+            dept = (req_data.get("dept") or "").strip()
+            group = (req_data.get("group") or "").strip()
+            phone1 = (req_data.get("phone1") or "").strip()
+            phone2 = (req_data.get("phone2") or "").strip()
+
+            data = load_danh_ba_data()
+            staff_list = data.get("staff", [])
+            depts = data.get("departments", [])
+            
+            dept_hotline = ""
+            dept_order = 99
+            for d in depts:
+                if d.get("name") == dept:
+                    dept_hotline = d.get("hotline", "")
+                    dept_order = d.get("order", 99)
+                    if not group:
+                        group = d.get("group", "")
+                    break
+
+            found = False
+            updated_member = None
+            for s in staff_list:
+                if str(s.get("id")) == sid:
+                    s["name"] = name
+                    s["role"] = role
+                    s["dept"] = dept
+                    s["group"] = group
+                    s["phone1"] = phone1
+                    s["phone1_clean"] = "".join(filter(str.isdigit, phone1))
+                    s["phone2"] = phone2
+                    s["phone2_clean"] = "".join(filter(str.isdigit, phone2))
+                    s["dept_order"] = dept_order
+                    s["dept_hotline"] = dept_hotline
+                    found = True
+                    updated_member = s
+                    break
+
+            if not found:
+                return jsonify({"success": False, "error": f"Không tìm thấy cán bộ có mã {sid}!"}), 404
+
+            sync_res = save_danh_ba_data(data, commit_msg=f"Cập nhật cán bộ: {name} - {dept}", github_token=github_token)
+            return jsonify({
+                "success": True,
+                "message": f"Đã cập nhật thông tin cán bộ {name} thành công!",
+                "member": updated_member,
+                "sync": sync_res
+            })
+
+        # 5. DELETE STAFF
+        elif act == "danh-ba-delete":
+            req_data = request.get_json(silent=True) or request.form.to_dict() or {}
+            sid = str(req_data.get("id") or request.args.get("id") or "").strip()
+            if not sid:
+                return jsonify({"success": False, "error": "Thiếu mã định danh cán bộ (id) cần xóa!"}), 400
+
+            data = load_danh_ba_data()
+            staff_list = data.get("staff", [])
+            original_len = len(staff_list)
+            del_name = ""
+            new_list = []
+            for s in staff_list:
+                if str(s.get("id")) == sid:
+                    del_name = s.get("name", "")
+                else:
+                    new_list.append(s)
+
+            if len(new_list) == original_len:
+                return jsonify({"success": False, "error": f"Không tìm thấy cán bộ mã {sid} để xóa!"}), 404
+
+            # Re-index STT
+            for idx, s in enumerate(new_list, 1):
+                s["stt"] = idx
+
+            data["staff"] = new_list
+            sync_res = save_danh_ba_data(data, commit_msg=f"Xóa cán bộ: {del_name} (ID: {sid})", github_token=github_token)
+            return jsonify({
+                "success": True,
+                "message": f"Đã xóa cán bộ {del_name} khỏi danh bạ thành công!",
+                "deleted_id": sid,
+                "sync": sync_res
+            })
+
+        # 6. UPDATE DEPT HOTLINE
+        elif act == "danh-ba-hotline":
+            req_data = request.get_json(silent=True) or request.form.to_dict() or {}
+            dept_name = (req_data.get("dept") or req_data.get("dept_name") or "").strip()
+            hotline = (req_data.get("hotline") or "").strip()
+            if not dept_name:
+                return jsonify({"success": False, "error": "Vui lòng chỉ định tên Khoa / Phòng!"}), 400
+
+            data = load_danh_ba_data()
+            depts = data.get("departments", [])
+            staff_list = data.get("staff", [])
+            
+            dept_found = False
+            for d in depts:
+                if d.get("name") == dept_name:
+                    d["hotline"] = hotline
+                    dept_found = True
+                    break
+
+            if not dept_found:
+                # Add new dept if not existed
+                depts.append({
+                    "id": f"{len(depts)+1:02d}_{dept_name}",
+                    "name": dept_name,
+                    "order": len(depts) + 1,
+                    "group": req_data.get("group") or "IV. CÁC ĐƠN VỊ KHÁC",
+                    "hotline": hotline
+                })
+
+            # Update dept_hotline for all staff in this dept
+            updated_count = 0
+            for s in staff_list:
+                if s.get("dept") == dept_name:
+                    s["dept_hotline"] = hotline
+                    updated_count += 1
+
+            sync_res = save_danh_ba_data(data, commit_msg=f"Cập nhật hotline Khoa/Phòng: {dept_name} ({hotline})", github_token=github_token)
+            return jsonify({
+                "success": True,
+                "message": f"Đã cập nhật hotline cho khoa {dept_name} (đồng bộ {updated_count} cán bộ) thành công!",
+                "dept": dept_name,
+                "hotline": hotline,
+                "sync": sync_res
+            })
+
+        # 7. IMPORT EXCEL
+        elif act == "danh-ba-import":
+            if "file" not in request.files:
+                return jsonify({"success": False, "error": "Chưa chọn file Excel để nhập dữ liệu!"}), 400
+            f = request.files["file"]
+            if not f or not f.filename:
+                return jsonify({"success": False, "error": "File rỗng hoặc không hợp lệ!"}), 400
+
+            wb = openpyxl.load_workbook(f, data_only=True)
+            ws = wb.active
+            
+            data = load_danh_ba_data()
+            staff_list = data.get("staff", [])
+            depts = data.get("departments", [])
+            
+            # Map existing staff by (name.lower(), dept.lower())
+            existing_map = {
+                (s.get("name", "").strip().lower(), s.get("dept", "").strip().lower()): s
+                for s in staff_list
+            }
+
+            added_count = 0
+            updated_count = 0
+            
+            # Find header row
+            header_row_idx = 1
+            col_map = {}
+            for r in range(1, min(10, ws.max_row + 1)):
+                row_vals = [str(ws.cell(row=r, column=c).value or "").strip().lower() for c in range(1, ws.max_column + 1)]
+                for c_idx, val in enumerate(row_vals, 1):
+                    if "họ" in val and "tên" in val:
+                        col_map["name"] = c_idx
+                    elif "chức" in val and "vụ" in val:
+                        col_map["role"] = c_idx
+                    elif "khoa" in val or "phòng" in val or "đơn vị" in val:
+                        col_map["dept"] = c_idx
+                    elif "nhóm" in val or "khối" in val:
+                        col_map["group"] = c_idx
+                    elif "điện thoại" in val or "sđt" in val or "phone" in val:
+                        if "phone1" not in col_map:
+                            col_map["phone1"] = c_idx
+                        else:
+                            col_map["phone2"] = c_idx
+                if "name" in col_map:
+                    header_row_idx = r
+                    break
+
+            if "name" not in col_map:
+                col_map = {"name": 2, "role": 3, "dept": 4, "group": 5, "phone1": 6, "phone2": 7}
+
+            for r in range(header_row_idx + 1, ws.max_row + 1):
+                name_val = str(ws.cell(row=r, column=col_map.get("name", 2)).value or "").strip()
+                if not name_val or name_val.lower().startswith("tổng số") or name_val.lower().startswith("ghi chú"):
+                    continue
+                
+                role_val = str(ws.cell(row=r, column=col_map.get("role", 3)).value or "").strip() if "role" in col_map else ""
+                dept_val = str(ws.cell(row=r, column=col_map.get("dept", 4)).value or "").strip() if "dept" in col_map else ""
+                group_val = str(ws.cell(row=r, column=col_map.get("group", 5)).value or "").strip() if "group" in col_map else ""
+                phone1_val = str(ws.cell(row=r, column=col_map.get("phone1", 6)).value or "").strip() if "phone1" in col_map else ""
+                phone2_val = str(ws.cell(row=r, column=col_map.get("phone2", 7)).value or "").strip() if "phone2" in col_map else ""
+                
+                if phone1_val.endswith(".0"): phone1_val = phone1_val[:-2]
+                if phone2_val.endswith(".0"): phone2_val = phone2_val[:-2]
+
+                key = (name_val.lower(), dept_val.lower())
+                if key in existing_map:
+                    s = existing_map[key]
+                    if role_val: s["role"] = role_val
+                    if phone1_val: s["phone1"] = phone1_val; s["phone1_clean"] = "".join(filter(str.isdigit, phone1_val))
+                    if phone2_val: s["phone2"] = phone2_val; s["phone2_clean"] = "".join(filter(str.isdigit, phone2_val))
+                    if group_val: s["group"] = group_val
+                    updated_count += 1
+                else:
+                    new_stt = len(staff_list) + 1
+                    new_s = {
+                        "id": f"nv_{new_stt:04d}_{int(time.time())}",
+                        "stt": new_stt,
+                        "name": name_val,
+                        "role": role_val,
+                        "phone1": phone1_val,
+                        "phone1_clean": "".join(filter(str.isdigit, phone1_val)),
+                        "phone2": phone2_val,
+                        "phone2_clean": "".join(filter(str.isdigit, phone2_val)),
+                        "dept": dept_val,
+                        "dept_order": 99,
+                        "group": group_val,
+                        "dept_hotline": ""
+                    }
+                    staff_list.append(new_s)
+                    existing_map[key] = new_s
+                    added_count += 1
+
+            data["staff"] = staff_list
+            sync_res = save_danh_ba_data(data, commit_msg=f"Nhập file Excel: Thêm {added_count}, Cập nhật {updated_count} cán bộ", github_token=github_token)
+            return jsonify({
+                "success": True,
+                "message": f"Nhập Excel thành công: Thêm mới {added_count} và cập nhật {updated_count} cán bộ!",
+                "added": added_count,
+                "updated": updated_count,
+                "total": len(staff_list),
+                "sync": sync_res
+            })
+
+        # 8. SYNC GITHUB
+        elif act == "danh-ba-sync":
+            data = load_danh_ba_data()
+            sync_res = sync_danh_ba_to_github(data, commit_msg="Đồng bộ thủ công từ hệ thống web", token=github_token)
+            return jsonify({
+                "success": sync_res.get("success", False),
+                "sync": sync_res,
+                "updated_at": data.get("updated_at"),
+                "total_staff": len(data.get("staff", []))
+            })
+
+        else:
+            return jsonify({"success": False, "error": f"Hành động không hợp lệ: {act}"}), 400
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": f"Lỗi xử lý API Danh bạ: {str(e)}"}), 500
+
+
 def dispatch_request(path=""):
     matched = (
         (path or "") + " " +
@@ -10548,6 +12909,10 @@ def dispatch_request(path=""):
 
     req_act = (request.args.get("action") or request.form.get("action") or "").lower()
     req_task = str(request.args.get("task") or request.form.get("task") or "")
+
+    # Tác vụ 15: Tra cứu Danh bạ nhân viên & Khoa/Phòng
+    if "api/danh-ba" in matched or "danh-ba" in matched or req_act.startswith("danh-ba") or req_task == "15":
+        return handle_danh_ba_api()
     if "task-14" in matched or "bccv" in matched or req_act in ("task-14", "bccv", "bccv-data", "get-bccv") or req_task == "14":
         return handle_task_14()
 
@@ -10625,6 +12990,9 @@ def dispatch_request(path=""):
 @app.route("/api/monthly-error-stats", methods=["GET", "POST"])
 @app.route("/api/export-monthly-errors", methods=["GET", "POST"])
 @app.route("/api/format-sql-check-khoa-phong", methods=["GET", "POST"])
+@app.route("/api/danh-ba", methods=["GET", "POST"])
+@app.route("/api/danh-ba/<path:subpath>", methods=["GET", "POST"])
+
 @app.route("/<path:path>", methods=["GET", "POST"])
 def master_router(path=""):
     return dispatch_request(path)

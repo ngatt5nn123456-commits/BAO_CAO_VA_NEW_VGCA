@@ -12,3 +12,9 @@ dist/
 *.doc
 *.db
 !templates/**
+
+*.bak*
+scratch/
+data/danh_ba_2025*
+Chay_Ung_Dung.bat
+*.exe
