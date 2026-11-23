@@ -2328,6 +2328,9 @@ HTML_PAGE = """<!DOCTYPE html>
     .tree-folder-group.card-cks {
       border-left: 3px solid #38bdf8;
     }
+    .tree-folder-group.card-baocao {
+      border-left: 3px solid #10b981;
+    }
     .tree-folder-group.card-bhyt {
       border-left: 3px solid #c084fc;
     }
@@ -2370,6 +2373,7 @@ HTML_PAGE = """<!DOCTYPE html>
       text-transform: uppercase;
     }
     .card-cks .folder-title { color: #7dd3fc; }
+    .card-baocao .folder-title { color: #6ee7b7; }
     .card-bhyt .folder-title { color: #d8b4fe; }
 
     .folder-badge {
@@ -2382,6 +2386,11 @@ HTML_PAGE = """<!DOCTYPE html>
       background: rgba(56, 189, 248, 0.15);
       color: #38bdf8;
       border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+    .badge-baocao {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
     }
     .badge-bhyt {
       background: rgba(192, 132, 252, 0.15);
@@ -2412,6 +2421,9 @@ HTML_PAGE = """<!DOCTYPE html>
       width: 2px;
       background: rgba(56, 189, 248, 0.3);
       border-radius: 1px;
+    }
+    .card-baocao .tree-children-list::before {
+      background: rgba(16, 185, 129, 0.3);
     }
     .card-bhyt .tree-children-list::before {
       background: rgba(192, 132, 252, 0.3);
@@ -2449,6 +2461,9 @@ HTML_PAGE = """<!DOCTYPE html>
       height: 2px;
       background: rgba(56, 189, 248, 0.35);
       border-bottom-left-radius: 3px;
+    }
+    .card-baocao .tree-child-item::before {
+      background: rgba(16, 185, 129, 0.35);
     }
     .card-bhyt .tree-child-item::before {
       background: rgba(192, 132, 252, 0.35);
@@ -4602,15 +4617,50 @@ HTML_PAGE = """<!DOCTYPE html>
           </ul>
         </div>
 
-        <!-- THƯ MỤC CHA 2: BÁO CÁO VÀ GIÁM ĐỊNH BHYT -->
-        <div class="tree-folder-group card-bhyt" id="folder-grp-2">
+        <!-- THƯ MỤC CHA 2: BÁO CÁO CÔNG TÁC CNTT -->
+        <div class="tree-folder-group card-baocao" id="folder-grp-2">
           <div class="tree-folder-header" onclick="toggleTreeFolder('folder-grp-2')">
             <div class="folder-title-wrap">
               <span class="folder-chevron">▼</span>
               <span class="folder-icon">📂</span>
-              <span class="folder-title">BÁO CÁO & GIÁM ĐỊNH BHYT</span>
+              <span class="folder-title">NHÓM BÁO CÁO CNTT</span>
             </div>
-            <span class="folder-badge badge-bhyt">7 tác vụ</span>
+            <span class="folder-badge badge-baocao">3 tác vụ</span>
+          </div>
+          <ul class="tree-children-list sidebar-menu">
+            <li data-task="8" onclick="switchTask(8)" class="tree-child-item">
+              <div class="nav-icon">⚡</div>
+              <div class="nav-text">
+                <span class="nav-title">BC P.CNTT</span>
+                <span class="nav-desc">Tự động tải Google Sheets & Gộp nhiều sheet</span>
+              </div>
+            </li>
+            <li data-task="14" onclick="switchTask(14)" class="tree-child-item">
+              <div class="nav-icon">📋</div>
+              <div class="nav-text">
+                <span class="nav-title">BC CV hàng ngày P.CNTT</span>
+                <span class="nav-desc">Thống kê lỗi chủ quan & khoa phòng</span>
+              </div>
+            </li>
+            <li data-task="11" onclick="switchTask(11)" class="tree-child-item">
+              <div class="nav-icon">🛠</div>
+              <div class="nav-text">
+                <span class="nav-title">BC Sửa CNTT</span>
+                <span class="nav-desc">Tổng hợp ca tiếp nhận & báo cáo cán bộ</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- THƯ MỤC CHA 3: BẢO HIỂM & GIÁM ĐỊNH BHYT -->
+        <div class="tree-folder-group card-bhyt" id="folder-grp-3">
+          <div class="tree-folder-header" onclick="toggleTreeFolder('folder-grp-3')">
+            <div class="folder-title-wrap">
+              <span class="folder-chevron">▼</span>
+              <span class="folder-icon">📂</span>
+              <span class="folder-title">GIÁM ĐỊNH & BẢO HIỂM Y TẾ</span>
+            </div>
+            <span class="folder-badge badge-bhyt">4 tác vụ</span>
           </div>
           <ul class="tree-children-list sidebar-menu">
             <li data-task="5" onclick="switchTask(5)" class="tree-child-item">
@@ -4620,11 +4670,11 @@ HTML_PAGE = """<!DOCTYPE html>
                 <span class="nav-desc">Lọc người dùng & xuất Excel A4</span>
               </div>
             </li>
-            <li data-task="11" onclick="switchTask(11)" class="tree-child-item">
-              <div class="nav-icon">🛠</div>
+            <li data-task="10" onclick="switchTask(10)" class="tree-child-item">
+              <div class="nav-icon">📊</div>
               <div class="nav-text">
-                <span class="nav-title">BC Sửa CNTT</span>
-                <span class="nav-desc">Tổng hợp ca tiếp nhận & báo cáo cán bộ</span>
+                <span class="nav-title">Thống Kê Lỗi XML BHYT</span>
+                <span class="nav-desc">Google Sheets • Lọc Khoa/Phòng & Lỗi</span>
               </div>
             </li>
             <li data-task="12" onclick="switchTask(12)" class="tree-child-item">
@@ -4641,33 +4691,12 @@ HTML_PAGE = """<!DOCTYPE html>
                 <span class="nav-desc">Câu lệnh check khoa, phòng bảo hiểm</span>
               </div>
             </li>
-            <li data-task="14" onclick="switchTask(14)" class="tree-child-item">
-              <div class="nav-icon">📋</div>
-              <div class="nav-text">
-                <span class="nav-title">BC CV hàng ngày P.CNTT</span>
-                <span class="nav-desc">Thống kê lỗi chủ quan & khoa phòng</span>
-              </div>
-            </li>
-            <li data-task="8" onclick="switchTask(8)" class="tree-child-item">
-              <div class="nav-icon">⚡</div>
-              <div class="nav-text">
-                <span class="nav-title">BC P.CNTT</span>
-                <span class="nav-desc">Tự động tải Google Sheets & Gộp nhiều sheet</span>
-              </div>
-            </li>
-            <li data-task="10" onclick="switchTask(10)" class="tree-child-item">
-              <div class="nav-icon">📊</div>
-              <div class="nav-text">
-                <span class="nav-title">Thống Kê Lỗi XML BHYT</span>
-                <span class="nav-desc">Google Sheets • Lọc Khoa/Phòng & Lỗi</span>
-              </div>
-            </li>
           </ul>
         </div>
 
-        <!-- THƯ MỤC CHA 3: TIỆN ÍCH & DANH BẠ NỘI BỘ -->
-        <div class="tree-folder-group card-danhba" id="folder-grp-3">
-          <div class="tree-folder-header" onclick="toggleTreeFolder('folder-grp-3')">
+        <!-- THƯ MỤC CHA 4: TIỆN ÍCH & DANH BẠ NỘI BỘ -->
+        <div class="tree-folder-group card-danhba" id="folder-grp-4">
+          <div class="tree-folder-header" onclick="toggleTreeFolder('folder-grp-4')">
             <div class="folder-title-wrap">
               <span class="folder-chevron">▼</span>
               <span class="folder-icon">📂</span>
