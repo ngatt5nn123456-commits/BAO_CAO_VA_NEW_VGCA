@@ -2247,8 +2247,15 @@ HTML_PAGE = """<!DOCTYPE html>
       position: absolute;
       left: 10px;
       font-size: 0.85rem;
-      opacity: 0.6;
-      pointer-events: none;
+      opacity: 0.7;
+      cursor: pointer;
+      z-index: 2;
+      transition: all 0.2s ease;
+    }
+    .search-input-wrapper .search-icon:hover {
+      opacity: 1;
+      transform: scale(1.15);
+      color: #38bdf8;
     }
     #menu-search-input {
       width: 100%;
@@ -4467,8 +4474,18 @@ HTML_PAGE = """<!DOCTYPE html>
       <!-- THANH TÌM KIẾM NHANH & ĐIỀU KHIỂN CÂY -->
       <div class="sidebar-search-box">
         <div class="search-input-wrapper">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="menu-search-input" placeholder="Tìm kiếm tác vụ (gõ tên hoặc lỗi)..." oninput="filterSidebarTree(this.value)">
+          <span class="search-icon" onclick="doManualTreeSearch()" title="Nhấn để tìm kiếm tác vụ">🔍</span>
+          <input type="text" id="menu-search-input" 
+                 name="prevent_autofill_tree_search"
+                 autocomplete="new-password"
+                 autocorrect="off"
+                 autocapitalize="off"
+                 spellcheck="false"
+                 data-lpignore="true"
+                 data-form-type="other"
+                 placeholder="Tìm kiếm tác vụ (nhấn Enter)..." 
+                 onkeydown="if(event.key==='Enter'){event.preventDefault(); doManualTreeSearch();} else if(event.key==='Escape'){clearTreeSearch();}"
+                 oninput="handleTreeSearchInput(this)">
           <button type="button" id="clear-search-btn" onclick="clearTreeSearch()" style="display:none;" title="Xóa tìm kiếm">✕</button>
         </div>
         <div class="tree-actions-row">
@@ -6507,6 +6524,55 @@ function handleRequest(e) {
       });
     }
 
+    let treeSearchDebounceTimer = null;
+
+    function handleTreeSearchInput(inputEl) {
+      const rawVal = inputEl ? inputEl.value : '';
+      const val = rawVal.trim();
+      const clearBtn = document.getElementById('clear-search-btn');
+      if (clearBtn) clearBtn.style.display = val ? 'block' : 'none';
+
+      // 1. Nếu ô tìm kiếm bị rỗng, lập tức khôi phục toàn bộ cây thư mục
+      if (!val) {
+        if (treeSearchDebounceTimer) clearTimeout(treeSearchDebounceTimer);
+        filterSidebarTree('');
+        return;
+      }
+
+      // 2. Chặn hoàn toàn nếu là đường link URL (trình duyệt tự điền hoặc dán nhầm URL Google Sheet)
+      if (val.startsWith('http://') || val.startsWith('https://') || val.includes('docs.google') || val.includes('spreadsheets/d/')) {
+        inputEl.value = '';
+        if (clearBtn) clearBtn.style.display = 'none';
+        filterSidebarTree('');
+        return;
+      }
+
+      // 3. Tự động tìm kiếm nhẹ nhàng có debounce (300ms sau khi người dùng ngừng gõ, tối thiểu 2 ký tự)
+      if (treeSearchDebounceTimer) clearTimeout(treeSearchDebounceTimer);
+      treeSearchDebounceTimer = setTimeout(() => {
+        if (val.length >= 2) {
+          filterSidebarTree(val);
+        } else if (val.length === 0) {
+          filterSidebarTree('');
+        }
+      }, 300);
+    }
+
+    function doManualTreeSearch() {
+      const input = document.getElementById('menu-search-input');
+      if (!input) return;
+      const val = input.value.trim();
+      if (!val || val.startsWith('http://') || val.startsWith('https://') || val.includes('docs.google') || val.includes('spreadsheets/d/')) {
+        input.value = '';
+        const clearBtn = document.getElementById('clear-search-btn');
+        if (clearBtn) clearBtn.style.display = 'none';
+        filterSidebarTree('');
+        return;
+      }
+      if (treeSearchDebounceTimer) clearTimeout(treeSearchDebounceTimer);
+      filterSidebarTree(val);
+    }
+
     function filterSidebarTree(query) {
       query = (query || '').trim().toLowerCase();
       const clearBtn = document.getElementById('clear-search-btn');
@@ -6539,8 +6605,9 @@ function handleRequest(e) {
       if (input) {
         input.value = '';
         filterSidebarTree('');
-        input.focus();
       }
+      const clearBtn = document.getElementById('clear-search-btn');
+      if (clearBtn) clearBtn.style.display = 'none';
     }
 
     function switchTask(taskId) {
@@ -6558,6 +6625,15 @@ function handleRequest(e) {
           setTimeout(() => { isProgrammaticSwitch = false; }, 150);
         }
       } catch (e) {}
+
+      // Tự động dọn dẹp ô tìm kiếm menu khi chuyển tab để luôn hiển thị đầy đủ danh mục
+      const searchInp = document.getElementById('menu-search-input');
+      if (searchInp && searchInp.value) {
+        searchInp.value = '';
+        const clearBtn = document.getElementById('clear-search-btn');
+        if (clearBtn) clearBtn.style.display = 'none';
+        filterSidebarTree('');
+      }
 
       document.querySelectorAll('[data-task]').forEach((el) => {
         const id = parseInt(el.getAttribute('data-task'));
@@ -8558,6 +8634,15 @@ function handleRequest(e) {
     }
 
     function initPageRouter() {
+      try {
+        const searchInp = document.getElementById('menu-search-input');
+        if (searchInp) {
+          searchInp.value = '';
+          const clearBtn = document.getElementById('clear-search-btn');
+          if (clearBtn) clearBtn.style.display = 'none';
+          filterSidebarTree('');
+        }
+      } catch (e) {}
       try { updateAuthUI(); } catch (e) {}
       try { initFixedMDInsightUI(); } catch (e) {}
       const targetTask = getTaskFromUrl();
