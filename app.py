@@ -1808,7 +1808,10 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
     if sheet_name and not str(sheet_name).lower().startswith("sheet"):
         if "," in str(sheet_name):
             parts = [s.strip() for s in str(sheet_name).split(",") if s.strip()]
-            title_text = f"TỔNG HỢP CÔNG VIỆC PHÒNG CNTT - CUỐI TUẦN (NGÀY {parts[0]} - {parts[-1]})"
+            if len(parts) <= 3:
+                title_text = f"TỔNG HỢP CÔNG VIỆC PHÒNG CNTT - GỘP DỮ LIỆU (NGÀY {', '.join(parts)})"
+            else:
+                title_text = f"TỔNG HỢP CÔNG VIỆC PHÒNG CNTT - GỘP DỮ LIỆU ({parts[0]} - {parts[-1]})"
         else:
             title_text = f"TỔNG HỢP CÔNG VIỆC PHÒNG CNTT - NGÀY {sheet_name}"
     else:
@@ -2689,6 +2692,57 @@ HTML_PAGE = """<!DOCTYPE html>
       display: none; animation: rotation 1s linear infinite;
     }
     @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* TÁC VỤ 8: MULTI-SHEET SELECTOR */
+    .t8-sheet-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #334155;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+    .t8-sheet-pill:hover {
+      border-color: #93c5fd;
+      background: #f0f7ff;
+    }
+    .t8-sheet-pill.checked {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      color: #1d4ed8;
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(59, 130, 246, 0.15);
+    }
+    .t8-sheet-pill input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+    .t8-quick-btn {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 5px 9px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .t8-quick-btn:hover {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      color: #1d4ed8;
+    }
 
     /* TÁC VỤ 10: THỐNG KÊ LỖI XML BHYT */
     .tracker-card {
@@ -4598,7 +4652,7 @@ HTML_PAGE = """<!DOCTYPE html>
               <div class="nav-icon">⚡</div>
               <div class="nav-text">
                 <span class="nav-title">BC P.CNTT</span>
-                <span class="nav-desc">Tự động tải Google Sheets & Gộp cuối tuần</span>
+                <span class="nav-desc">Tự động tải Google Sheets & Gộp nhiều sheet</span>
               </div>
             </li>
             <li data-task="10" onclick="switchTask(10)" class="tree-child-item">
@@ -5115,16 +5169,17 @@ HTML_PAGE = """<!DOCTYPE html>
             </div>
             <div class="guide-box">
               <h3>🎯 Mục đích:</h3>
-              <p>Tự động lấy dữ liệu từ Google Sheets <b>cố định của Phòng CNTT Bệnh viện</b>, tự động nhận diện cột <b>"Sửa lỗi xuất toán tự động"</b> và tự động phát hiện các ngày cuối tuần <b>Thứ 6, Thứ 7, Chủ Nhật</b> để gộp vào 1 báo cáo duy nhất chuẩn A4 ngang.</p>
+              <p>Tự động lấy dữ liệu từ Google Sheets <b>cố định của Phòng CNTT Bệnh viện</b>, tự động nhận diện cột <b>"Sửa lỗi xuất toán tự động"</b> và cho phép <b>tùy ý chọn nhiều sheet ngày (gộp 2, 3 ngày cuối tuần hoặc nhiều ngày)</b> để tổng hợp thành 1 báo cáo duy nhất chuẩn A4 ngang.</p>
               <h3>💡 Tiện ích đặc biệt:</h3>
-              <p>• <b>Tự động phát hiện cuối tuần:</b> Khi chọn sheet Thứ 6, Thứ 7 hoặc Chủ Nhật, hệ thống tự động nhận diện cụm 3 ngày cuối tuần và gộp trọn vẹn số liệu vào 1 báo cáo.<br>
+              <p>• <b>Chọn nhiều sheet linh hoạt:</b> Bạn có thể tích chọn bất kỳ bao nhiêu sheet ngày tùy ý (ví dụ: Thứ 6, Thứ 7, Chủ Nhật), hệ thống sẽ gộp toàn bộ dữ liệu vào 1 file Excel.<br>
+              • <b>Thao tác siêu nhanh:</b> Có sẵn các nút chọn nhanh 3 ngày mới nhất, 2 ngày mới nhất, chọn tất cả hoặc lọc tìm kiếm theo tên sheet.<br>
               • <b>Bổ sung cột "Sửa lỗi xuất toán tự động":</b> Đọc chính xác dữ liệu từ cột phần mềm tương ứng và cộng tổng chuẩn xác vào dòng TỔNG CỘNG.<br>
               • <b>Liệt kê lỗi khoa học:</b> Khoa phòng có &gt;2 lỗi sẽ được trình bày liệt kê ngăn cách dấu phẩy, không vỡ khung in.</p>
               <h3>📝 Các bước thực hiện:</h3>
               <ol>
                 <li><b>Bước 1:</b> Nhấn nút <b>"⚡ Nạp Danh Sách Sheet Ngày"</b> để quét toàn bộ ngày từ Google Sheets.</li>
-                <li><b>Bước 2:</b> Chọn sheet ngày đơn lẻ hoặc chọn cụm <b>"🗓️ GỘP CUỐI TUẦN"</b> (Thứ 6 + Thứ 7 + Chủ Nhật).</li>
-                <li><b>Bước 3:</b> Nhấn <b>"🚀 Tổng Hợp Theo Sheet Đã Chọn"</b> hoặc nhấn <b>"✨ Gộp Báo Cáo Cuối Tuần (T6+T7+CN)"</b> để tải file Excel về.</li>
+                <li><b>Bước 2:</b> Tích chọn các sheet ngày cần gộp báo cáo (hoặc bấm <b>"⚡ Chọn 3 ngày mới nhất"</b>).</li>
+                <li><b>Bước 3:</b> Nhấn <b>"🚀 Xuất Báo Cáo Tổng Hợp (Gộp Các Sheet Đã Chọn)"</b> để tải file Excel về.</li>
               </ol>
             </div>
           </div>
@@ -5132,7 +5187,7 @@ HTML_PAGE = """<!DOCTYPE html>
           <div class="card">
             <div class="card-header">
               <span class="icon">⚡</span>
-              <h2>Thao Tác Thực Thi & Chọn Dữ Liệu</h2>
+              <h2>Thao Tác Thực Thi & Chọn Nhiều Sheet Dữ Liệu</h2>
             </div>
             <form onsubmit="handleTask8(event)">
               <div class="form-group">
@@ -5144,30 +5199,43 @@ HTML_PAGE = """<!DOCTYPE html>
               </div>
 
               <div class="form-group">
-                <label class="form-label">2️⃣ Chọn Sheet ngày hoặc Cụm ngày cuối tuần cần xử lý:</label>
-                <select id="select-t8-sheet" class="form-input" onchange="onTask8SheetChanged()">
-                  <option value="">-- Vui lòng nhấn 'Nạp Danh Sách Sheet Ngày' trước --</option>
-                </select>
-                <div id="t8-weekend-badge" style="display:none; margin-top:8px; padding:8px 12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; font-size:13px; color:#1e40af;">
-                  💡 <b>Phát hiện ngày cuối tuần:</b> <span id="t8-weekend-desc"></span>
+                <label class="form-label">2️⃣ Chọn các Sheet ngày cần xuất báo cáo (Cho phép chọn nhiều):</label>
+                
+                <!-- Thanh nút chọn nhanh -->
+                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
+                  <button type="button" class="t8-quick-btn" onclick="selectT8RecentDays(3)" title="Chọn 3 ngày mới nhất trên cùng">⚡ Chọn 3 ngày mới nhất</button>
+                  <button type="button" class="t8-quick-btn" onclick="selectT8RecentDays(2)" title="Chọn 2 ngày mới nhất trên cùng">⚡ Chọn 2 ngày mới nhất</button>
+                  <button type="button" class="t8-quick-btn" onclick="selectT8RecentDays(1)" title="Chỉ chọn 1 ngày trên cùng">📅 Chọn 1 ngày</button>
+                  <button type="button" class="t8-quick-btn" onclick="selectAllT8Sheets(true)" title="Chọn tất cả các sheet">☑️ Chọn tất cả</button>
+                  <button type="button" class="t8-quick-btn" onclick="selectAllT8Sheets(false)" style="background:#f1f5f9; color:#64748b;" title="Bỏ chọn tất cả">🔄 Bỏ chọn hết</button>
+                </div>
+
+                <!-- Ô tìm kiếm / lọc nhanh sheet -->
+                <div style="position:relative; margin-bottom:8px;">
+                  <input type="text" id="t8-sheet-search" class="form-input" placeholder="🔍 Lọc nhanh sheet ngày (ví dụ: 21, 22, 23)..." oninput="filterT8SheetList(this.value)" style="padding-left:32px; font-size:0.85rem; height:36px;">
+                  <span style="position:absolute; left:10px; top:9px; opacity:0.6; pointer-events:none; font-size:0.85rem;">🔍</span>
+                </div>
+
+                <!-- Container danh sách checkbox pills -->
+                <div id="t8-sheet-list-container" style="max-height:220px; overflow-y:auto; border:1px solid #cbd5e1; border-radius:8px; padding:10px; background:#f8fafc; display:grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap:7px;">
+                  <div style="grid-column: 1 / -1; text-align:center; padding:16px; color:#64748b; font-size:13px;">
+                    ⏳ Vui lòng nhấn nút <b>"⚡ Nạp Danh Sách Sheet Ngày"</b> ở trên để tải danh sách các ngày.
+                  </div>
+                </div>
+
+                <!-- Ẩn select cũ để tương thích nếu cần -->
+                <select id="select-t8-sheet" style="display:none;"></select>
+
+                <!-- Badge tóm tắt các sheet đã chọn -->
+                <div id="t8-selected-summary" style="margin-top:10px; padding:9px 12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; font-size:13px; color:#1e40af;">
+                  ℹ️ Chưa có sheet nào được chọn. Hãy nạp danh sách và tích chọn các sheet cần xuất.
                 </div>
               </div>
 
-              <div class="form-group" style="margin-top:12px; margin-bottom:16px;">
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: #1e293b;">
-                  <input type="checkbox" id="chk-t8-auto-weekend" checked style="width: 17px; height: 17px; accent-color: #2563eb;">
-                  <span>Tự động gộp 3 ngày cuối tuần (Thứ 6 + Thứ 7 + Chủ Nhật) khi chọn ngày cuối tuần</span>
-                </label>
-              </div>
-
-              <div style="display: flex; gap: 10px; margin-top: 14px;">
-                <button type="submit" class="btn" id="btn-t8" style="flex: 1;">
+              <div style="margin-top: 16px;">
+                <button type="submit" class="btn" id="btn-t8" style="width: 100%; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); font-weight:700; padding: 13px 18px; font-size: 0.95rem;">
                   <span class="spinner" id="spin-t8"></span>
-                  <span id="txt-t8">🚀 Tổng Hợp Theo Sheet Đã Chọn</span>
-                </button>
-                <button type="button" class="btn" id="btn-t8-weekend" onclick="handleTask8Weekend(event)" style="flex: 1; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                  <span class="spinner" id="spin-t8-weekend"></span>
-                  <span id="txt-t8-weekend">✨ Gộp Báo Cáo Cuối Tuần (T6+T7+CN)</span>
+                  <span id="txt-t8">🚀 Xuất Báo Cáo Tổng Hợp (Gộp Các Sheet Đã Chọn - A4 Ngang)</span>
                 </button>
               </div>
               <div class="alert" id="alert-t8"></div>
@@ -6434,7 +6502,7 @@ function handleRequest(e) {
       3: { badge: 'MẪU 02 (WORD)', title: '📝 CKS (Mẫu CV02 chỉ đọc file Word)  ─  Đọc toàn bộ file Word xuất Mẫu 02' },
       5: { badge: 'CHECK LOG MDINSIGHT', title: '🏥 Check Log MDINSIGHT  ─  Lọc người dùng & xuất Excel A4 ngang' },
       7: { badge: 'VGCA (WORD)', title: '📄 VGCA (Từ File Word)  ─  Đọc nhiều file Word không cần SSO' },
-      8: { badge: 'BC P.CNTT', title: '⚡ BC P.CNTT ─ Báo Cáo Công Tác CNTT (Hỗ Trợ Gộp Cuối Tuần T6-T7-CN)' },
+      8: { badge: 'BC P.CNTT', title: '⚡ BC P.CNTT ─ Báo Cáo Công Tác CNTT (Hỗ Trợ Gộp Nhiều Sheet Ngày)' },
       14: { badge: 'BC CV HÀNG NGÀY', title: '📋 BC CV hàng ngày P.CNTT  ─  Thống Kê Thứ Hạng Lỗi Chủ Quan & Khoa Phòng' },
 
       9: { badge: 'EMAIL CÔNG VỤ', title: '📧 Cấp Email Công Vụ  ─  Tổng hợp danh sách xin cấp Email' },
@@ -6665,6 +6733,8 @@ function handleRequest(e) {
       try {
         if (taskId === 14 && typeof initTask14 === 'function') {
           initTask14();
+        } else if (taskId === 8 && typeof initTask8 === 'function') {
+          initTask8();
         } else if (taskId === 5 && typeof initFixedMDInsightUI === 'function') {
           initFixedMDInsightUI();
         } else if (taskId === 10 && typeof initErrorTracker === 'function') {
@@ -6852,7 +6922,12 @@ function handleRequest(e) {
 
     async function loadSheetsIntoSelect(formData, selectId, alertId) {
       const sel = document.getElementById(selectId);
-      sel.innerHTML = '<option value="">⏳ Đang nạp danh sách các sheet ngày...</option>';
+      if (selectId === 'select-t8-sheet') {
+        const c = document.getElementById('t8-sheet-list-container');
+        if (c) c.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:16px; color:#2563eb; font-size:13px;">⏳ Đang quét danh sách các sheet ngày từ Google Sheets...</div>';
+      } else if (sel) {
+        sel.innerHTML = '<option value="">⏳ Đang nạp danh sách các sheet ngày...</option>';
+      }
       hideAlert(alertId);
       try {
         const res = await fetch('/api/get-sheets?action=get-sheets', {
@@ -6869,89 +6944,13 @@ function handleRequest(e) {
           throw new Error(data.error || ('Lỗi tải sheet: ' + res.status));
         }
 
-        sel.innerHTML = '';
+        if (sel) sel.innerHTML = '';
         if (!data.sheets || data.sheets.length === 0) {
           throw new Error('Không tìm thấy sheet nào trong tài liệu này!');
         }
 
         if (selectId === 'select-t8-sheet') {
-          window._t8SheetsList = data.sheets;
-          // Helper phân tích thứ trong tuần cho sheet ngày (theo năm 2025: 21.11=Thứ 6, 22.11=Thứ 7, 23.11=Chủ Nhật)
-          function getWdInfo(sName) {
-            const m = String(sName).trim().match(/^0?(\\d{1,2})[\\./]0?(\\d{1,2})$/);
-            if (!m) return null;
-            const d = parseInt(m[1]), mo = parseInt(m[2]);
-            const dt = new Date(2025, mo - 1, d);
-            const wd = dt.getDay(); // 0=Chủ Nhật, 1=Thứ 2 .. 5=Thứ 6, 6=Thứ 7
-            const labels = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-            return { d, mo, wd, label: labels[wd], dateObj: dt };
-          }
-
-          // Tự động tìm các cụm cuối tuần (Thứ 6 + Thứ 7 + Chủ Nhật)
-          const weekendClusters = [];
-          const seenClusters = new Set();
-          data.sheets.forEach(s => {
-            const info = getWdInfo(s);
-            if (info && (info.wd === 5 || info.wd === 6 || info.wd === 0)) { // 5=T6, 6=T7, 0=CN
-              const diffToFri = (info.wd === 0) ? -2 : (info.wd === 6 ? -1 : 0);
-              const friDt = new Date(info.dateObj);
-              friDt.setDate(friDt.getDate() + diffToFri);
-              const satDt = new Date(friDt); satDt.setDate(satDt.getDate() + 1);
-              const sunDt = new Date(friDt); sunDt.setDate(sunDt.getDate() + 2);
-
-              const clusterKey = `${friDt.getDate()}.${friDt.getMonth()+1}`;
-              if (!seenClusters.has(clusterKey)) {
-                seenClusters.add(clusterKey);
-                const cSheets = [];
-                [friDt, satDt, sunDt].forEach(tDt => {
-                  const matchSheet = data.sheets.find(x => {
-                    const xInfo = getWdInfo(x);
-                    return xInfo && xInfo.d === tDt.getDate() && xInfo.mo === (tDt.getMonth() + 1);
-                  });
-                  if (matchSheet && !cSheets.includes(matchSheet)) cSheets.push(matchSheet);
-                });
-                if (cSheets.length >= 2) {
-                  weekendClusters.push({
-                    sheets: cSheets,
-                    label: `🗓️ [GỘP CUỐI TUẦN] Thứ 6 - Thứ 7 - Chủ Nhật (${cSheets.join(' + ')})`,
-                    val: cSheets.join(',')
-                  });
-                }
-              }
-            }
-          });
-
-          if (weekendClusters.length > 0) {
-            const grpWk = document.createElement('optgroup');
-            grpWk.label = '✨ CỤM NGÀY CUỐI TUẦN (GỘP T6 + T7 + CN)';
-            weekendClusters.forEach((cl, cIdx) => {
-              const opt = document.createElement('option');
-              opt.value = cl.val;
-              opt.textContent = cl.label;
-              if (cIdx === 0) opt.selected = true; // Mặc định chọn cụm cuối tuần mới nhất
-              grpWk.appendChild(opt);
-            });
-            sel.appendChild(grpWk);
-          }
-
-          const grpSingle = document.createElement('optgroup');
-          grpSingle.label = '📅 DANH SÁCH SHEET NGÀY CHI TIẾT';
-          data.sheets.forEach((s, idx) => {
-            const opt = document.createElement('option');
-            opt.value = s;
-            const wInfo = getWdInfo(s);
-            if (wInfo) {
-              opt.textContent = `📅 Sheet: ${s} (${wInfo.label})`;
-            } else {
-              opt.textContent = `📅 Sheet: ${s}`;
-            }
-            if (weekendClusters.length === 0 && idx === data.sheets.length - 1) {
-              opt.selected = true;
-            }
-            grpSingle.appendChild(opt);
-          });
-          sel.appendChild(grpSingle);
-          onTask8SheetChanged();
+          populateT8SheetList(data.sheets);
         } else {
           data.sheets.forEach((s, idx) => {
             const opt = document.createElement('option');
@@ -6960,12 +6959,17 @@ function handleRequest(e) {
             if (idx === data.sheets.length - 1) {
               opt.selected = true;
             }
-            sel.appendChild(opt);
+            if (sel) sel.appendChild(opt);
           });
         }
-        showAlert(alertId, 'success', `✅ Đã nạp thành công ${data.sheets.length} sheet ngày! Hãy chọn sheet cần xuất báo cáo.`);
+        showAlert(alertId, 'success', `✅ Đã nạp thành công ${data.sheets.length} sheet ngày!`);
       } catch (err) {
-        sel.innerHTML = '<option value="">❌ Không đọc được sheet. Vui lòng kiểm tra lại!</option>';
+        if (selectId === 'select-t8-sheet') {
+          const c = document.getElementById('t8-sheet-list-container');
+          if (c) c.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:16px; color:#ef4444; font-size:13px;">❌ Không tải được danh sách sheet. Vui lòng thử lại!</div>';
+        } else if (sel) {
+          sel.innerHTML = '<option value="">❌ Không đọc được sheet. Vui lòng kiểm tra lại!</option>';
+        }
         showAlert(alertId, 'error', 'Lỗi: ' + err.message);
       }
     }
@@ -7886,54 +7890,129 @@ function handleRequest(e) {
       }
     }
 
-    // XỬ LÝ TÁC VỤ 8: BC P.CNTT
-    function onTask8SheetChanged() {
-      const sel = document.getElementById('select-t8-sheet');
-      const val = sel ? sel.value : '';
-      const badge = document.getElementById('t8-weekend-badge');
-      const desc = document.getElementById('t8-weekend-desc');
-      if (!badge || !desc || !val) {
-        if (badge) badge.style.display = 'none';
+    // ============================================================
+    // XỬ LÝ TÁC VỤ 8: BC P.CNTT (CHỌN NHIỀU SHEET GỘP BÁO CÁO)
+    // ============================================================
+    function initTask8() {
+      if (!window._t8SheetsList || window._t8SheetsList.length === 0) {
+        fetchGSheetsForTask(8);
+      }
+    }
+
+    function populateT8SheetList(sheets) {
+      window._t8SheetsList = sheets;
+      const container = document.getElementById('t8-sheet-list-container');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!sheets || sheets.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:16px; color:#ef4444; font-size:13px;">❌ Không tìm thấy sheet nào trong tài liệu!</div>';
+        updateT8SelectedSummary();
         return;
       }
-      if (val.includes(',')) {
-        badge.style.display = 'block';
-        desc.textContent = `Đang chọn cụm gộp cuối tuần: ${val}. Hệ thống sẽ tự động gộp tất cả số liệu vào 1 báo cáo duy nhất.`;
-        return;
+      sheets.forEach((s, idx) => {
+        const isChecked = (idx < 3); // Mặc định chọn 3 sheet ngày mới nhất trên cùng
+        const label = document.createElement('label');
+        label.className = 't8-sheet-pill' + (isChecked ? ' checked' : '');
+        label.setAttribute('data-sheet', s);
+        label.innerHTML = `
+          <input type="checkbox" value="${s}" ${isChecked ? 'checked' : ''} onchange="onT8SheetCheckboxChange(this)">
+          <span>📅 Sheet: ${s}</span>
+        `;
+        container.appendChild(label);
+      });
+      updateT8SelectedSummary();
+    }
+
+    function onT8SheetCheckboxChange(input) {
+      const pill = input.closest('.t8-sheet-pill');
+      if (pill) {
+        pill.classList.toggle('checked', input.checked);
       }
-      const m = val.trim().match(/^0?(\\d{1,2})[\\./]0?(\\d{1,2})$/);
-      if (m) {
-        const d = parseInt(m[1]), mo = parseInt(m[2]);
-        const dt = new Date(2025, mo - 1, d);
-        const wd = dt.getDay(); // 0=Chủ Nhật, 5=Thứ 6, 6=Thứ 7
-        if (wd === 5 || wd === 6 || wd === 0) {
-          const labels = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-          badge.style.display = 'block';
-          desc.textContent = `Sheet "${val}" là ${labels[wd]}. Khi bật tuỳ chọn tự động gộp, hệ thống sẽ tự động phát hiện và gộp cả Thứ 6 + Thứ 7 + Chủ Nhật vào 1 file Excel!`;
-          return;
+      updateT8SelectedSummary();
+    }
+
+    function getSelectedT8Sheets() {
+      const cbs = document.querySelectorAll('#t8-sheet-list-container input[type="checkbox"]:checked');
+      return Array.from(cbs).map(cb => cb.value.trim()).filter(Boolean);
+    }
+
+    function updateT8SelectedSummary() {
+      const summary = document.getElementById('t8-selected-summary');
+      if (!summary) return;
+      const selected = getSelectedT8Sheets();
+      if (selected.length === 0) {
+        summary.innerHTML = '⚠️ <b>Chưa chọn sheet nào!</b> Vui lòng tick chọn ít nhất 1 sheet bên trên để xuất báo cáo.';
+        summary.style.background = '#fef2f2';
+        summary.style.borderColor = '#fecaca';
+        summary.style.color = '#b91c1c';
+      } else if (selected.length === 1) {
+        summary.innerHTML = `📊 <b>Đã chọn 1 sheet:</b> [ <b style="color:#1d4ed8;">${selected[0]}</b> ] ─ Xuất báo cáo cho riêng ngày ${selected[0]}`;
+        summary.style.background = '#eff6ff';
+        summary.style.borderColor = '#bfdbfe';
+        summary.style.color = '#1e40af';
+      } else {
+        const preview = selected.length <= 4 ? selected.join(', ') : (selected.slice(0, 3).join(', ') + '... (tổng ' + selected.length + ' sheet)');
+        summary.innerHTML = `📊 <b>Đã chọn ${selected.length} sheet:</b> [ <b style="color:#047857;">${preview}</b> ] ─ Hệ thống sẽ <b>tự động gộp toàn bộ dữ liệu</b> vào 1 báo cáo duy nhất!`;
+        summary.style.background = '#ecfdf5';
+        summary.style.borderColor = '#a7f3d0';
+        summary.style.color = '#065f46';
+      }
+    }
+
+    function selectT8RecentDays(n) {
+      const pills = document.querySelectorAll('#t8-sheet-list-container .t8-sheet-pill');
+      pills.forEach((pill, idx) => {
+        const cb = pill.querySelector('input[type="checkbox"]');
+        if (cb) {
+          cb.checked = (idx < n);
+          pill.classList.toggle('checked', cb.checked);
         }
-      }
-      badge.style.display = 'none';
+      });
+      updateT8SelectedSummary();
+    }
+
+    function selectAllT8Sheets(checked) {
+      const pills = document.querySelectorAll('#t8-sheet-list-container .t8-sheet-pill');
+      pills.forEach(pill => {
+        const cb = pill.querySelector('input[type="checkbox"]');
+        if (cb) {
+          cb.checked = checked;
+          pill.classList.toggle('checked', checked);
+        }
+      });
+      updateT8SelectedSummary();
+    }
+
+    function filterT8SheetList(query) {
+      const q = (query || '').toLowerCase().trim();
+      const pills = document.querySelectorAll('#t8-sheet-list-container .t8-sheet-pill');
+      pills.forEach(pill => {
+        const s = pill.getAttribute('data-sheet') || pill.textContent;
+        if (!q || s.toLowerCase().includes(q)) {
+          pill.style.display = 'flex';
+        } else {
+          pill.style.display = 'none';
+        }
+      });
     }
 
     async function handleTask8(e) {
       if (e) e.preventDefault();
       hideAlert('alert-t8');
-      const sheet = document.getElementById('select-t8-sheet').value;
-      if (!sheet) {
-        showAlert('alert-t8', 'error', '⚠️ Vui lòng nhấn "Nạp Danh Sách Sheet Ngày" và chọn sheet cần xử lý!');
+      const sheets = getSelectedT8Sheets();
+      if (!sheets || sheets.length === 0) {
+        showAlert('alert-t8', 'error', '⚠️ Vui lòng tick chọn ít nhất 1 sheet ngày cần xuất báo cáo!');
         return;
       }
 
-      const autoWeekend = document.getElementById('chk-t8-auto-weekend') ? document.getElementById('chk-t8-auto-weekend').checked : false;
-      const isWeekendVal = (autoWeekend || sheet.includes(',')) ? '1' : '0';
-
+      const sheetParam = sheets.join(',');
       let defFileName = 'BC_PCNTT.xlsx';
-      if (sheet.includes(',')) {
-        const parts = sheet.split(',');
-        defFileName = `TỔNG HỢP CÔNG VIỆC P.CNTT (CUỐI TUẦN ${parts[0]} - ${parts[parts.length-1]}).xlsx`;
+      if (sheets.length === 1) {
+        defFileName = `TỔNG HỢP CÔNG VIỆC P.CNTT - NGÀY ${sheets[0]}.xlsx`;
+      } else if (sheets.length <= 3) {
+        defFileName = `TỔNG HỢP CÔNG VIỆC P.CNTT (GỘP NGÀY ${sheets.join('-')}).xlsx`;
       } else {
-        defFileName = `TỔNG HỢP CÔNG VIỆC P.CNTT - NGÀY ${sheet}.xlsx`;
+        defFileName = `TỔNG HỢP CÔNG VIỆC P.CNTT (GỘP ${sheets.length} NGÀY ${sheets[0]} - ${sheets[sheets.length-1]}).xlsx`;
       }
 
       const picker = await promptSaveFile(defFileName);
@@ -7941,8 +8020,8 @@ function handleRequest(e) {
 
       const formData = new FormData();
       formData.append('url', document.getElementById('url-t8').value);
-      formData.append('sheet_name', sheet);
-      formData.append('is_weekend', isWeekendVal);
+      formData.append('sheet_name', sheetParam);
+      formData.append('is_weekend', sheets.length > 1 ? '1' : '0');
 
       setLoading('t8', true);
       try {
@@ -7956,68 +8035,12 @@ function handleRequest(e) {
         if (picker.handle) {
           showAlert('alert-t8', 'success', `✅ Đã lưu file "${savedName}" thành công tại vị trí bạn đã chọn!`);
         } else {
-          showAlert('alert-t8', 'success', `✅ Đã xuất báo cáo BC P.CNTT thành công!`);
+          showAlert('alert-t8', 'success', `✅ Đã xuất báo cáo BC P.CNTT thành công (${sheets.length} sheet)!`);
         }
       } catch (err) {
         showAlert('alert-t8', 'error', '❌ Lỗi: ' + err.message);
       } finally {
-        setLoading('t8', false, '🚀 Tổng Hợp Theo Sheet Đã Chọn');
-      }
-    }
-
-    async function handleTask8Weekend(e) {
-      if (e) e.preventDefault();
-      hideAlert('alert-t8');
-      const sel = document.getElementById('select-t8-sheet');
-      let sheet = sel ? sel.value : '';
-
-      // Tự tìm option gộp cuối tuần nếu đang chọn ngày đơn
-      if (!sheet || !sheet.includes(',')) {
-        if (sel) {
-          for (let opt of sel.options) {
-            if (opt.value && opt.value.includes(',')) {
-              sheet = opt.value;
-              sel.value = sheet;
-              onTask8SheetChanged();
-              break;
-            }
-          }
-        }
-      }
-      if (!sheet) {
-        showAlert('alert-t8', 'error', '⚠️ Vui lòng nhấn "Nạp Danh Sách Sheet Ngày" trước khi gộp cuối tuần!');
-        return;
-      }
-
-      const parts = sheet.split(',');
-      const defFileName = `TỔNG HỢP CÔNG VIỆC P.CNTT (CUỐI TUẦN ${parts[0]} - ${parts[parts.length-1]}).xlsx`;
-
-      const picker = await promptSaveFile(defFileName);
-      if (picker.canceled) return;
-
-      const formData = new FormData();
-      formData.append('url', document.getElementById('url-t8').value);
-      formData.append('sheet_name', sheet);
-      formData.append('is_weekend', '1');
-
-      setLoading('t8-weekend', true);
-      try {
-        const res = await fetch('/api/task-8?action=task-8', { method: 'POST', body: formData });
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({ error: 'Lỗi máy chủ.' }));
-          throw new Error(errData.error || 'Xử lý thất bại.');
-        }
-        const blob = await res.blob();
-        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, defFileName);
-        if (picker.handle) {
-          showAlert('alert-t8', 'success', `✅ Đã lưu file gộp cuối tuần "${savedName}" thành công!`);
-        } else {
-          showAlert('alert-t8', 'success', `✅ Đã gộp thành công dữ liệu Thứ 6 + Thứ 7 + Chủ Nhật vào 1 báo cáo duy nhất!`);
-        }
-      } catch (err) {
-        showAlert('alert-t8', 'error', '❌ Lỗi: ' + err.message);
-      } finally {
-        setLoading('t8-weekend', false, '✨ Gộp Báo Cáo Cuối Tuần (T6+T7+CN)');
+        setLoading('t8', false, '🚀 Xuất Báo Cáo Tổng Hợp (Gộp Các Sheet Đã Chọn - A4 Ngang)');
       }
     }
 
@@ -11444,7 +11467,10 @@ def handle_task_8():
             except Exception:
                 stream = download_google_sheet(url.strip())
             out_io = process_cntt_web(stream, sheet_list)
-            download_name = f"TỔNG HỢP CÔNG VIỆC P.CNTT (CUỐI TUẦN {sheet_list[0]} - {sheet_list[-1]}).xlsx"
+            if len(sheet_list) <= 3:
+                download_name = f"TỔNG HỢP CÔNG VIỆC P.CNTT (GỘP NGÀY {'-'.join(sheet_list)}).xlsx"
+            else:
+                download_name = f"TỔNG HỢP CÔNG VIỆC P.CNTT (GỘP {len(sheet_list)} NGÀY {sheet_list[0]} - {sheet_list[-1]}).xlsx"
         else:
             try:
                 stream = download_google_sheet_single_tab(url.strip(), sheet_list[0])
