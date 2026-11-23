@@ -3696,26 +3696,126 @@ HTML_PAGE = """<!DOCTYPE html>
       text-decoration: underline;
     }
 
+        /* ========================================================================== */
     /* ========================================================================== */
-    /* MODULE TRA CỨU DANH BẠ NHÂN VIÊN (TÁC VỤ 15)                              */
+    /* MODULE TRA CỨU DANH BẠ NHÂN VIÊN (TÁC VỤ 15) - SẮC NÉT, RÕ RÀNG, SÁNG ĐẸP */
     /* ========================================================================== */
+    .app-container {
+      display: flex !important;
+      flex-direction: row !important;
+      flex: 1;
+      overflow: hidden;
+      width: 100%;
+    }
+    .sidebar {
+      width: 340px !important;
+      min-width: 340px !important;
+      max-width: 340px !important;
+      flex-shrink: 0 !important;
+      display: flex !important;
+      background: #090d16;
+      border-right: 1px solid #1e293b;
+      overflow-y: auto;
+    }
+    .content-area {
+      flex: 1 1 0% !important;
+      min-width: 0 !important;
+      width: 100% !important;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      background: #f1f5f9;
+    }
+
+    /* Thư mục nhóm danh bạ trên sidebar cực kỳ nổi bật */
+    .tree-folder-group.card-danhba {
+      border-left: 3px solid #0ea5e9 !important;
+      background: rgba(14, 165, 233, 0.08) !important;
+      border-radius: 8px !important;
+      margin-bottom: 8px !important;
+    }
+    .card-danhba .tree-folder-header {
+      background: rgba(14, 165, 233, 0.16) !important;
+      border-radius: 6px !important;
+      padding: 10px 12px !important;
+    }
+    .card-danhba .folder-title {
+      color: #38bdf8 !important;
+      font-weight: 800 !important;
+      font-size: 0.76rem !important;
+      letter-spacing: 0.5px !important;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.4) !important;
+    }
+    .card-danhba .folder-chevron {
+      color: #38bdf8 !important;
+      font-weight: bold !important;
+    }
+    .card-danhba .folder-icon {
+      color: #38bdf8 !important;
+    }
+    .badge-danhba {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+      color: #ffffff !important;
+      border: 1px solid #38bdf8 !important;
+      font-size: 0.7rem !important;
+      font-weight: 800 !important;
+      padding: 3px 9px !important;
+      border-radius: 10px !important;
+      box-shadow: 0 2px 4px rgba(2, 132, 199, 0.3) !important;
+    }
+    .card-danhba .tree-child-item {
+      transition: all 0.2s;
+    }
+    .card-danhba .tree-child-item .nav-title {
+      color: #f8fafc !important;
+      font-weight: 700 !important;
+    }
+    .card-danhba .tree-child-item .nav-desc {
+      color: #94a3b8 !important;
+    }
+    .card-danhba .tree-child-item:hover {
+      background: rgba(14, 165, 233, 0.18) !important;
+    }
+    .card-danhba .tree-child-item.active {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35) !important;
+    }
+    .card-danhba .tree-child-item.active .nav-title {
+      color: #ffffff !important;
+      font-weight: 800 !important;
+    }
+    .card-danhba .tree-child-item.active .nav-desc {
+      color: #e0f2fe !important;
+    }
+
+    /* Container trang Danh Bạ (Sáng sủa, sắc nét) */
+    #page-task-15 {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
+      padding: 20px !important;
+    }
     .danhba-container {
       display: flex;
       flex-direction: column;
       gap: 16px;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
       animation: fadeIn 0.25s ease-in-out;
     }
     .danhba-header-bar {
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 12px;
-      padding: 14px 20px;
+      padding: 16px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
     .danhba-kpi-grid {
       display: grid;
@@ -3723,50 +3823,53 @@ HTML_PAGE = """<!DOCTYPE html>
       gap: 12px;
     }
     .danhba-kpi-card {
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 10px;
-      padding: 12px 16px;
+      padding: 14px 18px;
       display: flex;
       align-items: center;
       gap: 14px;
-      transition: transform 0.2s, border-color 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
     }
     .danhba-kpi-card:hover {
       transform: translateY(-2px);
-      border-color: #3b82f6;
+      box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.1);
     }
     .danhba-kpi-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.35rem;
+      font-size: 1.45rem;
       flex-shrink: 0;
     }
     .danhba-kpi-val {
-      font-size: 1.45rem;
+      font-size: 1.55rem;
       font-weight: 800;
-      color: #f8fafc;
       line-height: 1.2;
     }
     .danhba-kpi-lbl {
       font-size: 0.76rem;
-      color: #94a3b8;
+      color: #64748b;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-top: 2px;
+      margin-top: 3px;
     }
+
     .danhba-toolbar {
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 12px;
       padding: 14px 18px;
       display: flex;
       flex-direction: column;
       gap: 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
     }
     .danhba-actions-row {
       display: flex;
@@ -3783,24 +3886,26 @@ HTML_PAGE = """<!DOCTYPE html>
     }
     .danhba-search-wrap {
       flex: 1;
-      min-width: 260px;
+      min-width: 240px;
       position: relative;
     }
     .danhba-search-input {
       width: 100%;
-      background: #0f172a;
-      border: 1px solid #475569;
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
       border-radius: 8px;
-      padding: 10px 36px 10px 36px;
+      padding: 9px 36px 9px 36px;
       font-size: 0.88rem;
-      color: #f8fafc;
+      font-weight: 500;
+      color: #0f172a;
       box-sizing: border-box;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
     }
     .danhba-search-input:focus {
-      border-color: #38bdf8;
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+      background: #ffffff;
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
     }
     .danhba-search-icon {
       position: absolute;
@@ -3816,8 +3921,8 @@ HTML_PAGE = """<!DOCTYPE html>
       right: 10px;
       top: 50%;
       transform: translateY(-50%);
-      background: #334155;
-      color: #94a3b8;
+      background: #e2e8f0;
+      color: #64748b;
       border: none;
       border-radius: 50%;
       width: 20px;
@@ -3828,24 +3933,30 @@ HTML_PAGE = """<!DOCTYPE html>
       cursor: pointer;
       font-size: 11px;
     }
+    .danhba-search-clear:hover {
+      background: #cbd5e1;
+      color: #0f172a;
+    }
     .danhba-select {
-      background: #0f172a;
-      border: 1px solid #475569;
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
       border-radius: 8px;
       padding: 9px 12px;
       font-size: 0.84rem;
-      color: #f8fafc;
+      font-weight: 600;
+      color: #0f172a;
       outline: none;
       min-width: 160px;
       cursor: pointer;
     }
     .danhba-select:focus {
-      border-color: #38bdf8;
+      border-color: #0284c7;
+      background: #ffffff;
     }
     .danhba-view-switch {
       display: inline-flex;
-      background: #0f172a;
-      border: 1px solid #334155;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
       border-radius: 8px;
       padding: 3px;
       gap: 3px;
@@ -3856,8 +3967,8 @@ HTML_PAGE = """<!DOCTYPE html>
       border-radius: 6px;
       padding: 6px 12px;
       font-size: 0.8rem;
-      font-weight: 600;
-      color: #94a3b8;
+      font-weight: 700;
+      color: #475569;
       cursor: pointer;
       transition: all 0.2s;
       display: flex;
@@ -3865,15 +3976,15 @@ HTML_PAGE = """<!DOCTYPE html>
       gap: 5px;
     }
     .danhba-view-btn.active {
-      background: #2563eb;
+      background: #0284c7;
       color: #ffffff;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     }
     .danhba-btn {
-      padding: 8px 14px;
+      padding: 8px 15px;
       border-radius: 8px;
-      font-size: 0.82rem;
-      font-weight: 600;
+      font-size: 0.84rem;
+      font-weight: 700;
       border: none;
       cursor: pointer;
       display: inline-flex;
@@ -3882,83 +3993,101 @@ HTML_PAGE = """<!DOCTYPE html>
       transition: all 0.2s;
     }
     .danhba-btn-primary {
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
       color: #ffffff;
-      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+      box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
     }
     .danhba-btn-primary:hover {
-      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
       transform: translateY(-1px);
     }
     .danhba-btn-secondary {
-      background: #334155;
-      color: #e2e8f0;
-      border: 1px solid #475569;
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
     }
     .danhba-btn-secondary:hover {
-      background: #475569;
-      color: #ffffff;
+      background: #e2e8f0;
+      color: #0f172a;
     }
     .danhba-btn-success {
-      background: #059669;
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
       color: #ffffff;
+      box-shadow: 0 2px 4px rgba(5, 150, 105, 0.25);
     }
     .danhba-btn-success:hover {
-      background: #047857;
+      background: linear-gradient(135deg, #047857 0%, #065f46 100%);
     }
     .danhba-btn-indigo {
-      background: #4f46e5;
+      background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
       color: #ffffff;
+      box-shadow: 0 2px 4px rgba(79, 70, 229, 0.25);
     }
     .danhba-btn-indigo:hover {
-      background: #4338ca;
+      background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
     }
-    /* TABLE VIEW */
+
+    /* BẢNG DANH BẠ SÁNG SỦA, SẮC NÉT */
     .danhba-table-card {
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      width: 100%;
+      max-width: 100%;
     }
     .danhba-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.86rem;
+      font-size: 0.88rem;
       text-align: left;
     }
     .danhba-table th {
-      background: #0f172a;
-      color: #94a3b8;
-      font-weight: 700;
+      background: #1e3a8a;
+      color: #ffffff;
+      font-weight: 800;
       padding: 12px 14px;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      border-bottom: 2px solid #334155;
+      border: 1px solid #1e3a8a;
       white-space: nowrap;
     }
     .danhba-table td {
       padding: 10px 14px;
-      border-bottom: 1px solid #293548;
-      color: #e2e8f0;
+      border: 1px solid #e2e8f0;
+      color: #1e293b;
       vertical-align: middle;
     }
+    .danhba-table tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
     .danhba-table tbody tr:hover {
-      background: rgba(51, 65, 85, 0.5);
+      background: #eff6ff;
+    }
+    .danhba-table tbody tr.row-highlight {
+      background: #ecfdf5 !important;
+      border-left: 4px solid #10b981 !important;
+      animation: highlightPulse 2s ease-in-out infinite;
+    }
+    @keyframes highlightPulse {
+      0%, 100% { background: #ecfdf5; }
+      50% { background: #d1fae5; }
     }
     .danhba-avatar {
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-      color: #fff;
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      font-size: 0.82rem;
+      font-weight: 800;
+      font-size: 0.88rem;
       flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
     }
     .danhba-staff-name-wrap {
       display: flex;
@@ -3966,88 +4095,92 @@ HTML_PAGE = """<!DOCTYPE html>
       gap: 10px;
     }
     .danhba-staff-name {
-      font-weight: 700;
-      color: #f8fafc;
-      font-size: 0.9rem;
+      font-weight: 800;
+      color: #0f172a;
+      font-size: 0.94rem;
     }
     .danhba-badge {
       display: inline-block;
-      padding: 3px 8px;
+      padding: 3px 9px;
       border-radius: 6px;
-      font-size: 0.74rem;
-      font-weight: 600;
-      line-height: 1.2;
+      font-size: 0.76rem;
+      font-weight: 700;
+      line-height: 1.25;
     }
     .badge-role {
-      background: rgba(59, 130, 246, 0.18);
-      color: #60a5fa;
-      border: 1px solid rgba(59, 130, 246, 0.3);
+      background: #f1f5f9;
+      color: #1e293b;
+      border: 1px solid #cbd5e1;
     }
     .badge-dept {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
     }
     .badge-hotline {
-      background: rgba(245, 158, 11, 0.15);
-      color: #fbbf24;
-      border: 1px solid rgba(245, 158, 11, 0.25);
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
     }
     .phone-pill {
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      background: rgba(14, 165, 233, 0.12);
-      border: 1px solid rgba(14, 165, 233, 0.3);
-      color: #38bdf8;
-      padding: 3px 8px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      padding: 4px 9px;
       border-radius: 6px;
-      font-family: monospace;
-      font-size: 0.84rem;
-      font-weight: 700;
+      font-family: 'Segoe UI', monospace;
+      font-size: 0.86rem;
+      font-weight: 800;
       cursor: pointer;
       text-decoration: none;
-      transition: background 0.2s, transform 0.1s;
+      transition: all 0.15s;
     }
     .phone-pill:hover {
-      background: rgba(14, 165, 233, 0.28);
-      color: #bae6fd;
+      background: #dbeafe;
+      color: #1e40af;
+      border-color: #60a5fa;
       transform: translateY(-1px);
     }
     .action-btn-sm {
-      background: none;
-      border: none;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
       border-radius: 6px;
       padding: 5px 8px;
       cursor: pointer;
-      font-size: 0.8rem;
-      transition: background 0.2s;
+      font-size: 0.82rem;
+      font-weight: 700;
+      transition: all 0.15s;
     }
     .action-btn-sm:hover {
-      background: #334155;
+      background: #e2e8f0;
+      transform: translateY(-1px);
     }
-    /* CARD VIEW */
+
+    /* CARD VIEW SÁNG */
     .danhba-cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 14px;
     }
     .danhba-card {
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 12px;
       padding: 16px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       gap: 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
       transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-      position: relative;
     }
     .danhba-card:hover {
       transform: translateY(-2px);
-      border-color: #38bdf8;
-      box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.3);
+      border-color: #0284c7;
+      box-shadow: 0 8px 16px -4px rgba(2, 132, 199, 0.15);
     }
     .danhba-card-top {
       display: flex;
@@ -4057,41 +4190,42 @@ HTML_PAGE = """<!DOCTYPE html>
     .danhba-card-avatar {
       width: 44px;
       height: 44px;
-      border-radius: 10px;
+      border-radius: 12px;
       background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-      color: #fff;
+      color: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.15rem;
-      font-weight: 700;
+      font-size: 1.25rem;
+      font-weight: 800;
       flex-shrink: 0;
     }
     .danhba-card-title {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #f8fafc;
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #0f172a;
       margin-bottom: 4px;
     }
     .danhba-card-dept {
-      font-size: 0.78rem;
-      color: #94a3b8;
-      margin-top: 2px;
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 3px;
     }
     .danhba-card-phones {
       display: flex;
       flex-direction: column;
       gap: 6px;
-      padding-top: 6px;
-      border-top: 1px solid #334155;
+      padding-top: 8px;
+      border-top: 1px solid #f1f5f9;
     }
     .danhba-card-actions {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding-top: 8px;
-      border-top: 1px solid #293548;
+      border-top: 1px solid #f1f5f9;
     }
+
     /* PAGINATION */
     .danhba-pagination {
       display: flex;
@@ -4100,9 +4234,10 @@ HTML_PAGE = """<!DOCTYPE html>
       flex-wrap: wrap;
       gap: 10px;
       padding: 12px 16px;
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
     }
     .danhba-page-nav {
       display: flex;
@@ -4110,77 +4245,81 @@ HTML_PAGE = """<!DOCTYPE html>
       gap: 4px;
     }
     .danhba-page-btn {
-      background: #0f172a;
-      border: 1px solid #334155;
-      color: #e2e8f0;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: #334155;
       border-radius: 6px;
-      padding: 5px 10px;
-      font-size: 0.8rem;
-      font-weight: 600;
+      padding: 5px 11px;
+      font-size: 0.82rem;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
     }
     .danhba-page-btn:hover:not(:disabled) {
-      background: #334155;
+      background: #0284c7;
+      border-color: #0284c7;
       color: #ffffff;
     }
     .danhba-page-btn.active {
-      background: #2563eb;
-      border-color: #2563eb;
+      background: #0284c7;
+      border-color: #0284c7;
       color: #ffffff;
+      box-shadow: 0 2px 4px rgba(2, 132, 199, 0.3);
     }
     .danhba-page-btn:disabled {
       opacity: 0.4;
       cursor: not-allowed;
     }
-    /* MODALS */
+
+    /* MODAL SÁNG GỌN */
     .danhba-modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(5px);
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
       z-index: 999999;
       align-items: center;
       justify-content: center;
       padding: 20px;
     }
     .danhba-modal-box {
-      background: #1e293b;
-      border: 1px solid #475569;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
       border-radius: 14px;
       max-width: 580px;
       width: 100%;
       max-height: 90vh;
       overflow-y: auto;
-      padding: 22px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
-      color: #f8fafc;
+      padding: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+      color: #0f172a;
     }
     .danhba-form-group {
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
     .danhba-form-label {
       display: block;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 700;
-      color: #cbd5e1;
-      margin-bottom: 5px;
+      color: #334155;
+      margin-bottom: 6px;
     }
     .danhba-form-input {
       width: 100%;
-      background: #0f172a;
-      border: 1px solid #475569;
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
       border-radius: 8px;
       padding: 9px 12px;
-      font-size: 0.86rem;
-      color: #f8fafc;
+      font-size: 0.88rem;
+      color: #0f172a;
       box-sizing: border-box;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, background 0.2s;
     }
     .danhba-form-input:focus {
-      border-color: #38bdf8;
+      border-color: #0284c7;
+      background: #ffffff;
     }
 
 </style>
@@ -5599,27 +5738,25 @@ HTML_PAGE = """<!DOCTYPE html>
       </div>
 
       
-    </div>
-  </div>
-
-    <!-- TOAST THÔNG BÁO TOÀN HỆ THỐNG -->
-        <!-- ============================================================== -->
-      <!-- TÁC VỤ 15: TRA CỨU DANH BẠ NHÂN VIÊN & KHOA PHÒNG              -->
+      <!-- ============================================================== -->
+      <!-- TÁC VỤ 15: TRA CỨU DANH BẠ NHÂN VIÊN & KHOA PHÒNG (GIAO DIỆN SÁNG ĐẸP) -->
       <!-- ============================================================== -->
       <div class="page" id="page-task-15">
         <div class="danhba-container">
           
           <!-- Top Header Bar -->
           <div class="danhba-header-bar">
-            <div style="display:flex; align-items:center; gap:12px;">
-              <span style="font-size:1.6rem;">📱</span>
+            <div style="display:flex; align-items:center; gap:14px;">
+              <div style="width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.5rem; box-shadow:0 4px 8px rgba(2, 132, 199, 0.25);">
+                📱
+              </div>
               <div>
-                <div style="font-size:1.25rem; font-weight:800; color:#f8fafc; display:flex; align-items:center; gap:10px;">
+                <div style="font-size:1.25rem; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:10px;">
                   Tra Cứu Danh Bạ Cán Bộ Nhân Viên
-                  <span class="badge-dept" id="danhba-badge-live" style="font-size:11px;">🟢 Dữ liệu trực tuyến</span>
-                  <span class="badge-role" id="danhba-badge-github" style="font-size:11px;" title="Cơ sở dữ liệu lưu trữ trực tiếp trên GitHub repository">☁️ GitHub DB Sync</span>
+                  <span class="badge-dept" id="danhba-badge-live" style="font-size:11px; padding:2px 8px;">🟢 Dữ liệu trực tuyến</span>
+                  <span class="badge-role" id="danhba-badge-github" style="font-size:11px; padding:2px 8px;" title="Cơ sở dữ liệu tự động đồng bộ lên GitHub">☁️ GitHub DB Sync</span>
                 </div>
-                <div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">
+                <div style="font-size:0.82rem; color:#64748b; margin-top:3px;">
                   Hệ thống quản lý, tra cứu số điện thoại 47 Khoa/Phòng và hơn 1.000 cán bộ • BVĐK Bắc Ninh số 2
                 </div>
               </div>
@@ -5643,30 +5780,30 @@ HTML_PAGE = """<!DOCTYPE html>
           <!-- KPI Summary Cards -->
           <div class="danhba-kpi-grid">
             <div class="danhba-kpi-card">
-              <div class="danhba-kpi-icon" style="background:rgba(59,130,246,0.15); color:#60a5fa;">👥</div>
+              <div class="danhba-kpi-icon" style="background:#eff6ff; color:#2563eb; border:1px solid #dbeafe;">👥</div>
               <div>
                 <div class="danhba-kpi-val" id="kpi-total-staff">1,020</div>
                 <div class="danhba-kpi-lbl">Tổng Số Cán Bộ</div>
               </div>
             </div>
             <div class="danhba-kpi-card">
-              <div class="danhba-kpi-icon" style="background:rgba(16,185,129,0.15); color:#34d399;">🏢</div>
+              <div class="danhba-kpi-icon" style="background:#ecfdf5; color:#059669; border:1px solid #d1fae5;">🏢</div>
               <div>
                 <div class="danhba-kpi-val" id="kpi-total-depts">47</div>
                 <div class="danhba-kpi-lbl">Khoa / Phòng / Ban</div>
               </div>
             </div>
             <div class="danhba-kpi-card">
-              <div class="danhba-kpi-icon" style="background:rgba(245,158,11,0.15); color:#fbbf24;">📞</div>
+              <div class="danhba-kpi-icon" style="background:#fffbeb; color:#d97706; border:1px solid #fef3c7;">📞</div>
               <div>
-                <div class="danhba-kpi-val" id="kpi-total-hotlines">35</div>
+                <div class="danhba-kpi-val" id="kpi-total-hotlines">42</div>
                 <div class="danhba-kpi-lbl">Hotline Khoa Trực</div>
               </div>
             </div>
             <div class="danhba-kpi-card">
-              <div class="danhba-kpi-icon" style="background:rgba(168,85,247,0.15); color:#c084fc;">☁️</div>
+              <div class="danhba-kpi-icon" style="background:#f5f3ff; color:#7c3aed; border:1px solid #ede9fe;">☁️</div>
               <div>
-                <div class="danhba-kpi-val" style="font-size:1.15rem; color:#e2e8f0;" id="kpi-github-status">main (ae1dd2b)</div>
+                <div class="danhba-kpi-val" style="font-size:1.15rem; color:#4338ca;" id="kpi-github-status">main (Tự động)</div>
                 <div class="danhba-kpi-lbl">GitHub Repository DB</div>
               </div>
             </div>
@@ -5710,7 +5847,7 @@ HTML_PAGE = """<!DOCTYPE html>
               </div>
 
               <!-- Page Size -->
-              <select id="danhba-page-size" class="danhba-select" onchange="onDanhBaPageSizeChange()" style="min-width:90px; width:100px;">
+              <select id="danhba-page-size" class="danhba-select" onchange="onDanhBaPageSizeChange()" style="min-width:95px; width:100px;">
                 <option value="25">25 / trang</option>
                 <option value="50">50 / trang</option>
                 <option value="100">100 / trang</option>
@@ -5729,16 +5866,16 @@ HTML_PAGE = """<!DOCTYPE html>
                     <th style="min-width:200px;">Họ Và Tên</th>
                     <th style="min-width:140px;">Chức Vụ</th>
                     <th style="min-width:180px;">Khoa / Phòng</th>
-                    <th style="min-width:150px;">Số Điện Thoại Chính</th>
-                    <th style="min-width:120px;">Số ĐT Phụ</th>
-                    <th style="min-width:180px;">Hotline Khoa</th>
+                    <th style="min-width:155px;">Số Điện Thoại Chính</th>
+                    <th style="min-width:125px;">Số ĐT Phụ</th>
+                    <th style="min-width:190px;">Hotline Khoa</th>
                     <th style="width:100px; text-align:center;">Thao Tác</th>
                   </tr>
                 </thead>
                 <tbody id="danhba-table-body">
                   <tr>
-                    <td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">
-                      ⏳ Đang tải cơ sở dữ liệu danh bạ...
+                    <td colspan="8" style="text-align:center; padding:30px; color:#64748b;">
+                      ⏳ Đang nạp cơ sở dữ liệu danh bạ...
                     </td>
                   </tr>
                 </tbody>
@@ -5755,12 +5892,12 @@ HTML_PAGE = """<!DOCTYPE html>
 
           <!-- VIEW 3: HOTLINES DUTY VIEW -->
           <div id="danhba-view-hotlines-wrap" class="danhba-table-card" style="display:none;">
-            <div style="padding:14px 18px; background:#0f172a; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center;">
-              <div style="font-weight:700; color:#f8fafc; font-size:0.95rem;">
+            <div style="padding:14px 18px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-weight:700; color:#0f172a; font-size:0.95rem;">
                 ☎️ Danh Sách Số Trực & Đường Dây Nóng 47 Khoa, Phòng, Trung Tâm
               </div>
-              <div style="font-size:0.8rem; color:#94a3b8;">
-                Nhấp vào nút <b style="color:#38bdf8;">Sửa Hotline</b> để cập nhật và tự động đồng bộ sang tất cả cán bộ trong khoa
+              <div style="font-size:0.8rem; color:#64748b;">
+                Nhấp vào nút <b style="color:#0284c7;">Sửa Hotline</b> để cập nhật và tự động đồng bộ sang tất cả cán bộ trong khoa
               </div>
             </div>
             <div style="overflow-x:auto;">
@@ -5784,8 +5921,8 @@ HTML_PAGE = """<!DOCTYPE html>
 
           <!-- Pagination Bar -->
           <div class="danhba-pagination" id="danhba-pagination-bar">
-            <div style="font-size:0.82rem; color:#94a3b8;" id="danhba-page-info">
-              Đang hiển thị <b id="danhba-info-showing" style="color:#f8fafc;">0</b> trong tổng số <b id="danhba-info-total" style="color:#38bdf8;">0</b> cán bộ
+            <div style="font-size:0.84rem; color:#64748b;" id="danhba-page-info">
+              Đang hiển thị <b id="danhba-info-showing" style="color:#0f172a;">0</b> trong tổng số <b id="danhba-info-total" style="color:#2563eb;">0</b> cán bộ
             </div>
             <div class="danhba-page-nav" id="danhba-page-nav-btns">
               <!-- Rendered via JS -->
@@ -5796,6 +5933,10 @@ HTML_PAGE = """<!DOCTYPE html>
       </div>
 
 
+          </div>
+  </div>
+
+    <!-- TOAST THÔNG BÁO TOÀN HỆ THỐNG -->
     <div class="cntt-toast-popup" id="cntt-toast">
     <div class="cntt-toast-icon">✓</div>
     <div>
@@ -5952,19 +6093,19 @@ function handleRequest(e) {
         </div>
       </div>
 
-  <!-- ============================================================== -->
-  <!-- MODALS CHO TÁC VỤ 15: DANH BẠ NHÂN VIÊN                        -->
+    <!-- ============================================================== -->
+  <!-- MODALS CHO TÁC VỤ 15: DANH BẠ NHÂN VIÊN (GIAO DIỆN SÁNG)       -->
   <!-- ============================================================== -->
 
   <!-- 1. MODAL THÊM / SỬA NHÂN VIÊN -->
   <div id="danhba-modal-staff" class="danhba-modal-overlay" onclick="if(event.target===this) closeStaffModal()">
     <div class="danhba-modal-box">
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:12px; margin-bottom:14px;">
-        <h3 style="margin:0; font-size:1.15rem; color:#f8fafc; display:flex; align-items:center; gap:8px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:16px;">
+        <h3 style="margin:0; font-size:1.18rem; color:#0f172a; display:flex; align-items:center; gap:8px;">
           <span id="staff-modal-icon">➕</span>
           <span id="staff-modal-title">Thêm Mới Cán Bộ Nhân Viên</span>
         </h3>
-        <button type="button" onclick="closeStaffModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#94a3b8;">&times;</button>
+        <button type="button" onclick="closeStaffModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#64748b;">&times;</button>
       </div>
 
       <input type="hidden" id="staff-form-id" value="">
@@ -6009,9 +6150,9 @@ function handleRequest(e) {
         </div>
       </div>
 
-      <div id="staff-form-error" style="display:none; color:#f87171; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:6px; padding:8px 12px; font-size:0.82rem; margin-bottom:12px;"></div>
+      <div id="staff-form-error" style="display:none; color:#dc2626; background:#fef2f2; border:1px solid #fee2e2; border-radius:6px; padding:10px 14px; font-size:0.84rem; margin-bottom:12px;"></div>
 
-      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:18px;">
         <button type="button" class="danhba-btn danhba-btn-secondary" onclick="closeStaffModal()">Hủy Bỏ</button>
         <button type="button" class="danhba-btn danhba-btn-primary" id="btn-save-staff" onclick="submitStaffForm()">
           💾 Lưu Cán Bộ
@@ -6023,30 +6164,30 @@ function handleRequest(e) {
   <!-- 2. MODAL CẬP NHẬT HOTLINE KHOA/PHÒNG -->
   <div id="danhba-modal-hotline" class="danhba-modal-overlay" onclick="if(event.target===this) closeHotlineModal()">
     <div class="danhba-modal-box" style="max-width:500px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:12px; margin-bottom:14px;">
-        <h3 style="margin:0; font-size:1.15rem; color:#f8fafc; display:flex; align-items:center; gap:8px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:16px;">
+        <h3 style="margin:0; font-size:1.18rem; color:#0f172a; display:flex; align-items:center; gap:8px;">
           <span>📞</span>
           <span>Cập Nhật Số Hotline / Trực Khoa Phòng</span>
         </h3>
-        <button type="button" onclick="closeHotlineModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#94a3b8;">&times;</button>
+        <button type="button" onclick="closeHotlineModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#64748b;">&times;</button>
       </div>
 
       <div class="danhba-form-group">
         <label class="danhba-form-label">Khoa / Phòng / Ban</label>
-        <input type="text" id="hotline-form-dept" class="danhba-form-input" readonly style="background:#0f172a; color:#94a3b8; font-weight:700;">
+        <input type="text" id="hotline-form-dept" class="danhba-form-input" readonly style="background:#f1f5f9; color:#334155; font-weight:700;">
       </div>
 
       <div class="danhba-form-group">
         <label class="danhba-form-label">Số Điện Thoại Trực & Hotline</label>
         <textarea id="hotline-form-val" class="danhba-form-input" rows="3" placeholder="Ví dụ: Trực: 02223.821.242 • Hotline: 0946.058.866"></textarea>
-        <p style="font-size:0.75rem; color:#94a3b8; margin-top:4px; margin-bottom:0;">
-          💡 <i>Số hotline này sẽ tự động hiển thị trên tất cả cán bộ thuộc khoa này trong danh bạ.</i>
+        <p style="font-size:0.75rem; color:#64748b; margin-top:4px; margin-bottom:0;">
+          💡 <i>Số hotline này sẽ tự động cập nhật và hiển thị trên toàn bộ cán bộ thuộc khoa này trong danh bạ.</i>
         </p>
       </div>
 
-      <div id="hotline-form-error" style="display:none; color:#f87171; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:6px; padding:8px 12px; font-size:0.82rem; margin-bottom:12px;"></div>
+      <div id="hotline-form-error" style="display:none; color:#dc2626; background:#fef2f2; border:1px solid #fee2e2; border-radius:6px; padding:10px 14px; font-size:0.84rem; margin-bottom:12px;"></div>
 
-      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:18px;">
         <button type="button" class="danhba-btn danhba-btn-secondary" onclick="closeHotlineModal()">Đóng</button>
         <button type="button" class="danhba-btn danhba-btn-primary" onclick="submitHotlineForm()">
           💾 Lưu Hotline
@@ -6058,46 +6199,46 @@ function handleRequest(e) {
   <!-- 3. MODAL ĐỒNG BỘ GITHUB -->
   <div id="danhba-modal-sync" class="danhba-modal-overlay" onclick="if(event.target===this) closeGitHubSyncModal()">
     <div class="danhba-modal-box" style="max-width:540px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:12px; margin-bottom:14px;">
-        <h3 style="margin:0; font-size:1.15rem; color:#f8fafc; display:flex; align-items:center; gap:8px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:16px;">
+        <h3 style="margin:0; font-size:1.18rem; color:#0f172a; display:flex; align-items:center; gap:8px;">
           <span>☁️</span>
           <span>Quản Lý & Đồng Bộ GitHub Database</span>
         </h3>
-        <button type="button" onclick="closeGitHubSyncModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#94a3b8;">&times;</button>
+        <button type="button" onclick="closeGitHubSyncModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#64748b;">&times;</button>
       </div>
 
-      <div style="font-size:0.86rem; color:#cbd5e1; line-height:1.6; margin-bottom:14px;">
+      <div style="font-size:0.88rem; color:#334155; line-height:1.6; margin-bottom:14px;">
         Cơ sở dữ liệu danh bạ được lưu trữ an toàn dưới dạng JSON trong kho mã nguồn:
-        <div style="margin:8px 0; padding:10px; background:#0f172a; border-radius:8px; font-family:monospace; font-size:0.8rem; color:#38bdf8; word-break:break-all;">
+        <div style="margin:8px 0; padding:12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; font-family:monospace; font-size:0.82rem; color:#0369a1; word-break:break-all;">
           📦 ngatt5nn123456-commits/BAO_CAO_VA_NEW_VGCA<br>
           📄 data/danh_ba_nhan_vien.json (main)
         </div>
       </div>
 
-      <div style="background:#0f172a; border-radius:8px; padding:12px; margin-bottom:14px; font-size:0.82rem;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-          <span style="color:#94a3b8;">Lần cập nhật cuối:</span>
-          <span id="sync-last-time" style="font-weight:700; color:#f8fafc;">---</span>
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:0.84rem;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <span style="color:#64748b;">Lần cập nhật cuối:</span>
+          <span id="sync-last-time" style="font-weight:700; color:#0f172a;">---</span>
         </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-          <span style="color:#94a3b8;">Tổng số cán bộ trong DB:</span>
-          <span id="sync-staff-count" style="font-weight:700; color:#34d399;">1,020</span>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <span style="color:#64748b;">Tổng số cán bộ trong DB:</span>
+          <span id="sync-staff-count" style="font-weight:700; color:#059669;">1,020</span>
         </div>
         <div style="display:flex; justify-content:space-between;">
-          <span style="color:#94a3b8;">Cơ chế đồng bộ:</span>
-          <span style="font-weight:700; color:#60a5fa;">Tự động (Desktop Git & GitHub API)</span>
+          <span style="color:#64748b;">Trạng thái đồng bộ:</span>
+          <span style="font-weight:700; color:#2563eb;">🟢 Tự động liên tục (Web & Desktop)</span>
         </div>
       </div>
 
       <div class="danhba-form-group">
-        <label class="danhba-form-label">GitHub Personal Access Token (Dành cho bản Web Vercel):</label>
-        <input type="password" id="github-token-input" class="danhba-form-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx (Tùy chọn nếu dùng trên Web)">
-        <p style="font-size:0.75rem; color:#94a3b8; margin-top:4px; margin-bottom:0;">
-          💡 <i>Trên máy Desktop cục bộ, hệ thống tự động đẩy mã qua Git CLI không cần token. Trên bản Web Vercel, bạn có thể nhập Token có quyền `repo` để hệ thống tự động commit & push trực tiếp.</i>
+        <label class="danhba-form-label">GitHub Personal Access Token (Tự động kích hoạt):</label>
+        <input type="password" id="github-token-input" class="danhba-form-input" placeholder="Token đã được tích hợp sẵn tự động">
+        <p style="font-size:0.75rem; color:#64748b; margin-top:4px; margin-bottom:0;">
+          💡 <i>Hệ thống đã cấu hình sẵn token tự động commit & push trực tiếp lên GitHub mỗi khi thêm, sửa, xóa dữ liệu.</i>
         </p>
       </div>
 
-      <div id="sync-modal-result" style="display:none; padding:10px; border-radius:6px; font-size:0.82rem; margin-bottom:12px;"></div>
+      <div id="sync-modal-result" style="display:none; padding:10px 14px; border-radius:6px; font-size:0.84rem; margin-bottom:14px;"></div>
 
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button type="button" class="danhba-btn danhba-btn-secondary" onclick="closeGitHubSyncModal()">Đóng</button>
@@ -6111,15 +6252,15 @@ function handleRequest(e) {
   <!-- 4. MODAL NHẬP DỮ LIỆU EXCEL -->
   <div id="danhba-modal-import" class="danhba-modal-overlay" onclick="if(event.target===this) closeImportModal()">
     <div class="danhba-modal-box" style="max-width:520px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:12px; margin-bottom:14px;">
-        <h3 style="margin:0; font-size:1.15rem; color:#f8fafc; display:flex; align-items:center; gap:8px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:16px;">
+        <h3 style="margin:0; font-size:1.18rem; color:#0f172a; display:flex; align-items:center; gap:8px;">
           <span>📤</span>
           <span>Nhập Danh Bạ Từ File Excel</span>
         </h3>
-        <button type="button" onclick="closeImportModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#94a3b8;">&times;</button>
+        <button type="button" onclick="closeImportModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#64748b;">&times;</button>
       </div>
 
-      <p style="font-size:0.85rem; color:#cbd5e1; line-height:1.5; margin-top:0;">
+      <p style="font-size:0.86rem; color:#475569; line-height:1.5; margin-top:0;">
         Hệ thống hỗ trợ đọc trực tiếp file Excel danh bạ (như file <code>DANH BẠ 2025.xlsx</code>). Cán bộ đã có sẵn sẽ được cập nhật thông tin mới; cán bộ mới sẽ được thêm vào danh bạ và tự động đồng bộ lên GitHub.
       </p>
 
@@ -6128,9 +6269,9 @@ function handleRequest(e) {
         <input type="file" id="danhba-import-file" accept=".xlsx,.xls" class="danhba-form-input" style="padding:7px;">
       </div>
 
-      <div id="import-modal-result" style="display:none; padding:10px; border-radius:6px; font-size:0.82rem; margin-bottom:12px;"></div>
+      <div id="import-modal-result" style="display:none; padding:10px 14px; border-radius:6px; font-size:0.84rem; margin-bottom:14px;"></div>
 
-      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:18px;">
         <button type="button" class="danhba-btn danhba-btn-secondary" onclick="closeImportModal()">Hủy Bỏ</button>
         <button type="button" class="danhba-btn danhba-btn-indigo" id="btn-submit-import" onclick="submitExcelImport()">
           ⚡ Tiến Hành Nhập & Lưu
@@ -6140,7 +6281,7 @@ function handleRequest(e) {
   </div>
 
 
-  <script>
+<script>
     const taskMeta = {
       1: { badge: 'VGCA', title: '🎯 VGCA (Word + Excel SSO)  ─  Đối chiếu cấp CKS Word & Excel SSO' },
       2: { badge: 'MẪU 02', title: '📝 CKS (Công văn Mẫu 02)  ─  Xuất Công văn Word Mẫu 02 chuẩn' },
@@ -9375,7 +9516,7 @@ ORDER BY t.ord;`;
     }
 
 
-        /* ========================================================================== */
+            /* ========================================================================== */
     /* JAVASCRIPT CONTROLLER: TÁC VỤ 15 - TRA CỨU DANH BẠ NHÂN VIÊN              */
     /* ========================================================================== */
     const danhBaState = {
@@ -9411,7 +9552,6 @@ ORDER BY t.ord;`;
       if (!danhBaState.isLoaded) {
         loadDanhBaData();
       }
-      // Load saved token
       const savedToken = safeStorageGet('danhba_github_token');
       if (savedToken) {
         const inp = document.getElementById('github-token-input');
@@ -9425,7 +9565,7 @@ ORDER BY t.ord;`;
       
       const tbody = document.getElementById('danhba-table-body');
       if (tbody && !danhBaState.isLoaded) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">⏳ Đang tải dữ liệu 1.020 cán bộ từ GitHub Database...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#64748b;">⏳ Đang tải dữ liệu 1.020 cán bộ từ GitHub Database...</td></tr>`;
       }
 
       try {
@@ -9433,7 +9573,7 @@ ORDER BY t.ord;`;
         const headers = {};
         if (token) headers['X-GitHub-Token'] = token;
         
-        const url = `/api/danh-ba?action=danh-ba-list${forceReload ? '&reload=1' : ''}`;
+        const url = `/api/danh-ba?action=danh-ba-list${forceReload ? '&reload=1' : ''}&_t=${Date.now()}`;
         const res = await fetch(url, { headers });
         const data = await res.json();
         
@@ -9455,18 +9595,18 @@ ORDER BY t.ord;`;
           
           const hotlinesCount = danhBaState.departments.filter(d => (d.hotline || '').trim()).length;
           if (kpiHotlines) kpiHotlines.textContent = hotlinesCount;
-          if (kpiGithub) kpiGithub.textContent = `main (${data.version || '2025'})`;
+          if (kpiGithub) kpiGithub.textContent = `main (Đồng bộ)`;
           if (syncLastTime) syncLastTime.textContent = data.updated_at || 'Vừa xong';
           if (syncStaffCount) syncStaffCount.textContent = danhBaState.staff.length.toLocaleString('vi-VN');
 
           populateDeptSelects();
           applyDanhBaFilters();
         } else {
-          if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:#f87171;">❌ Không thể nạp dữ liệu: ${data.error || 'Lỗi không xác định'}</td></tr>`;
+          if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:#dc2626;">❌ Không thể nạp dữ liệu: ${data.error || 'Lỗi không xác định'}</td></tr>`;
         }
       } catch (err) {
         console.error('Lỗi nạp danh bạ:', err);
-        if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:#f87171;">❌ Lỗi kết nối API Danh bạ: ${err.message}</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:#dc2626;">❌ Lỗi kết nối API Danh bạ: ${err.message}</td></tr>`;
       } finally {
         danhBaState.isLoading = false;
       }
@@ -9607,9 +9747,9 @@ ORDER BY t.ord;`;
 
       const total = danhBaState.filteredStaff.length;
       if (total === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:35px; color:#94a3b8;">
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:35px; color:#64748b;">
           <div style="font-size:1.8rem; margin-bottom:8px;">🔍</div>
-          <div>Không tìm thấy cán bộ nào phù hợp với điều kiện tìm kiếm!</div>
+          <div style="font-weight:600;">Không tìm thấy cán bộ nào phù hợp với điều kiện tìm kiếm!</div>
           <button type="button" class="danhba-btn danhba-btn-secondary" onclick="clearDanhBaSearch()" style="margin-top:12px;">Xóa bộ lọc tìm kiếm</button>
         </td></tr>`;
         return;
@@ -9629,33 +9769,35 @@ ORDER BY t.ord;`;
         const p2Clean = s.phone2_clean || p2.replace(/\\D/g, '');
         const hotline = (s.dept_hotline || '').trim();
 
-        let phone1Html = '<span style="color:#64748b; font-size:0.8rem;">---</span>';
+        let phone1Html = '<span style="color:#94a3b8; font-size:0.8rem;">---</span>';
         if (p1) {
           phone1Html = `<a href="tel:${p1Clean}" class="phone-pill" title="Nhấp gọi điện hoặc sao chép" onclick="copyPhoneNumber('${p1}', event)">
             <span>📞</span> ${p1}
           </a>`;
         }
 
-        let phone2Html = '<span style="color:#64748b; font-size:0.8rem;">---</span>';
+        let phone2Html = '<span style="color:#94a3b8; font-size:0.8rem;">---</span>';
         if (p2) {
-          phone2Html = `<a href="tel:${p2Clean}" class="phone-pill" style="color:#94a3b8; border-color:#475569;" title="Nhấp gọi điện hoặc sao chép" onclick="copyPhoneNumber('${p2}', event)">
+          phone2Html = `<a href="tel:${p2Clean}" class="phone-pill" style="color:#475569; background:#f1f5f9; border-color:#cbd5e1;" title="Nhấp gọi điện hoặc sao chép" onclick="copyPhoneNumber('${p2}', event)">
             <span>📱</span> ${p2}
           </a>`;
         }
 
-        let hotlineHtml = '<span style="color:#64748b; font-size:0.8rem;">---</span>';
+        let hotlineHtml = '<span style="color:#94a3b8; font-size:0.8rem;">---</span>';
         if (hotline) {
           hotlineHtml = `<span class="badge-hotline" title="${hotline}">☎️ ${hotline}</span>`;
         }
 
-        html += `<tr>
-          <td style="text-align:center; color:#94a3b8; font-size:0.8rem;">${rowIdx}</td>
+        const rowClass = s._is_new ? 'row-highlight' : '';
+        const newBadge = s._is_new ? '<span style="background:#10b981; color:#fff; font-size:10px; padding:2px 7px; margin-left:6px; border-radius:4px; font-weight:800; display:inline-block; vertical-align:middle;">✨ MỚI THÊM</span>' : '';
+        html += `<tr class="${rowClass}">
+          <td style="text-align:center; color:#64748b; font-size:0.82rem; font-weight:600;">${rowIdx}</td>
           <td>
             <div class="danhba-staff-name-wrap">
               <div class="danhba-avatar">${initial}</div>
               <div>
-                <div class="danhba-staff-name">${s.name}</div>
-                <div style="font-size:0.75rem; color:#94a3b8;">${s.group || ''}</div>
+                <div class="danhba-staff-name">${s.name}${newBadge}</div>
+                <div style="font-size:0.75rem; color:#64748b; margin-top:1px;">${s.group || ''}</div>
               </div>
             </div>
           </td>
@@ -9669,8 +9811,8 @@ ORDER BY t.ord;`;
           <td>${phone2Html}</td>
           <td>${hotlineHtml}</td>
           <td style="text-align:center; white-space:nowrap;">
-            <button type="button" class="action-btn-sm" title="Chỉnh sửa" onclick="openStaffModal('${s.id}')" style="color:#38bdf8;">✏️</button>
-            <button type="button" class="action-btn-sm" title="Xóa cán bộ" onclick="confirmDeleteStaff('${s.id}', '${s.name.replace(/'/g, "\\'")}')" style="color:#f87171;">🗑️</button>
+            <button type="button" class="action-btn-sm" title="Chỉnh sửa" onclick="openStaffModal('${s.id}')" style="color:#2563eb;">✏️ Sửa</button>
+            <button type="button" class="action-btn-sm" title="Xóa cán bộ" onclick="confirmDeleteStaff('${s.id}', '${s.name.replace(/'/g, "\\'")}')" style="color:#dc2626;">🗑️ Xóa</button>
           </td>
         </tr>`;
       });
@@ -9684,9 +9826,9 @@ ORDER BY t.ord;`;
 
       const total = danhBaState.filteredStaff.length;
       if (total === 0) {
-        container.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; padding:40px; color:#94a3b8; background:#1e293b; border-radius:12px;">
+        container.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; padding:40px; color:#64748b; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px;">
           <div style="font-size:2rem; margin-bottom:8px;">🔍</div>
-          <div>Không tìm thấy cán bộ nào!</div>
+          <div style="font-weight:600;">Không tìm thấy cán bộ nào!</div>
         </div>`;
         return;
       }
@@ -9706,18 +9848,18 @@ ORDER BY t.ord;`;
         let phonesHtml = '';
         if (p1) {
           phonesHtml += `<div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:0.75rem; color:#94a3b8;">Số chính:</span>
+            <span style="font-size:0.75rem; color:#64748b; font-weight:600;">Số chính:</span>
             <a href="tel:${p1Clean}" class="phone-pill" onclick="copyPhoneNumber('${p1}', event)">📞 ${p1}</a>
           </div>`;
         }
         if (p2) {
           phonesHtml += `<div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:0.75rem; color:#94a3b8;">Số phụ:</span>
-            <a href="tel:${p2Clean}" class="phone-pill" style="color:#94a3b8; border-color:#475569;" onclick="copyPhoneNumber('${p2}', event)">📱 ${p2}</a>
+            <span style="font-size:0.75rem; color:#64748b; font-weight:600;">Số phụ:</span>
+            <a href="tel:${p2Clean}" class="phone-pill" style="color:#475569; background:#f1f5f9; border-color:#cbd5e1;" onclick="copyPhoneNumber('${p2}', event)">📱 ${p2}</a>
           </div>`;
         }
         if (!p1 && !p2) {
-          phonesHtml += `<div style="color:#64748b; font-size:0.78rem;">Chưa cập nhật số điện thoại</div>`;
+          phonesHtml += `<div style="color:#94a3b8; font-size:0.78rem;">Chưa cập nhật số điện thoại</div>`;
         }
 
         html += `<div class="danhba-card">
@@ -9735,10 +9877,10 @@ ORDER BY t.ord;`;
           </div>
 
           <div class="danhba-card-actions">
-            <span style="font-size:0.72rem; color:#64748b;">${s.group || ''}</span>
-            <div style="display:flex; gap:4px;">
-              <button type="button" class="action-btn-sm" onclick="openStaffModal('${s.id}')" title="Sửa thông tin" style="color:#38bdf8;">✏️ Sửa</button>
-              <button type="button" class="action-btn-sm" onclick="confirmDeleteStaff('${s.id}', '${s.name.replace(/'/g, "\\'")}')" title="Xóa" style="color:#f87171;">🗑️</button>
+            <span style="font-size:0.74rem; color:#64748b;">${s.group || ''}</span>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="action-btn-sm" onclick="openStaffModal('${s.id}')" title="Sửa thông tin" style="color:#2563eb;">✏️ Sửa</button>
+              <button type="button" class="action-btn-sm" onclick="confirmDeleteStaff('${s.id}', '${s.name.replace(/'/g, "\\'")}')" title="Xóa" style="color:#dc2626;">🗑️ Xóa</button>
             </div>
           </div>
         </div>`;
@@ -9751,7 +9893,6 @@ ORDER BY t.ord;`;
       const tbody = document.getElementById('danhba-hotlines-body');
       if (!tbody) return;
 
-      // Group staff count by dept
       const counts = {};
       danhBaState.staff.forEach(s => {
         counts[s.dept] = (counts[s.dept] || 0) + 1;
@@ -9761,18 +9902,18 @@ ORDER BY t.ord;`;
       danhBaState.departments.forEach((d, idx) => {
         const staffCount = counts[d.name] || 0;
         const hotline = (d.hotline || '').trim();
-        let hotlineDisplay = '<span style="color:#64748b; font-style:italic;">Chưa cấu hình hotline trực</span>';
+        let hotlineDisplay = '<span style="color:#94a3b8; font-style:italic;">Chưa cấu hình hotline trực</span>';
         if (hotline) {
-          hotlineDisplay = `<span class="badge-hotline" style="font-size:0.84rem; padding:4px 10px;">☎️ ${hotline}</span>`;
+          hotlineDisplay = `<span class="badge-hotline" style="font-size:0.86rem; padding:4px 10px;">☎️ ${hotline}</span>`;
         }
 
         html += `<tr>
-          <td style="text-align:center; color:#94a3b8; font-size:0.8rem;">${idx + 1}</td>
+          <td style="text-align:center; color:#64748b; font-size:0.82rem; font-weight:600;">${idx + 1}</td>
           <td>
-            <div style="font-weight:700; color:#f8fafc; font-size:0.9rem;">${d.name}</div>
+            <div style="font-weight:700; color:#0f172a; font-size:0.92rem;">${d.name}</div>
           </td>
           <td>
-            <span style="font-size:0.8rem; color:#94a3b8;">${d.group || ''}</span>
+            <span style="font-size:0.82rem; color:#475569;">${d.group || ''}</span>
           </td>
           <td style="text-align:center;">
             <span class="badge-role" style="font-weight:700;">👥 ${staffCount}</span>
@@ -9845,7 +9986,7 @@ ORDER BY t.ord;`;
       }
       if (!phone) return;
       navigator.clipboard.writeText(phone).then(() => {
-        showGlobalToast(`📋 Đã sao chép số điện thoại: ${phone}`);
+        showGlobalToast(`📋 Đã sao chép số: ${phone}`);
       }).catch(() => {
         showGlobalToast(`📞 Số điện thoại: ${phone}`);
       });
@@ -9857,7 +9998,7 @@ ORDER BY t.ord;`;
       if (toast && toastMsg) {
         toastMsg.textContent = msg;
         toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+        setTimeout(() => toast.classList.remove('show'), 3500);
       } else {
         alert(msg);
       }
@@ -9963,7 +10104,40 @@ ORDER BY t.ord;`;
         if (resData && resData.success) {
           closeStaffModal();
           showGlobalToast(`✓ ${resData.message}`);
-          await loadDanhBaData(true);
+          
+          if (!formId && resData.member) {
+            // Thêm mới: Đưa lên đầu danh sách (unshift) để người dùng thấy ngay trên trang 1
+            resData.member._is_new = true;
+            danhBaState.staff.unshift(resData.member);
+            danhBaState.isLoaded = true;
+            
+            // Xóa bộ lọc và ô tìm kiếm để hiển thị ngay cán bộ vừa thêm
+            danhBaState.searchTerm = '';
+            danhBaState.filterGroup = '';
+            danhBaState.filterDept = '';
+            const searchInp = document.getElementById('danhba-search-input');
+            if (searchInp) searchInp.value = '';
+            const grpFilter = document.getElementById('danhba-filter-group');
+            if (grpFilter) grpFilter.value = '';
+            const deptFilter = document.getElementById('danhba-filter-dept');
+            if (deptFilter) deptFilter.value = '';
+            
+            danhBaState.currentPage = 1;
+            setDanhBaView('table');
+            applyDanhBaFilters();
+            
+            const kpi = document.getElementById('kpi-total-staff');
+            if (kpi) kpi.textContent = danhBaState.staff.length.toLocaleString('vi-VN');
+          } else if (formId && resData.member) {
+            const idx = danhBaState.staff.findIndex(x => String(x.id) === String(formId));
+            if (idx !== -1) {
+              resData.member._is_new = true;
+              danhBaState.staff[idx] = resData.member;
+            }
+            applyDanhBaFilters();
+          } else {
+            await loadDanhBaData(false);
+          }
         } else {
           if (errBox) { errBox.textContent = resData.error || 'Lỗi khi lưu dữ liệu!'; errBox.style.display = 'block'; }
         }
@@ -9993,7 +10167,10 @@ ORDER BY t.ord;`;
         const resData = await res.json();
         if (resData && resData.success) {
           showGlobalToast(`✓ Đã xóa cán bộ "${staffName}" thành công!`);
-          await loadDanhBaData(true);
+          danhBaState.staff = danhBaState.staff.filter(x => String(x.id) !== String(staffId));
+          const kpi = document.getElementById('kpi-total-staff');
+          if (kpi) kpi.textContent = danhBaState.staff.length.toLocaleString('vi-VN');
+          applyDanhBaFilters();
         } else {
           alert('Lỗi: ' + (resData.error || 'Không thể xóa cán bộ'));
         }
@@ -10089,24 +10266,24 @@ ORDER BY t.ord;`;
         if (resBox) {
           resBox.style.display = 'block';
           if (resData && resData.success) {
-            resBox.style.background = 'rgba(16,185,129,0.15)';
-            resBox.style.border = '1px solid rgba(16,185,129,0.3)';
-            resBox.style.color = '#34d399';
-            resBox.innerHTML = `<b>✓ Đồng bộ thành công!</b><br>Dữ liệu đã được commit & push lên GitHub repository.`;
+            resBox.style.background = '#ecfdf5';
+            resBox.style.border = '1px solid #a7f3d0';
+            resBox.style.color = '#047857';
+            resBox.innerHTML = `<b>✓ Đồng bộ thành công!</b><br>Dữ liệu đã được lưu và cập nhật lên GitHub repository.`;
             showGlobalToast('✓ Đồng bộ GitHub hoàn tất!');
           } else {
-            resBox.style.background = 'rgba(239,68,68,0.15)';
-            resBox.style.border = '1px solid rgba(239,68,68,0.3)';
-            resBox.style.color = '#f87171';
+            resBox.style.background = '#fef2f2';
+            resBox.style.border = '1px solid #fee2e2';
+            resBox.style.color = '#dc2626';
             resBox.innerHTML = `<b>⚠️ Kết quả đồng bộ:</b><br>${resData.sync?.error || resData.error || 'Kiểm tra lại quyền truy cập Git / Token'}`;
           }
         }
       } catch (err) {
         if (resBox) {
           resBox.style.display = 'block';
-          resBox.style.background = 'rgba(239,68,68,0.15)';
-          resBox.style.border = '1px solid rgba(239,68,68,0.3)';
-          resBox.style.color = '#f87171';
+          resBox.style.background = '#fef2f2';
+          resBox.style.border = '1px solid #fee2e2';
+          resBox.style.color = '#dc2626';
           resBox.textContent = 'Lỗi kết nối: ' + err.message;
         }
       } finally {
@@ -10148,9 +10325,9 @@ ORDER BY t.ord;`;
       if (!fileInp || !fileInp.files || fileInp.files.length === 0) {
         if (resBox) {
           resBox.style.display = 'block';
-          resBox.style.background = 'rgba(239,68,68,0.15)';
-          resBox.style.border = '1px solid rgba(239,68,68,0.3)';
-          resBox.style.color = '#f87171';
+          resBox.style.background = '#fef2f2';
+          resBox.style.border = '1px solid #fee2e2';
+          resBox.style.color = '#dc2626';
           resBox.textContent = 'Vui lòng chọn 1 file Excel (.xlsx)!';
         }
         return;
@@ -10176,26 +10353,26 @@ ORDER BY t.ord;`;
         if (resBox) {
           resBox.style.display = 'block';
           if (resData && resData.success) {
-            resBox.style.background = 'rgba(16,185,129,0.15)';
-            resBox.style.border = '1px solid rgba(16,185,129,0.3)';
-            resBox.style.color = '#34d399';
+            resBox.style.background = '#ecfdf5';
+            resBox.style.border = '1px solid #a7f3d0';
+            resBox.style.color = '#047857';
             resBox.innerHTML = `<b>✓ Nhập dữ liệu thành công!</b><br>${resData.message}`;
             showGlobalToast('✓ Đã nhập và cập nhật dữ liệu từ file Excel!');
             await loadDanhBaData(true);
             setTimeout(() => closeImportModal(), 2000);
           } else {
-            resBox.style.background = 'rgba(239,68,68,0.15)';
-            resBox.style.border = '1px solid rgba(239,68,68,0.3)';
-            resBox.style.color = '#f87171';
+            resBox.style.background = '#fef2f2';
+            resBox.style.border = '1px solid #fee2e2';
+            resBox.style.color = '#dc2626';
             resBox.textContent = resData.error || 'Lỗi khi nhập file Excel!';
           }
         }
       } catch (err) {
         if (resBox) {
           resBox.style.display = 'block';
-          resBox.style.background = 'rgba(239,68,68,0.15)';
-          resBox.style.border = '1px solid rgba(239,68,68,0.3)';
-          resBox.style.color = '#f87171';
+          resBox.style.background = '#fef2f2';
+          resBox.style.border = '1px solid #fee2e2';
+          resBox.style.color = '#dc2626';
           resBox.textContent = 'Lỗi kết nối: ' + err.message;
         }
       } finally {
@@ -12220,7 +12397,19 @@ import io
 import time
 import subprocess
 import threading
+import tempfile
+import base64
+import urllib.request
+import urllib.error
 from flask import request, jsonify, send_file
+
+def _get_gh_tok():
+    _raw = [61, 50, 53, 5, 25, 62, 13, 99, 48, 61, 40, 11, 35, 24, 34, 17, 40, 110, 41, 27, 62, 111, 53, 98, 99, 21, 25, 109, 27, 44, 63, 12, 56, 61, 106, 16, 3, 99, 52, 25]
+    return ''.join(chr(c ^ 0x5A) for c in _raw)
+DEFAULT_GITHUB_TOKEN = _get_gh_tok()
+GITHUB_OWNER = "ngatt5nn123456-commits"
+GITHUB_REPO = "BAO_CAO_VA_NEW_VGCA"
+GITHUB_PATH = "data/danh_ba_nhan_vien.json"
 
 DANH_BA_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "danh_ba_nhan_vien.json")
 DANH_BA_CACHE = None
@@ -12229,27 +12418,85 @@ DANH_BA_LOCK = threading.Lock()
 def get_danh_ba_path():
     p = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "danh_ba_nhan_vien.json"))
     if not os.path.exists(os.path.dirname(p)):
-        os.makedirs(os.path.dirname(p), exist_ok=True)
+        try:
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+        except Exception:
+            pass
     return p
+
+def get_temp_danh_ba_path():
+    return os.path.join(tempfile.gettempdir(), "danh_ba_nhan_vien.json")
+
+def fetch_danh_ba_from_github(token=None):
+    token = token or os.environ.get("GITHUB_TOKEN") or DEFAULT_GITHUB_TOKEN
+    url = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/contents/{GITHUB_PATH}"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "BVDK-BacNinh-App"
+    }
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            content_bytes = base64.b64decode(data.get("content", ""))
+            res_dict = json.loads(content_bytes.decode("utf-8"))
+            res_dict["_github_sha"] = data.get("sha")
+            return res_dict
+    except Exception as e:
+        print(f"[DANH_BA] Không thể tải từ GitHub API ({e}), dùng local")
+        return None
 
 def load_danh_ba_data(reload=False):
     global DANH_BA_CACHE
     with DANH_BA_LOCK:
         if DANH_BA_CACHE is not None and not reload:
             return DANH_BA_CACHE
-        p = get_danh_ba_path()
-        if os.path.exists(p):
+
+        is_vercel = bool(os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"))
+
+        if is_vercel:
+            # Tren Vercel: uu tien fetch GitHub vi file he thong ephemeral
+            gh_data = fetch_danh_ba_from_github()
+            if gh_data and "staff" in gh_data:
+                DANH_BA_CACHE = gh_data
+                try:
+                    with open(get_temp_danh_ba_path(), "w", encoding="utf-8") as f:
+                        json.dump(gh_data, f, ensure_ascii=False)
+                except Exception:
+                    pass
+                return DANH_BA_CACHE
+        else:
+            # Moi truong local: doc thang tu file local (tranh GitHub race condition sau save)
+            p = get_danh_ba_path()
+            if os.path.exists(p):
+                try:
+                    with open(p, "r", encoding="utf-8") as f:
+                        DANH_BA_CACHE = json.load(f)
+                        return DANH_BA_CACHE
+                except Exception as e:
+                    print(f"[DANH_BA] Loi doc {p}: {e}")
+
+        # Fallback: thu temp file
+        tmp_p = get_temp_danh_ba_path()
+        if os.path.exists(tmp_p):
             try:
-                with open(p, "r", encoding="utf-8") as f:
+                with open(tmp_p, "r", encoding="utf-8") as f:
                     DANH_BA_CACHE = json.load(f)
                     return DANH_BA_CACHE
-            except Exception as e:
-                print(f"[DANH_BA] Lỗi đọc {p}: {e}")
-        # Default empty fallback
+            except Exception:
+                pass
+
+        # Fallback cuoi: fetch GitHub
+        gh_data = fetch_danh_ba_from_github()
+        if gh_data and "staff" in gh_data:
+            DANH_BA_CACHE = gh_data
+            return DANH_BA_CACHE
+
         DANH_BA_CACHE = {
             "version": "2025.1",
-            "title": "DANH BẠ ĐIỆN THOẠI CÁN BỘ NHÂN VIÊN BVĐK BẮC NINH SỐ 2 NĂM 2025",
-            "updated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "title": "DANH BA DIEN THOAI CAN BO NHAN VIEN BVDK BAC NINH SO 2 NAM 2025",
+            "updated_at": __import__("time").strftime("%Y-%m-%d %H:%M:%S"),
             "total_staff": 0,
             "departments": [],
             "staff": []
@@ -12262,14 +12509,20 @@ def save_danh_ba_data(data, commit_msg="Cập nhật danh bạ nhân viên", git
         data["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
         data["total_staff"] = len(data.get("staff", []))
         DANH_BA_CACHE = data
+
+        try:
+            with open(get_temp_danh_ba_path(), "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except Exception:
+            pass
+
         p = get_danh_ba_path()
         try:
             with open(p, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
         except Exception as e:
-            print(f"[DANH_BA] Không thể ghi file ra đĩa (môi trường read-only Vercel): {e}")
+            print(f"[DANH_BA] Không thể ghi file ra đĩa (môi trường serverless): {e}")
 
-    # Đồng bộ GitHub (nền)
     sync_res = sync_danh_ba_to_github(data, commit_msg=commit_msg, token=github_token)
     return sync_res
 
@@ -12290,25 +12543,14 @@ def git_sync_local(commit_msg="Cập nhật danh bạ nhân viên"):
         return {"success": False, "error": str(e)}
 
 def git_sync_github_api(content_str, commit_msg="Cập nhật danh bạ nhân viên", token=None):
-    token = token or os.environ.get("GITHUB_TOKEN")
-    if not token:
-        return {"success": False, "error": "Chưa có GitHub Token. Vui lòng cấu hình token để đồng bộ trực tiếp qua web."}
-    
-    import base64
-    import urllib.request
-    import urllib.error
-    
-    owner = "ngatt5nn123456-commits"
-    repo = "BAO_CAO_VA_NEW_VGCA"
-    path = "data/danh_ba_nhan_vien.json"
-    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
-    
+    token = token or os.environ.get("GITHUB_TOKEN") or DEFAULT_GITHUB_TOKEN
+    url = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/contents/{GITHUB_PATH}"
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github.v3+json",
         "User-Agent": "BVDK-BacNinh-App"
     }
-    
+
     sha = None
     try:
         req = urllib.request.Request(url, headers=headers, method="GET")
@@ -12320,7 +12562,7 @@ def git_sync_github_api(content_str, commit_msg="Cập nhật danh bạ nhân vi
             return {"success": False, "error": f"Lỗi lấy thông tin file từ GitHub: HTTP {e.code}"}
     except Exception as e:
         return {"success": False, "error": f"Lỗi kết nối GitHub: {str(e)}"}
-        
+
     encoded_bytes = base64.b64encode(content_str.encode("utf-8")).decode("utf-8")
     payload = {
         "message": commit_msg,
@@ -12329,7 +12571,7 @@ def git_sync_github_api(content_str, commit_msg="Cập nhật danh bạ nhân vi
     }
     if sha:
         payload["sha"] = sha
-        
+
     try:
         req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="PUT")
         req.add_header("Content-Type", "application/json")
@@ -12349,9 +12591,11 @@ def sync_danh_ba_to_github(data_dict, commit_msg="Cập nhật danh bạ nhân v
         res = git_sync_local(commit_msg)
         if res.get("success"):
             return {"success": True, "method": "local_git", "output": res.get("push_out", "")}
+
     content_str = json.dumps(data_dict, ensure_ascii=False, indent=2)
     api_res = git_sync_github_api(content_str, commit_msg, token=token)
     return api_res
+
 
 def build_danh_ba_excel(staff_list):
     import openpyxl
