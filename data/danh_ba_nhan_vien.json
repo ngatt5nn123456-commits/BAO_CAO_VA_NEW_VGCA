@@ -1,8 +1,8 @@
 {
   "version": "2025.1",
   "title": "DANH BẠ ĐIỆN THOẠI BỆNH VIỆN ĐA KHOA BẮC NINH SỐ 2 - NĂM 2025",
-  "updated_at": "2026-11-23 08:28:25",
-  "total_staff": 1020,
+  "updated_at": "2026-11-23 01:35:32",
+  "total_staff": 1021,
   "departments": [
     {
       "id": "01_BAN GIÁM ĐỐC",
@@ -14614,6 +14614,21 @@
       "dept_order": 46,
       "group": "B. KHỐI NỘI",
       "dept_hotline": "Trực khoa: 0385.022.285 Hotline:0385.022.285"
+    },
+    {
+      "id": "nv_1021_1795397732",
+      "stt": 1021,
+      "name": "Nguyễn Lê Huyền Ly",
+      "role": "Nhân Viên",
+      "phone1": "0394022258",
+      "phone1_clean": "0394022258",
+      "phone2": "0917939926",
+      "phone2_clean": "0917939926",
+      "dept": "CÔNG NGHỆ THÔNG TIN",
+      "dept_order": 7,
+      "group": "I. CÁC PHÒNG CHỨC NĂNG",
+      "dept_hotline": "Giao ban: 119 Trực: 0388.852.787"
     }
-  ]
+  ],
+  "_github_sha": "e4ea09aac6488b7ff3a37fd3bc87f8129c0ce81d"
 }
