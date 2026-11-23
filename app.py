@@ -11,7 +11,7 @@ import unicodedata
 import urllib.request
 import urllib.parse
 import http.client
-from datetime import datetime
+from datetime import datetime, date, timedelta
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
 
@@ -1631,6 +1631,42 @@ def download_google_sheet_single_tab(url, sheet_name):
 
     return download_google_sheet(url)
 
+def download_google_sheet_tabs(url, sheet_names):
+    spreadsheet_id = extract_spreadsheet_id(url)
+    try:
+        wb_temp = Workbook()
+        wb_temp.remove(wb_temp.active)
+        for s in sheet_names:
+            encoded_sheet = urllib.parse.quote(str(s).strip())
+            csv_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/gviz/tq?tqx=out:csv&sheet={encoded_sheet}"
+            req = urllib.request.Request(csv_url, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            })
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                raw_csv = resp.read().decode("utf-8", errors="ignore")
+            if raw_csv and not raw_csv.startswith("<!DOCTYPE html>"):
+                ws_temp = wb_temp.create_sheet(title=str(s).strip())
+                reader = csv.reader(io.StringIO(raw_csv))
+                for r_idx, row in enumerate(reader, 1):
+                    for c_idx, val in enumerate(row, 1):
+                        if val != "":
+                            try:
+                                if "." in val:
+                                    val = float(val)
+                                else:
+                                    val = int(val)
+                            except ValueError:
+                                pass
+                            ws_temp.cell(r_idx, c_idx, val)
+        if len(wb_temp.sheetnames) > 0:
+            temp_stream = io.BytesIO()
+            wb_temp.save(temp_stream)
+            temp_stream.seek(0)
+            return temp_stream
+    except Exception:
+        pass
+    return download_google_sheet(url)
+
 def download_google_sheet(url):
     spreadsheet_id = extract_spreadsheet_id(url)
     export_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=xlsx"
@@ -1655,25 +1691,27 @@ def download_google_sheet(url):
 # LOGIC BÁO CÁO TỔNG HỢP CÔNG VIỆC P.CNTT (CHUẨN 100% app_tong_hop.py)
 # ============================================================
 STANDARD_HEADERS_18 = [
-    "STT",
-    "KHOA, PHÒNG, TRUNG TÂM",
-    "Xoá CLS, PTTT",
-    "Sửa phí",
-    "Huỷ CKS",
-    "Huỷ B/án",
-    "Sửa thông tin BN (NN; Địa chỉ, tuổi, CCCD,.v.v...)\nSửa công khám, sửa kiểu khám",
-    "Sửa ngày giờ cls; pttt; giờ đọc kết quả; người TH\ncập nhật CLS, PTTT",
-    "Sửa mã bệnh kèm theo; bệnh chính",
-    "Hỗ trợ ký số PM, QLVBĐH",
-    "Sửa giấy RV, sửa kết thúc ra viện, chuyển tuyến",
-    "Đăng bài trên website",
-    "Sửa cách dùng thuốc, ngày giờ thuốc",
-    "Phân quyền USER, đổi nick user",
-    "Lỗi không kết thúc được hồ sơ",
-    "Sửa xoá giường; cập nhật giường, thêm giường",
-    "Chuyển thuốc CP- DG",
-    "SỬA LỖI KHÁC"
+    "STT",                                                                              # 1 (A)
+    "KHOA, PHÒNG, TRUNG TÂM",                                                           # 2 (B)
+    "Xoá CLS, PTTT",                                                                    # 3 (C)
+    "Sửa phí",                                                                          # 4 (D)
+    "Huỷ CKS",                                                                          # 5 (E)
+    "Huỷ B/án",                                                                         # 6 (F)
+    "Sửa thông tin BN (NN; Địa chỉ, tuổi, CCCD,.v.v...)\nSửa công khám, sửa kiểu khám",   # 7 (G)
+    "Sửa ngày giờ cls; pttt; giờ đọc kết quả; người TH\ncập nhật CLS, PTTT",            # 8 (H)
+    "Sửa mã bệnh kèm theo; bệnh chính",                                                 # 9 (I)
+    "Hỗ trợ ký số PM, QLVBĐH",                                                          # 10 (J)
+    "Sửa giấy RV, sửa kết thúc ra viện, chuyển tuyến",                                  # 11 (K)
+    "Đăng bài trên website",                                                            # 12 (L)
+    "Sửa cách dùng thuốc, ngày giờ thuốc",                                              # 13 (M)
+    "Phân quyền USER, đổi nick user",                                                   # 14 (N)
+    "Lỗi không kết thúc được hồ sơ",                                                    # 15 (O)
+    "Sửa xoá giường; cập nhật giường, thêm giường",                                     # 16 (P)
+    "Chuyển thuốc CP- DG",                                                              # 17 (Q)
+    "Sửa lỗi xuất toán tự động",                                                        # 18 (R) - CỘT MỚI BỔ SUNG THEO YÊU CẦU
+    "SỬA LỖI KHÁC"                                                                      # 19 (S) - CỘT 19
 ]
+STANDARD_HEADERS_19 = STANDARD_HEADERS_18
 
 FIXED_COL_WIDTHS_18 = [
     (1,  5.0),          # A: STT
@@ -1684,15 +1722,17 @@ FIXED_COL_WIDTHS_18 = [
     (9,  13.28515625),  # I: Sửa mã bệnh kèm theo...
     (10, 14.5703125),   # J: Hỗ trợ ký số PM...
     (11, 12.0),         # K: Sửa giấy RV...
-    (18, 42.7109375),   # R: SỬA LỖI KHÁC
+    (18, 14.5),         # R: Sửa lỗi xuất toán tự động
+    (19, 42.7109375),   # S: SỬA LỖI KHÁC
 ]
+FIXED_COL_WIDTHS_19 = FIXED_COL_WIDTHS_18
 
 def map_software_header_to_index(header_name):
     norm_h = norm_name(header_name)
     if not norm_h:
         return None
-    target_15 = STANDARD_HEADERS_18[2:17]
-    for idx, th in enumerate(target_15):
+    target_16 = STANDARD_HEADERS_19[2:18] # 16 danh mục phần mềm (từ Cột C đến R)
+    for idx, th in enumerate(target_16):
         if norm_name(th) == norm_h:
             return idx
     if "xoacls" in norm_h or "xoapttt" in norm_h: return 0
@@ -1710,7 +1750,48 @@ def map_software_header_to_index(header_name):
     if "loikhongketthuc" in norm_h: return 12
     if "suaxoagiuong" in norm_h or "themgiuong" in norm_h or "capnhatgiuong" in norm_h: return 13
     if "chuyenthuoccp" in norm_h or "cpdg" in norm_h: return 14
+    if "xuattoan" in norm_h or "sualoixuattoan" in norm_h: return 15
     return None
+
+def parse_sheet_day_month(sheet_name):
+    m = re.match(r'^0?(\d{1,2})[\./]0?(\d{1,2})$', str(sheet_name).strip())
+    if m:
+        return int(m.group(1)), int(m.group(2))
+    return None, None
+
+def get_sheet_weekday_info(sheet_name, year=2025):
+    day, month = parse_sheet_day_month(sheet_name)
+    if not day or not month:
+        return None, None, ""
+    try:
+        dt = date(year, month, day)
+        wd = dt.weekday()  # 0=Thứ 2 .. 4=Thứ 6, 5=Thứ 7, 6=Chủ Nhật
+        labels = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"]
+        return dt, wd, labels[wd]
+    except Exception:
+        return None, None, ""
+
+def find_weekend_cluster_for_sheet(selected_sheet, all_sheets, year=2025):
+    """Tự động phát hiện ngày cuối tuần Thứ 6, Thứ 7, Chủ Nhật và tìm các sheet cùng cụm."""
+    dt, wd, _ = get_sheet_weekday_info(selected_sheet, year)
+    if dt is None or wd not in (4, 5, 6):
+        return [selected_sheet]
+    # Tìm ngày Thứ 6 của tuần đó
+    friday = dt - timedelta(days=(wd - 4))
+    sat = friday + timedelta(days=1)
+    sun = friday + timedelta(days=2)
+
+    cluster = []
+    for target_dt in [friday, sat, sun]:
+        found = None
+        for s in all_sheets:
+            sd, sm = parse_sheet_day_month(s)
+            if sd == target_dt.day and sm == target_dt.month:
+                found = s
+                break
+        if found and found not in cluster:
+            cluster.append(found)
+    return cluster if cluster else [selected_sheet]
 
 def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, output_file=None, sheet_name=None):
     result_wb = Workbook()
@@ -1722,10 +1803,18 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
     # Dark gray header fill (#595959)
     header_fill = PatternFill(fill_type="solid", fgColor="595959")
 
-    # 1. Row 1: Title (Times New Roman cỡ 16 in đậm)
-    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=18)
-    title_text = f"TỔNG HỢP CÔNG VIỆC PHÒNG CNTT - NGÀY {sheet_name}" if (sheet_name and not str(sheet_name).lower().startswith("sheet")) else "TỔNG HỢP CÔNG VIỆC P.CNTT"
-    for c in range(1, 19):
+    # 1. Row 1: Title (Times New Roman cỡ 16 in đậm) - Hàng tiêu đề chiếm 19 cột (A1:S1)
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=19)
+    if sheet_name and not str(sheet_name).lower().startswith("sheet"):
+        if "," in str(sheet_name):
+            parts = [s.strip() for s in str(sheet_name).split(",") if s.strip()]
+            title_text = f"TỔNG HỢP CÔNG VIỆC PHÒNG CNTT - CUỐI TUẦN (NGÀY {parts[0]} - {parts[-1]})"
+        else:
+            title_text = f"TỔNG HỢP CÔNG VIỆC PHÒNG CNTT - NGÀY {sheet_name}"
+    else:
+        title_text = "TỔNG HỢP CÔNG VIỆC P.CNTT"
+
+    for c in range(1, 20):
         cell_t = ws.cell(1, c)
         cell_t.font = Font(name="Times New Roman", size=16, bold=True)
         cell_t.alignment = Alignment(horizontal="center", vertical="center")
@@ -1736,7 +1825,7 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
     header_row = 3
     data_start_row = 4
 
-    for col_idx, h_text in enumerate(STANDARD_HEADERS_18, 1):
+    for col_idx, h_text in enumerate(STANDARD_HEADERS_19, 1):
         cell = ws.cell(header_row, col_idx, h_text)
         cell.font = Font(name="Times New Roman", size=14, bold=True, color="FFFFFF")
         cell.fill = header_fill
@@ -1760,9 +1849,9 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
         c_dept.border = border
         c_dept.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
 
-        # Col 3..17 (C..Q): 15 danh mục phần mềm
+        # Col 3..18 (C..R): 16 danh mục phần mềm (bao gồm Sửa lỗi xuất toán tự động ở cột 18)
         counts = data_matrix[dept]
-        for c_offset in range(15):
+        for c_offset in range(16):
             col = 3 + c_offset
             v = counts[c_offset]
             c_val = ws.cell(r_idx, col, int(v) if (v not in (None, "", 0)) else None)
@@ -1770,7 +1859,7 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
             c_val.border = border
             c_val.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
-        # Col 18 (R): Sửa lỗi khác
+        # Col 19 (S): Sửa lỗi khác
         err_list = other_errors.get(dept, [])
         distinct_items = []
         for e in err_list:
@@ -1801,7 +1890,7 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
             # Khoa phòng có 1 hoặc 2 lỗi: trình bày xuống dòng có dấu đầu dòng +
             err_text = "\n".join(f"+ {item}" for item in distinct_items)
 
-        c_err = ws.cell(r_idx, 18, err_text)
+        c_err = ws.cell(r_idx, 19, err_text)
         c_err.font = Font(name="Times New Roman", size=14)
         c_err.border = border
         c_err.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
@@ -1830,38 +1919,38 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
     c_tot_label.border = border
     c_tot_label.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
 
-    category_sums = [0] * 15
+    category_sums = [0] * 16
     for dept in valid_departments:
         counts = data_matrix[dept]
-        for i in range(15):
+        for i in range(16):
             val = counts[i]
             if isinstance(val, (int, float)):
                 category_sums[i] += int(val)
 
-    for c_offset in range(15):
+    for c_offset in range(16):
         col = 3 + c_offset
         cell = ws.cell(total_row, col)
         cell.font = Font(name="Times New Roman", size=14, bold=True)
         cell.border = border
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
-        if c_offset == 9:  # Column L: Đăng bài trên website (Excluded from summary)
+        if c_offset == 9:  # Column 12 (L): Đăng bài trên website (Excluded from summary)
             cell.value = None
         else:
             s_val = category_sums[c_offset]
             cell.value = s_val if s_val > 0 else None
 
-    # Col 18 (R): Grand Total sum (excl col L)
-    grand_total = sum(category_sums[i] for i in range(15) if i != 9)
-    c_tot_r = ws.cell(total_row, 18, grand_total if grand_total > 0 else None)
-    c_tot_r.font = Font(name="Times New Roman", size=14, bold=True)
-    c_tot_r.border = border
-    c_tot_r.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+    # Col 19 (S): Grand Total sum (tổng cộng tất cả lỗi phần mềm, loại trừ cột Đăng bài website)
+    grand_total = sum(category_sums[i] for i in range(16) if i != 9)
+    c_tot_s = ws.cell(total_row, 19, grand_total if grand_total > 0 else None)
+    c_tot_s.font = Font(name="Times New Roman", size=14, bold=True)
+    c_tot_s.border = border
+    c_tot_s.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
 
     ws.row_dimensions[total_row].height = 35.1
 
     # 5. Set column widths
-    for col_idx_or_letter, width in FIXED_COL_WIDTHS_18:
+    for col_idx_or_letter, width in FIXED_COL_WIDTHS_19:
         col_letter = get_column_letter(col_idx_or_letter)
         ws.column_dimensions[col_letter].width = width
 
@@ -1895,19 +1984,8 @@ def build_formatted_cntt_report(valid_departments, data_matrix, other_errors, ou
         out_stream.seek(0)
         return out_stream
 
-def process_cntt_web(file_stream, sheet_name):
-    wb_source = load_workbook(file_stream, data_only=True)
-    if sheet_name in wb_source.sheetnames:
-        ws_source = wb_source[sheet_name]
-    else:
-        target_name = None
-        for s in wb_source.sheetnames:
-            if s.strip().lower() == str(sheet_name).strip().lower():
-                target_name = s
-                break
-        ws_source = wb_source[target_name] if target_name else wb_source.active
-
-    # 1. Tự động phát hiện dòng tiêu đề cột
+def extract_cntt_sheet_matrix(ws_source):
+    """Trích xuất ma trận phần mềm (16 danh mục) và lỗi khác từ 1 worksheet."""
     header_row_source = None
     for r in range(1, 15):
         c2_val = clean_text(ws_source.cell(r, 2).value).upper()
@@ -1918,7 +1996,6 @@ def process_cntt_web(file_stream, sheet_name):
     if not header_row_source:
         header_row_source = 4 if ws_source.max_row >= 4 else 1
 
-    # 2. Tìm cột 'Sửa chữa khác' (bắt đầu tìm từ cột 5 để bỏ qua STT, Khoa/Phòng, Số hồ sơ, Số phiếu)
     other_col = None
     for c in range(5, ws_source.max_column + 1):
         h = clean_text(ws_source.cell(header_row_source, c).value)
@@ -1932,24 +2009,21 @@ def process_cntt_web(file_stream, sheet_name):
     if not other_col:
         other_col = 35 if ws_source.max_column >= 30 else 25
 
-    # 3. Chỉ quét các cột phần mềm từ cột 5 đến trước cột Sửa chữa khác (bỏ qua cột 1, 2, 3, 4)
     sw_col_target_map = {}
     for col in range(5, min(other_col, ws_source.max_column + 1)):
         h = clean_text(ws_source.cell(header_row_source, col).value)
         if not h and header_row_source > 1:
             h = clean_text(ws_source.cell(header_row_source - 1, col).value)
         nh = norm_name(h)
-        # Bỏ qua các cột không phải phần mềm (số hồ sơ, số phiếu, cán bộ, ghi chú, phần cứng...)
         if any(skip_kw in nh for skip_kw in (
             "sohoso", "sophieu", "noidung", "dexuat", "canbo", "ghichu",
             "phancung", "domuc", "caiwin", "loimang", "suamaytinh", "nguon",
-            "ocung", "suamayin", "loep", "cambien", "tinhtrang"
+            "ocung", "suamayin", "loep", "cambien", "tinhtrang", "vimes"
         )):
             continue
         t_idx = map_software_header_to_index(h)
         sw_col_target_map[col] = (t_idx, h)
 
-    # 4. Quét các dòng dữ liệu (bắt đầu ngay sau header_row_source)
     departments_order = []
     data_matrix = {}
     other_errors = {}
@@ -1974,7 +2048,7 @@ def process_cntt_web(file_stream, sheet_name):
 
         if dept_str not in data_matrix:
             departments_order.append(dept_str)
-            data_matrix[dept_str] = [0] * 15
+            data_matrix[dept_str] = [0] * 16
             other_errors[dept_str] = []
 
         for col, (t_idx, col_name) in sw_col_target_map.items():
@@ -1988,7 +2062,6 @@ def process_cntt_web(file_stream, sheet_name):
             except (ValueError, TypeError):
                 val_num = 1
 
-            # Bỏ qua các số lớn > 50 (chỉ có thể là số hồ sơ hoặc mã bệnh nhân nhầm lẫn)
             if val_num > 50:
                 continue
 
@@ -1998,25 +2071,63 @@ def process_cntt_web(file_stream, sheet_name):
                 if col_name and not any(k in norm_name(col_name) for k in ("noidung", "dexuat", "hoso", "phieu")):
                     other_errors[dept_str].append(f"{col_name}: {val_num}")
 
-        # Đọc cột Sửa chữa khác
         err_val = ws_source.cell(row, other_col).value
         if err_val is not None:
             err_str = str(err_val).strip()
             if err_str and err_str not in ("0", "None"):
                 nh_err = norm_name(err_str)
-                # Loại bỏ hoàn toàn dòng tiêu đề hoặc mã số hồ sơ
                 if not any(k in nh_err for k in ("noidungdexuat", "suachuavabosung")):
                     if not re.search(r"^\d{6,}$", err_str):
                         if err_str not in other_errors[dept_str]:
                             other_errors[dept_str].append(err_str)
 
+    return departments_order, data_matrix, other_errors
+
+def process_cntt_web(file_stream, sheet_name):
+    """Xử lý báo cáo CNTT, hỗ trợ cả 1 sheet đơn lẻ hoặc danh sách/chuỗi nhiều sheet (Gộp cuối tuần)."""
+    if isinstance(sheet_name, list):
+        sheet_names = sheet_name
+    elif isinstance(sheet_name, str) and ("," in sheet_name or ";" in sheet_name):
+        sheet_names = [s.strip() for s in re.split(r'[,;]', sheet_name) if s.strip()]
+    else:
+        sheet_names = [sheet_name]
+
+    wb_source = load_workbook(file_stream, data_only=True)
+    all_depts = []
+    merged_data_matrix = {}
+    merged_other_errors = {}
+
+    for s_name in sheet_names:
+        if s_name in wb_source.sheetnames:
+            ws_source = wb_source[s_name]
+        else:
+            target_name = None
+            for s in wb_source.sheetnames:
+                if s.strip().lower() == str(s_name).strip().lower():
+                    target_name = s
+                    break
+            ws_source = wb_source[target_name] if target_name else wb_source.active
+
+        d_order, d_matrix, d_other = extract_cntt_sheet_matrix(ws_source)
+        for dept in d_order:
+            if dept not in merged_data_matrix:
+                all_depts.append(dept)
+                merged_data_matrix[dept] = [0] * 16
+                merged_other_errors[dept] = []
+            for i in range(16):
+                merged_data_matrix[dept][i] += d_matrix[dept][i]
+            for err in d_other.get(dept, []):
+                if err not in merged_other_errors[dept]:
+                    merged_other_errors[dept].append(err)
+
     valid_departments = [
-        dept for dept in departments_order
-        if any(v != 0 for v in data_matrix[dept]) or bool(other_errors[dept])
+        dept for dept in all_depts
+        if any(v != 0 for v in merged_data_matrix[dept]) or bool(merged_other_errors[dept])
     ]
 
     out_io = io.BytesIO()
-    build_formatted_cntt_report(valid_departments, data_matrix, other_errors, output_file=out_io, sheet_name=sheet_name)
+    combined_name = ", ".join(sheet_names) if len(sheet_names) > 1 else sheet_names[0]
+    build_formatted_cntt_report(valid_departments, merged_data_matrix, merged_other_errors, output_file=out_io, sheet_name=combined_name)
     return out_io
 
 # ============================================================
@@ -4469,8 +4580,8 @@ HTML_PAGE = """<!DOCTYPE html>
             <li data-task="8" onclick="switchTask(8)" class="tree-child-item">
               <div class="nav-icon">⚡</div>
               <div class="nav-text">
-                <span class="nav-title">P.CNTT (Sheet Cố Định)</span>
-                <span class="nav-desc">Tự động tải Google Sheets của viện</span>
+                <span class="nav-title">BC P.CNTT</span>
+                <span class="nav-desc">Tự động tải Google Sheets & Gộp cuối tuần</span>
               </div>
             </li>
             <li data-task="10" onclick="switchTask(10)" class="tree-child-item">
@@ -4977,24 +5088,26 @@ HTML_PAGE = """<!DOCTYPE html>
         </div>
       </div>
 
-      <!-- ==================== TÁC VỤ 8 ==================== -->
+      <!-- ==================== TÁC VỤ 8: BC P.CNTT ==================== -->
       <div class="page" id="page-task-8">
         <div class="two-col-grid">
           <div class="card">
             <div class="card-header">
               <span class="icon">📖</span>
-              <h2>Hướng Dẫn Nghiệp Vụ Tác Vụ 8</h2>
+              <h2>Hướng Dẫn Nghiệp Vụ BC P.CNTT</h2>
             </div>
             <div class="guide-box">
               <h3>🎯 Mục đích:</h3>
-              <p>Tự động lấy dữ liệu từ đường link Google Sheets <b>cố định của Phòng CNTT Bệnh viện</b>, quét tất cả sheet ngày và xuất báo cáo chuẩn A4 ngang.</p>
+              <p>Tự động lấy dữ liệu từ Google Sheets <b>cố định của Phòng CNTT Bệnh viện</b>, tự động nhận diện cột <b>"Sửa lỗi xuất toán tự động"</b> và tự động phát hiện các ngày cuối tuần <b>Thứ 6, Thứ 7, Chủ Nhật</b> để gộp vào 1 báo cáo duy nhất chuẩn A4 ngang.</p>
               <h3>💡 Tiện ích đặc biệt:</h3>
-              <p>Đường link nội bộ đã được cấu hình sẵn trong hệ thống, chỉ cần 1 chạm là nạp toàn bộ danh sách ngày mà không cần copy/paste link thủ công.</p>
+              <p>• <b>Tự động phát hiện cuối tuần:</b> Khi chọn sheet Thứ 6, Thứ 7 hoặc Chủ Nhật, hệ thống tự động nhận diện cụm 3 ngày cuối tuần và gộp trọn vẹn số liệu vào 1 báo cáo.<br>
+              • <b>Bổ sung cột "Sửa lỗi xuất toán tự động":</b> Đọc chính xác dữ liệu từ cột phần mềm tương ứng và cộng tổng chuẩn xác vào dòng TỔNG CỘNG.<br>
+              • <b>Liệt kê lỗi khoa học:</b> Khoa phòng có &gt;2 lỗi sẽ được trình bày liệt kê ngăn cách dấu phẩy, không vỡ khung in.</p>
               <h3>📝 Các bước thực hiện:</h3>
               <ol>
-                <li><b>Bước 1:</b> Nhấn nút <b>"⚡ Nạp Danh Sách Sheet Ngày"</b>.</li>
-                <li><b>Bước 2:</b> Chọn sheet ngày cần tổng hợp (hệ thống tự chọn ngày mới nhất).</li>
-                <li><b>Bước 3:</b> Nhấn nút <b>"🚀 Tổng Hợp Báo Cáo P.CNTT"</b> để tải file Excel về.</li>
+                <li><b>Bước 1:</b> Nhấn nút <b>"⚡ Nạp Danh Sách Sheet Ngày"</b> để quét toàn bộ ngày từ Google Sheets.</li>
+                <li><b>Bước 2:</b> Chọn sheet ngày đơn lẻ hoặc chọn cụm <b>"🗓️ GỘP CUỐI TUẦN"</b> (Thứ 6 + Thứ 7 + Chủ Nhật).</li>
+                <li><b>Bước 3:</b> Nhấn <b>"🚀 Tổng Hợp Theo Sheet Đã Chọn"</b> hoặc nhấn <b>"✨ Gộp Báo Cáo Cuối Tuần (T6+T7+CN)"</b> để tải file Excel về.</li>
               </ol>
             </div>
           </div>
@@ -5014,16 +5127,32 @@ HTML_PAGE = """<!DOCTYPE html>
               </div>
 
               <div class="form-group">
-                <label class="form-label">2️⃣ Chọn Sheet ngày cần xử lý:</label>
-                <select id="select-t8-sheet" class="form-input">
+                <label class="form-label">2️⃣ Chọn Sheet ngày hoặc Cụm ngày cuối tuần cần xử lý:</label>
+                <select id="select-t8-sheet" class="form-input" onchange="onTask8SheetChanged()">
                   <option value="">-- Vui lòng nhấn 'Nạp Danh Sách Sheet Ngày' trước --</option>
                 </select>
+                <div id="t8-weekend-badge" style="display:none; margin-top:8px; padding:8px 12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; font-size:13px; color:#1e40af;">
+                  💡 <b>Phát hiện ngày cuối tuần:</b> <span id="t8-weekend-desc"></span>
+                </div>
               </div>
 
-              <button type="submit" class="btn" id="btn-t8">
-                <span class="spinner" id="spin-t8"></span>
-                <span id="txt-t8">🚀 Tổng Hợp Từ Google Sheets (A4 Ngang)</span>
-              </button>
+              <div class="form-group" style="margin-top:12px; margin-bottom:16px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: #1e293b;">
+                  <input type="checkbox" id="chk-t8-auto-weekend" checked style="width: 17px; height: 17px; accent-color: #2563eb;">
+                  <span>Tự động gộp 3 ngày cuối tuần (Thứ 6 + Thứ 7 + Chủ Nhật) khi chọn ngày cuối tuần</span>
+                </label>
+              </div>
+
+              <div style="display: flex; gap: 10px; margin-top: 14px;">
+                <button type="submit" class="btn" id="btn-t8" style="flex: 1;">
+                  <span class="spinner" id="spin-t8"></span>
+                  <span id="txt-t8">🚀 Tổng Hợp Theo Sheet Đã Chọn</span>
+                </button>
+                <button type="button" class="btn" id="btn-t8-weekend" onclick="handleTask8Weekend(event)" style="flex: 1; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                  <span class="spinner" id="spin-t8-weekend"></span>
+                  <span id="txt-t8-weekend">✨ Gộp Báo Cáo Cuối Tuần (T6+T7+CN)</span>
+                </button>
+              </div>
               <div class="alert" id="alert-t8"></div>
             </form>
           </div>
@@ -6288,7 +6417,7 @@ function handleRequest(e) {
       3: { badge: 'MẪU 02 (WORD)', title: '📝 CKS (Mẫu CV02 chỉ đọc file Word)  ─  Đọc toàn bộ file Word xuất Mẫu 02' },
       5: { badge: 'CHECK LOG MDINSIGHT', title: '🏥 Check Log MDINSIGHT  ─  Lọc người dùng & xuất Excel A4 ngang' },
       7: { badge: 'VGCA (WORD)', title: '📄 VGCA (Từ File Word)  ─  Đọc nhiều file Word không cần SSO' },
-      8: { badge: 'P.CNTT', title: '⚡ P.CNTT (Sheet Cố Định)  ─  Tự động tải Google Sheets của viện' },
+      8: { badge: 'BC P.CNTT', title: '⚡ BC P.CNTT ─ Báo Cáo Công Tác CNTT (Hỗ Trợ Gộp Cuối Tuần T6-T7-CN)' },
       14: { badge: 'BC CV HÀNG NGÀY', title: '📋 BC CV hàng ngày P.CNTT  ─  Thống Kê Thứ Hạng Lỗi Chủ Quan & Khoa Phòng' },
 
       9: { badge: 'EMAIL CÔNG VỤ', title: '📧 Cấp Email Công Vụ  ─  Tổng hợp danh sách xin cấp Email' },
@@ -6668,15 +6797,96 @@ function handleRequest(e) {
         if (!data.sheets || data.sheets.length === 0) {
           throw new Error('Không tìm thấy sheet nào trong tài liệu này!');
         }
-        data.sheets.forEach((s, idx) => {
-          const opt = document.createElement('option');
-          opt.value = s;
-          opt.textContent = `📅 Sheet: ${s}`;
-          if (idx === data.sheets.length - 1) {
-            opt.selected = true;
+
+        if (selectId === 'select-t8-sheet') {
+          window._t8SheetsList = data.sheets;
+          // Helper phân tích thứ trong tuần cho sheet ngày (theo năm 2025: 21.11=Thứ 6, 22.11=Thứ 7, 23.11=Chủ Nhật)
+          function getWdInfo(sName) {
+            const m = String(sName).trim().match(/^0?(\\d{1,2})[\\./]0?(\\d{1,2})$/);
+            if (!m) return null;
+            const d = parseInt(m[1]), mo = parseInt(m[2]);
+            const dt = new Date(2025, mo - 1, d);
+            const wd = dt.getDay(); // 0=Chủ Nhật, 1=Thứ 2 .. 5=Thứ 6, 6=Thứ 7
+            const labels = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+            return { d, mo, wd, label: labels[wd], dateObj: dt };
           }
-          sel.appendChild(opt);
-        });
+
+          // Tự động tìm các cụm cuối tuần (Thứ 6 + Thứ 7 + Chủ Nhật)
+          const weekendClusters = [];
+          const seenClusters = new Set();
+          data.sheets.forEach(s => {
+            const info = getWdInfo(s);
+            if (info && (info.wd === 5 || info.wd === 6 || info.wd === 0)) { // 5=T6, 6=T7, 0=CN
+              const diffToFri = (info.wd === 0) ? -2 : (info.wd === 6 ? -1 : 0);
+              const friDt = new Date(info.dateObj);
+              friDt.setDate(friDt.getDate() + diffToFri);
+              const satDt = new Date(friDt); satDt.setDate(satDt.getDate() + 1);
+              const sunDt = new Date(friDt); sunDt.setDate(sunDt.getDate() + 2);
+
+              const clusterKey = `${friDt.getDate()}.${friDt.getMonth()+1}`;
+              if (!seenClusters.has(clusterKey)) {
+                seenClusters.add(clusterKey);
+                const cSheets = [];
+                [friDt, satDt, sunDt].forEach(tDt => {
+                  const matchSheet = data.sheets.find(x => {
+                    const xInfo = getWdInfo(x);
+                    return xInfo && xInfo.d === tDt.getDate() && xInfo.mo === (tDt.getMonth() + 1);
+                  });
+                  if (matchSheet && !cSheets.includes(matchSheet)) cSheets.push(matchSheet);
+                });
+                if (cSheets.length >= 2) {
+                  weekendClusters.push({
+                    sheets: cSheets,
+                    label: `🗓️ [GỘP CUỐI TUẦN] Thứ 6 - Thứ 7 - Chủ Nhật (${cSheets.join(' + ')})`,
+                    val: cSheets.join(',')
+                  });
+                }
+              }
+            }
+          });
+
+          if (weekendClusters.length > 0) {
+            const grpWk = document.createElement('optgroup');
+            grpWk.label = '✨ CỤM NGÀY CUỐI TUẦN (GỘP T6 + T7 + CN)';
+            weekendClusters.forEach((cl, cIdx) => {
+              const opt = document.createElement('option');
+              opt.value = cl.val;
+              opt.textContent = cl.label;
+              if (cIdx === 0) opt.selected = true; // Mặc định chọn cụm cuối tuần mới nhất
+              grpWk.appendChild(opt);
+            });
+            sel.appendChild(grpWk);
+          }
+
+          const grpSingle = document.createElement('optgroup');
+          grpSingle.label = '📅 DANH SÁCH SHEET NGÀY CHI TIẾT';
+          data.sheets.forEach((s, idx) => {
+            const opt = document.createElement('option');
+            opt.value = s;
+            const wInfo = getWdInfo(s);
+            if (wInfo) {
+              opt.textContent = `📅 Sheet: ${s} (${wInfo.label})`;
+            } else {
+              opt.textContent = `📅 Sheet: ${s}`;
+            }
+            if (weekendClusters.length === 0 && idx === data.sheets.length - 1) {
+              opt.selected = true;
+            }
+            grpSingle.appendChild(opt);
+          });
+          sel.appendChild(grpSingle);
+          onTask8SheetChanged();
+        } else {
+          data.sheets.forEach((s, idx) => {
+            const opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = `📅 Sheet: ${s}`;
+            if (idx === data.sheets.length - 1) {
+              opt.selected = true;
+            }
+            sel.appendChild(opt);
+          });
+        }
         showAlert(alertId, 'success', `✅ Đã nạp thành công ${data.sheets.length} sheet ngày! Hãy chọn sheet cần xuất báo cáo.`);
       } catch (err) {
         sel.innerHTML = '<option value="">❌ Không đọc được sheet. Vui lòng kiểm tra lại!</option>';
@@ -7600,9 +7810,38 @@ function handleRequest(e) {
       }
     }
 
-    // XỬ LÝ TÁC VỤ 8
+    // XỬ LÝ TÁC VỤ 8: BC P.CNTT
+    function onTask8SheetChanged() {
+      const sel = document.getElementById('select-t8-sheet');
+      const val = sel ? sel.value : '';
+      const badge = document.getElementById('t8-weekend-badge');
+      const desc = document.getElementById('t8-weekend-desc');
+      if (!badge || !desc || !val) {
+        if (badge) badge.style.display = 'none';
+        return;
+      }
+      if (val.includes(',')) {
+        badge.style.display = 'block';
+        desc.textContent = `Đang chọn cụm gộp cuối tuần: ${val}. Hệ thống sẽ tự động gộp tất cả số liệu vào 1 báo cáo duy nhất.`;
+        return;
+      }
+      const m = val.trim().match(/^0?(\\d{1,2})[\\./]0?(\\d{1,2})$/);
+      if (m) {
+        const d = parseInt(m[1]), mo = parseInt(m[2]);
+        const dt = new Date(2025, mo - 1, d);
+        const wd = dt.getDay(); // 0=Chủ Nhật, 5=Thứ 6, 6=Thứ 7
+        if (wd === 5 || wd === 6 || wd === 0) {
+          const labels = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+          badge.style.display = 'block';
+          desc.textContent = `Sheet "${val}" là ${labels[wd]}. Khi bật tuỳ chọn tự động gộp, hệ thống sẽ tự động phát hiện và gộp cả Thứ 6 + Thứ 7 + Chủ Nhật vào 1 file Excel!`;
+          return;
+        }
+      }
+      badge.style.display = 'none';
+    }
+
     async function handleTask8(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
       hideAlert('alert-t8');
       const sheet = document.getElementById('select-t8-sheet').value;
       if (!sheet) {
@@ -7610,12 +7849,24 @@ function handleRequest(e) {
         return;
       }
 
-      const picker = await promptSaveFile('TỔNG HỢP CÔNG VIỆC P.CNTT (CỐ ĐỊNH).xlsx');
+      const autoWeekend = document.getElementById('chk-t8-auto-weekend') ? document.getElementById('chk-t8-auto-weekend').checked : false;
+      const isWeekendVal = (autoWeekend || sheet.includes(',')) ? '1' : '0';
+
+      let defFileName = 'BC_PCNTT.xlsx';
+      if (sheet.includes(',')) {
+        const parts = sheet.split(',');
+        defFileName = `TỔNG HỢP CÔNG VIỆC P.CNTT (CUỐI TUẦN ${parts[0]} - ${parts[parts.length-1]}).xlsx`;
+      } else {
+        defFileName = `TỔNG HỢP CÔNG VIỆC P.CNTT - NGÀY ${sheet}.xlsx`;
+      }
+
+      const picker = await promptSaveFile(defFileName);
       if (picker.canceled) return;
 
       const formData = new FormData();
       formData.append('url', document.getElementById('url-t8').value);
       formData.append('sheet_name', sheet);
+      formData.append('is_weekend', isWeekendVal);
 
       setLoading('t8', true);
       try {
@@ -7625,16 +7876,72 @@ function handleRequest(e) {
           throw new Error(errData.error || 'Xử lý thất bại.');
         }
         const blob = await res.blob();
-        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, 'TỔNG HỢP CÔNG VIỆC P.CNTT (CỐ ĐỊNH).xlsx');
+        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, defFileName);
         if (picker.handle) {
           showAlert('alert-t8', 'success', `✅ Đã lưu file "${savedName}" thành công tại vị trí bạn đã chọn!`);
         } else {
-          showAlert('alert-t8', 'success', `✅ Đã tổng hợp từ Google Sheets của viện và tải xuống file thành công!`);
+          showAlert('alert-t8', 'success', `✅ Đã xuất báo cáo BC P.CNTT thành công!`);
         }
       } catch (err) {
         showAlert('alert-t8', 'error', '❌ Lỗi: ' + err.message);
       } finally {
-        setLoading('t8', false, '🚀 Tổng Hợp Từ Google Sheets (A4 Ngang)');
+        setLoading('t8', false, '🚀 Tổng Hợp Theo Sheet Đã Chọn');
+      }
+    }
+
+    async function handleTask8Weekend(e) {
+      if (e) e.preventDefault();
+      hideAlert('alert-t8');
+      const sel = document.getElementById('select-t8-sheet');
+      let sheet = sel ? sel.value : '';
+
+      // Tự tìm option gộp cuối tuần nếu đang chọn ngày đơn
+      if (!sheet || !sheet.includes(',')) {
+        if (sel) {
+          for (let opt of sel.options) {
+            if (opt.value && opt.value.includes(',')) {
+              sheet = opt.value;
+              sel.value = sheet;
+              onTask8SheetChanged();
+              break;
+            }
+          }
+        }
+      }
+      if (!sheet) {
+        showAlert('alert-t8', 'error', '⚠️ Vui lòng nhấn "Nạp Danh Sách Sheet Ngày" trước khi gộp cuối tuần!');
+        return;
+      }
+
+      const parts = sheet.split(',');
+      const defFileName = `TỔNG HỢP CÔNG VIỆC P.CNTT (CUỐI TUẦN ${parts[0]} - ${parts[parts.length-1]}).xlsx`;
+
+      const picker = await promptSaveFile(defFileName);
+      if (picker.canceled) return;
+
+      const formData = new FormData();
+      formData.append('url', document.getElementById('url-t8').value);
+      formData.append('sheet_name', sheet);
+      formData.append('is_weekend', '1');
+
+      setLoading('t8-weekend', true);
+      try {
+        const res = await fetch('/api/task-8?action=task-8', { method: 'POST', body: formData });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({ error: 'Lỗi máy chủ.' }));
+          throw new Error(errData.error || 'Xử lý thất bại.');
+        }
+        const blob = await res.blob();
+        const savedName = await writeBlobToHandleOrDownload(blob, picker.handle, defFileName);
+        if (picker.handle) {
+          showAlert('alert-t8', 'success', `✅ Đã lưu file gộp cuối tuần "${savedName}" thành công!`);
+        } else {
+          showAlert('alert-t8', 'success', `✅ Đã gộp thành công dữ liệu Thứ 6 + Thứ 7 + Chủ Nhật vào 1 báo cáo duy nhất!`);
+        }
+      } catch (err) {
+        showAlert('alert-t8', 'error', '❌ Lỗi: ' + err.message);
+      } finally {
+        setLoading('t8-weekend', false, '✨ Gộp Báo Cáo Cuối Tuần (T6+T7+CN)');
       }
     }
 
@@ -11025,16 +11332,46 @@ def handle_task_8():
         if not sheet_name:
             return jsonify({"error": "Vui lòng chọn Sheet ngày cần xử lý."}), 400
 
+        is_weekend = str(request.form.get("is_weekend", "")).lower() in ("1", "true", "yes")
         url = request.form.get("url") or DEFAULT_FIXED_GSHEET_URL
-        try:
-            stream = download_google_sheet_single_tab(url.strip(), sheet_name)
-        except Exception:
-            stream = download_google_sheet(url.strip())
-        out_io = process_cntt_web(stream, sheet_name)
+
+        # Xác định danh sách sheet: Nếu có dấu phẩy hoặc yêu cầu gộp cuối tuần
+        if "," in sheet_name:
+            sheet_list = [s.strip() for s in sheet_name.split(",") if s.strip()]
+            is_weekend = True
+        elif is_weekend:
+            try:
+                all_sheets = get_google_sheet_names(url.strip())
+                sheet_list = find_weekend_cluster_for_sheet(sheet_name, all_sheets)
+                if len(sheet_list) > 1:
+                    is_weekend = True
+                else:
+                    sheet_list = [sheet_name]
+            except Exception:
+                sheet_list = [sheet_name]
+        else:
+            sheet_list = [sheet_name]
+
+        # Tải dữ liệu và xử lý
+        if len(sheet_list) > 1:
+            try:
+                stream = download_google_sheet_tabs(url.strip(), sheet_list)
+            except Exception:
+                stream = download_google_sheet(url.strip())
+            out_io = process_cntt_web(stream, sheet_list)
+            download_name = f"TỔNG HỢP CÔNG VIỆC P.CNTT (CUỐI TUẦN {sheet_list[0]} - {sheet_list[-1]}).xlsx"
+        else:
+            try:
+                stream = download_google_sheet_single_tab(url.strip(), sheet_list[0])
+            except Exception:
+                stream = download_google_sheet(url.strip())
+            out_io = process_cntt_web(stream, sheet_list[0])
+            download_name = f"TỔNG HỢP CÔNG VIỆC P.CNTT - NGÀY {sheet_list[0]}.xlsx"
+
         return send_file(
             out_io,
             as_attachment=True,
-            download_name="TỔNG HỢP CÔNG VIỆC P.CNTT (CỐ ĐỊNH).xlsx",
+            download_name=download_name,
             mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
     except Exception as e:
