@@ -4708,7 +4708,10 @@ HTML_PAGE = """<!DOCTYPE html>
             <li data-task="15" onclick="switchTask(15)" class="tree-child-item">
               <div class="nav-icon">📱</div>
               <div class="nav-text">
-                <span class="nav-title">Tra Cứu Danh Bạ</span>
+                <span class="nav-title" style="display:flex; align-items:center; justify-content:space-between;">
+                  <span>Tra Cứu Danh Bạ</span>
+                  <span id="nav-lock-15" class="nav-lock" style="font-size:0.8rem; margin-left:6px;" title="Chức năng bảo mật (Yêu cầu PIN 8889)">🔒</span>
+                </span>
                 <span class="nav-desc">Danh bạ 47 khoa/phòng & 1.020 CB</span>
               </div>
             </li>
@@ -6594,32 +6597,50 @@ function handleRequest(e) {
       try { localStorage.removeItem(key); } catch (e) {}
     }
 
+    function isTaskProtected(taskId) {
+      return parseInt(taskId) === 15;
+    }
+
+    function isTaskUnlocked(taskId) {
+      taskId = parseInt(taskId);
+      if (!isTaskProtected(taskId)) return true;
+      return unlockedTasks.has(15) || safeStorageGet('danhba_unlocked_8889') === '1';
+    }
+
     function isAppUnlocked() {
-      return true; // Tạm thời mở toàn bộ chức năng
+      return true; // Tất cả các chức năng khác không yêu cầu pass
     }
 
     function updateAuthUI() {
-      document.querySelectorAll('.sidebar-menu li[data-task]').forEach(li => {
-        const lockEl = li.querySelector('.nav-lock');
-        if (lockEl) {
-          lockEl.style.display = 'none';
-        }
-      });
+      const is15Unlocked = isTaskUnlocked(15);
+      const lock15 = document.getElementById('nav-lock-15');
+      if (lock15) {
+        lock15.textContent = is15Unlocked ? '🔓' : '🔒';
+        lock15.title = is15Unlocked ? 'Đã mở khóa (Mã PIN 8889)' : 'Chức năng bảo vệ mã PIN 8889';
+        lock15.style.color = is15Unlocked ? '#10b981' : '#f59e0b';
+      }
       const statusText = document.getElementById('auth-status-text');
       const btnRelock = document.getElementById('btn-relock');
       if (statusText) {
-        statusText.innerHTML = '🟢 Hệ thống sẵn sàng (Đã mở toàn bộ chức năng)';
-        statusText.style.color = '#34d399';
+        if (is15Unlocked) {
+          statusText.innerHTML = '🟢 Hệ thống sẵn sàng (Danh Bạ: Đã mở 🔓)';
+          statusText.style.color = '#34d399';
+        } else {
+          statusText.innerHTML = '🛡️ Hệ thống sẵn sàng (Danh Bạ: Khóa 🔒)';
+          statusText.style.color = '#94a3b8';
+        }
       }
       if (btnRelock) {
-        btnRelock.style.display = 'none';
+        btnRelock.style.display = is15Unlocked ? 'inline-block' : 'none';
+        btnRelock.textContent = 'Khóa Danh Bạ';
+        btnRelock.title = 'Khóa lại chức năng Tra Cứu Danh Bạ';
       }
       const btnHeaderUnlock = document.getElementById('btn-header-unlock');
       const badgeHeaderUnlocked = document.getElementById('badge-header-unlocked');
       if (btnHeaderUnlock) btnHeaderUnlock.style.display = 'none';
       if (badgeHeaderUnlocked) {
         badgeHeaderUnlocked.style.display = 'inline-flex';
-        badgeHeaderUnlocked.textContent = '🟢 Đã mở tất cả chức năng';
+        badgeHeaderUnlocked.textContent = is15Unlocked ? '🟢 Danh bạ đã mở khóa' : '🔒 Danh bạ bảo mật (PIN 8889)';
       }
     }
 
@@ -6738,6 +6759,10 @@ function handleRequest(e) {
 
     function switchTask(taskId) {
       taskId = parseInt(taskId) || 10;
+      if (isTaskProtected(taskId) && !isTaskUnlocked(taskId)) {
+        openAuthModal(taskId);
+        return;
+      }
       executeSwitchTask(taskId);
     }
 
@@ -6811,7 +6836,25 @@ function handleRequest(e) {
       }
     }
     function openAuthModal(taskId) {
-      if (taskId) executeSwitchTask(taskId);
+      taskId = parseInt(taskId) || 15;
+      pendingTaskId = taskId;
+      const modal = document.getElementById('auth-modal');
+      const nameEl = document.getElementById('auth-task-name');
+      const input = document.getElementById('auth-password-input');
+      const errEl = document.getElementById('auth-error-msg');
+      if (nameEl) {
+        nameEl.textContent = taskMeta[taskId] ? taskMeta[taskId].title : 'Tra Cứu Danh Bạ';
+      }
+      if (errEl) {
+        errEl.style.display = 'none';
+        errEl.textContent = '';
+      }
+      if (input) {
+        input.value = '';
+        input.style.borderColor = '#cbd5e1';
+      }
+      if (modal) modal.style.display = 'flex';
+      setTimeout(() => { if (input) input.focus(); }, 120);
     }
 
     function closeAuthModal() {
@@ -6832,16 +6875,24 @@ function handleRequest(e) {
       if (!input) return;
       const val = input.value.trim();
       if (val === UNLOCK_PASSWORD) {
-        const target = pendingTaskId || 10;
+        const target = pendingTaskId || 15;
         unlockedTasks.add(target);
+        if (target === 15) {
+          safeStorageSet('danhba_unlocked_8889', '1');
+        }
         pendingTaskId = null;
         closeAuthModal();
+        updateAuthUI();
         executeSwitchTask(target);
-        showCnttToast('✓ MỞ KHÓA THÀNH CÔNG', 'Đã xác thực mã PIN 8889 và mở chức năng ' + (taskMeta[target] ? taskMeta[target].badge : ''));
-        showMiniToast('🔓 Mở khóa thành công!');
+        if (typeof showCnttToast === 'function') {
+          showCnttToast('✓ MỞ KHÓA THÀNH CÔNG', 'Đã xác thực mã PIN 8889 và mở chức năng ' + (taskMeta[target] ? taskMeta[target].badge : ''));
+        }
+        if (typeof showMiniToast === 'function') {
+          showMiniToast('🔓 Mở khóa thành công!');
+        }
       } else {
         if (errEl) {
-          errEl.textContent = '❌ Mật khẩu không chính xác! Vui lòng nhập mã PIN: 8889.';
+          errEl.textContent = '❌ Mật khẩu không chính xác! Vui lòng nhập đúng mã PIN: 8889.';
           errEl.style.display = 'block';
         }
         input.classList.remove('auth-shake');
@@ -6853,11 +6904,16 @@ function handleRequest(e) {
     }
 
     function lockApp() {
-      safeStorageRemove('app_unlocked_8889');
-      document.cookie = "app_auth_pass=; path=/; max-age=0; SameSite=Lax";
+      unlockedTasks.delete(15);
+      safeStorageRemove('danhba_unlocked_8889');
       updateAuthUI();
-      executeSwitchTask(10);
-      showMiniToast('🔒 Đã khóa lại các chức năng. Chuyển về màn hình Thống Kê Lỗi XML BHYT.');
+      const currentTask = parseInt(safeStorageGet('last_active_task') || '10');
+      if (currentTask === 15) {
+        executeSwitchTask(10);
+      }
+      if (typeof showMiniToast === 'function') {
+        showMiniToast('🔒 Đã khóa lại chức năng Tra Cứu Danh Bạ.');
+      }
     }
 
     function previewFiles(input, badgeId) {
@@ -8827,6 +8883,11 @@ function handleRequest(e) {
       try { updateAuthUI(); } catch (e) {}
       try { initFixedMDInsightUI(); } catch (e) {}
       const targetTask = getTaskFromUrl();
+      if (isTaskProtected(targetTask) && !isTaskUnlocked(targetTask)) {
+        executeSwitchTask(10);
+        openAuthModal(targetTask);
+        return;
+      }
       executeSwitchTask(targetTask);
     }
 
@@ -8834,11 +8895,21 @@ function handleRequest(e) {
     window.addEventListener('hashchange', () => {
       if (isProgrammaticSwitch) return;
       const targetTask = getTaskFromUrl();
+      if (isTaskProtected(targetTask) && !isTaskUnlocked(targetTask)) {
+        executeSwitchTask(10);
+        openAuthModal(targetTask);
+        return;
+      }
       executeSwitchTask(targetTask);
     });
     window.addEventListener('popstate', () => {
       if (isProgrammaticSwitch) return;
       const targetTask = getTaskFromUrl();
+      if (isTaskProtected(targetTask) && !isTaskUnlocked(targetTask)) {
+        executeSwitchTask(10);
+        openAuthModal(targetTask);
+        return;
+      }
       executeSwitchTask(targetTask);
     });
   
