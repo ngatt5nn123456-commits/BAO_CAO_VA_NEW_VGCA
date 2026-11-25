@@ -2708,8 +2708,8 @@ HTML_PAGE = """<!DOCTYPE html>
     }
     @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* TÁC VỤ 8: MULTI-SHEET SELECTOR */
-    .t8-sheet-pill {
+    /* TÁC VỤ 8 & 14: MULTI-SHEET SELECTOR */
+    .t8-sheet-pill, .t14-sheet-pill {
       display: flex;
       align-items: center;
       gap: 7px;
@@ -2724,24 +2724,24 @@ HTML_PAGE = """<!DOCTYPE html>
       user-select: none;
       transition: all 0.15s ease;
     }
-    .t8-sheet-pill:hover {
+    .t8-sheet-pill:hover, .t14-sheet-pill:hover {
       border-color: #93c5fd;
       background: #f0f7ff;
     }
-    .t8-sheet-pill.checked {
+    .t8-sheet-pill.checked, .t14-sheet-pill.checked {
       background: #eff6ff;
       border-color: #3b82f6;
       color: #1d4ed8;
       font-weight: 600;
       box-shadow: 0 1px 3px rgba(59, 130, 246, 0.15);
     }
-    .t8-sheet-pill input[type="checkbox"] {
+    .t8-sheet-pill input[type="checkbox"], .t14-sheet-pill input[type="checkbox"] {
       width: 15px;
       height: 15px;
       accent-color: #2563eb;
       cursor: pointer;
     }
-    .t8-quick-btn {
+    .t8-quick-btn, .t14-quick-btn {
       background: #f8fafc;
       border: 1px solid #cbd5e1;
       color: #334155;
@@ -2753,7 +2753,7 @@ HTML_PAGE = """<!DOCTYPE html>
       transition: all 0.15s ease;
       white-space: nowrap;
     }
-    .t8-quick-btn:hover {
+    .t8-quick-btn:hover, .t14-quick-btn:hover {
       background: #eff6ff;
       border-color: #3b82f6;
       color: #1d4ed8;
@@ -5283,13 +5283,15 @@ HTML_PAGE = """<!DOCTYPE html>
             </div>
             <div class="guide-box">
               <h3>🎯 Mục đích:</h3>
-              <p>Tự động đọc dữ liệu nhật ký sửa chữa từ Google Sheets cố định của Phòng CNTT, thống kê tổng hợp số lượng từng <b>Lỗi chủ quan</b> theo thứ hạng giảm dần và liệt kê chi tiết các <b>Khoa/Phòng/Trung tâm phát sinh</b>.</p>
+              <p>Tự động đọc dữ liệu nhật ký sửa chữa từ Google Sheets cố định của Phòng CNTT, cho phép <b>tùy ý chọn nhiều sheet ngày (gộp 2, 3 ngày hoặc nhiều ngày)</b> để thống kê tổng hợp số lượng từng <b>Lỗi chủ quan</b> theo thứ hạng giảm dần và liệt kê chi tiết các <b>Khoa/Phòng/Trung tâm phát sinh</b>.</p>
               <h3>💡 Tiện ích đặc biệt:</h3>
-              <p>Xem bảng xếp hạng trực tiếp trên web với nút <b>Sao Chép (📋)</b> nhanh danh sách khoa phòng cho từng lỗi, hoặc bấm xuất báo cáo Excel chuẩn A4 ngang chỉ với 1 click.</p>
+              <p>• <b>Chọn nhiều sheet linh hoạt:</b> Bạn có thể tích chọn 1 hoặc nhiều sheet ngày bất kỳ, hệ thống sẽ tự động gộp tất cả số liệu vào 1 bảng thống kê duy nhất.<br>
+              • <b>Thao tác siêu nhanh:</b> Có sẵn các nút chọn nhanh 1 ngày, 2 ngày, 3 ngày mới nhất hoặc chọn tất cả.<br>
+              • <b>Xem và sao chép trực tiếp:</b> Xem bảng xếp hạng trực tiếp trên web với nút <b>Sao Chép (📋)</b> nhanh danh sách khoa phòng cho từng lỗi, hoặc bấm xuất báo cáo Excel chuẩn A4 ngang chỉ với 1 click.</p>
               <h3>📝 Các bước thực hiện:</h3>
               <ol>
                 <li><b>Bước 1:</b> Nhấn nút <b>"⚡ Nạp Danh Sách Sheet Ngày"</b> để lấy danh sách các ngày trong Google Sheets.</li>
-                <li><b>Bước 2:</b> Chọn Sheet ngày cần thống kê (mặc định hệ thống tự chọn ngày mới nhất).</li>
+                <li><b>Bước 2:</b> Tích chọn các Sheet ngày cần thống kê (hoặc bấm các nút chọn nhanh).</li>
                 <li><b>Bước 3:</b> Nhấn <b>"🚀 Xem Báo Cáo Thống Kê"</b> để hiển thị bảng xếp hạng trực tiếp, hoặc nhấn <b>"📄 Xuất Excel (A4 Ngang)"</b> để tải file Excel về máy.</li>
               </ol>
             </div>
@@ -5298,7 +5300,7 @@ HTML_PAGE = """<!DOCTYPE html>
           <div class="card">
             <div class="card-header">
               <span class="icon">📋</span>
-              <h2>Thao Tác Thực Thi & Chọn Dữ Liệu</h2>
+              <h2>Thao Tác Thực Thi & Chọn Nhiều Sheet Dữ Liệu</h2>
             </div>
             <div>
               <div class="form-group">
@@ -5310,18 +5312,45 @@ HTML_PAGE = """<!DOCTYPE html>
               </div>
 
               <div class="form-group">
-                <label class="form-label">2️⃣ Chọn Sheet ngày cần xử lý:</label>
-                <select id="select-t14-sheet" class="form-input" onchange="onTask14SheetChanged()">
-                  <option value="">-- Vui lòng nhấn 'Nạp Danh Sách Sheet Ngày' trước --</option>
-                </select>
+                <label class="form-label">2️⃣ Chọn các Sheet ngày cần thống kê (Cho phép chọn nhiều):</label>
+
+                <!-- Thanh nút chọn nhanh -->
+                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
+                  <button type="button" class="t14-quick-btn" onclick="selectT14RecentDays(1)" title="Chỉ chọn 1 ngày trên cùng">📅 Chọn 1 ngày</button>
+                  <button type="button" class="t14-quick-btn" onclick="selectT14RecentDays(2)" title="Chọn 2 ngày mới nhất trên cùng">⚡ Chọn 2 ngày mới nhất</button>
+                  <button type="button" class="t14-quick-btn" onclick="selectT14RecentDays(3)" title="Chọn 3 ngày mới nhất trên cùng">⚡ Chọn 3 ngày mới nhất</button>
+                  <button type="button" class="t14-quick-btn" onclick="selectAllT14Sheets(true)" title="Chọn tất cả các sheet">☑️ Chọn tất cả</button>
+                  <button type="button" class="t14-quick-btn" onclick="selectAllT14Sheets(false)" style="background:#f1f5f9; color:#64748b;" title="Bỏ chọn tất cả">🔄 Bỏ chọn hết</button>
+                </div>
+
+                <!-- Ô tìm kiếm / lọc nhanh sheet -->
+                <div style="position:relative; margin-bottom:8px;">
+                  <input type="text" id="t14-sheet-search" class="form-input" placeholder="🔍 Lọc nhanh sheet ngày (ví dụ: 21, 22, 23)..." oninput="filterT14SheetList(this.value)" style="padding-left:32px; font-size:0.85rem; height:36px;">
+                  <span style="position:absolute; left:10px; top:9px; opacity:0.6; pointer-events:none; font-size:0.85rem;">🔍</span>
+                </div>
+
+                <!-- Container danh sách checkbox pills -->
+                <div id="t14-sheet-list-container" style="max-height:220px; overflow-y:auto; border:1px solid #cbd5e1; border-radius:8px; padding:10px; background:#f8fafc; display:grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap:7px;">
+                  <div style="grid-column: 1 / -1; text-align:center; padding:16px; color:#64748b; font-size:13px;">
+                    ⏳ Vui lòng nhấn nút <b>"⚡ Nạp Danh Sách Sheet Ngày"</b> ở trên để tải danh sách các ngày.
+                  </div>
+                </div>
+
+                <!-- Ẩn select cũ để tương thích nếu cần -->
+                <select id="select-t14-sheet" style="display:none;"></select>
+
+                <!-- Badge tóm tắt các sheet đã chọn -->
+                <div id="t14-selected-summary" style="margin-top:10px; padding:9px 12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; font-size:13px; color:#1e40af;">
+                  ℹ️ Chưa có sheet nào được chọn. Hãy nạp danh sách và tích chọn các sheet cần thống kê.
+                </div>
               </div>
 
               <div style="display: flex; gap: 10px; margin-top: 14px;">
-                <button type="button" class="btn" id="btn-t14-view" onclick="loadTask14Data()" style="flex: 1.2; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);">
+                <button type="button" class="btn" id="btn-t14-view" onclick="loadTask14Data()" style="flex: 1.2; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); font-weight:700;">
                   <span class="spinner" id="spin-t14-view"></span>
-                  <span id="txt-t14-view">🚀 Xem Báo Cáo Thống Kê</span>
+                  <span id="txt-t14-view">🚀 Xem Báo Cáo Thống Kê (Gộp Dữ Liệu)</span>
                 </button>
-                <button type="button" class="btn btn-secondary" id="btn-t14-excel" onclick="exportTask14Excel()" style="flex: 1; background: #047857; color: #fff; border: none;">
+                <button type="button" class="btn btn-secondary" id="btn-t14-excel" onclick="exportTask14Excel()" style="flex: 1; background: #047857; color: #fff; border: none; font-weight:700;">
                   <span class="spinner" id="spin-t14-excel"></span>
                   <span id="txt-t14-excel">📄 Xuất Excel (A4 Ngang)</span>
                 </button>
@@ -7673,21 +7702,119 @@ function handleRequest(e) {
 
 
     // ============================================================
-    // LOGIC TÁC VỤ 14: BC CV HÀNG NGÀY P.CNTT (XẾP HẠNG LỖI CHỦ QUAN)
+    // LOGIC TÁC VỤ 14: BC CV HÀNG NGÀY P.CNTT (XẾP HẠNG LỖI CHỦ QUAN - GỘP NHIỀU SHEET)
     // ============================================================
     let t14Records = [];
     let t14CurrentSheet = '';
 
     async function initTask14() {
-      const sel = document.getElementById('select-t14-sheet');
-      if (sel && (!sel.options || sel.options.length <= 1)) {
+      if (!window._t14SheetsList || window._t14SheetsList.length === 0) {
         await fetchGSheetsForTask14(true);
       }
     }
 
+    function populateT14SheetList(sheets) {
+      window._t14SheetsList = sheets;
+      const container = document.getElementById('t14-sheet-list-container');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!sheets || sheets.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:16px; color:#ef4444; font-size:13px;">❌ Không tìm thấy sheet nào trong tài liệu!</div>';
+        updateT14SelectedSummary();
+        return;
+      }
+      sheets.forEach((s, idx) => {
+        const isChecked = (idx === 0); // Mặc định chọn sheet đầu tiên (mới nhất)
+        const label = document.createElement('label');
+        label.className = 't14-sheet-pill' + (isChecked ? ' checked' : '');
+        label.setAttribute('data-sheet', s);
+        label.innerHTML = `
+          <input type="checkbox" value="${s}" ${isChecked ? 'checked' : ''} onchange="onT14SheetCheckboxChange(this)">
+          <span>📅 Sheet: ${s}</span>
+        `;
+        container.appendChild(label);
+      });
+      updateT14SelectedSummary();
+    }
+
+    function onT14SheetCheckboxChange(input) {
+      const pill = input.closest('.t14-sheet-pill');
+      if (pill) {
+        pill.classList.toggle('checked', input.checked);
+      }
+      updateT14SelectedSummary();
+    }
+
+    function getSelectedT14Sheets() {
+      const cbs = document.querySelectorAll('#t14-sheet-list-container input[type="checkbox"]:checked');
+      return Array.from(cbs).map(cb => cb.value.trim()).filter(Boolean);
+    }
+
+    function updateT14SelectedSummary() {
+      const summary = document.getElementById('t14-selected-summary');
+      if (!summary) return;
+      const selected = getSelectedT14Sheets();
+      if (selected.length === 0) {
+        summary.innerHTML = '⚠️ <b>Chưa chọn sheet nào!</b> Vui lòng tick chọn ít nhất 1 sheet bên trên để xem thống kê.';
+        summary.style.background = '#fef2f2';
+        summary.style.borderColor = '#fecaca';
+        summary.style.color = '#b91c1c';
+      } else if (selected.length === 1) {
+        summary.innerHTML = `📊 <b>Đã chọn 1 sheet:</b> [ <b style="color:#1d4ed8;">${selected[0]}</b> ] ─ Xem thống kê riêng cho ngày ${selected[0]}`;
+        summary.style.background = '#eff6ff';
+        summary.style.borderColor = '#bfdbfe';
+        summary.style.color = '#1e40af';
+      } else {
+        const preview = selected.length <= 4 ? selected.join(', ') : (selected.slice(0, 3).join(', ') + '... (tổng ' + selected.length + ' sheet)');
+        summary.innerHTML = `📊 <b>Đã chọn ${selected.length} sheet:</b> [ <b style="color:#047857;">${preview}</b> ] ─ Hệ thống sẽ <b>tự động gộp dữ liệu các ngày</b> vào 1 báo cáo duy nhất!`;
+        summary.style.background = '#ecfdf5';
+        summary.style.borderColor = '#a7f3d0';
+        summary.style.color = '#065f46';
+      }
+    }
+
+    function selectT14RecentDays(n) {
+      const pills = document.querySelectorAll('#t14-sheet-list-container .t14-sheet-pill');
+      pills.forEach((pill, idx) => {
+        const cb = pill.querySelector('input[type="checkbox"]');
+        if (cb) {
+          cb.checked = (idx < n);
+          pill.classList.toggle('checked', cb.checked);
+        }
+      });
+      updateT14SelectedSummary();
+    }
+
+    function selectAllT14Sheets(checked) {
+      const pills = document.querySelectorAll('#t14-sheet-list-container .t14-sheet-pill');
+      pills.forEach(pill => {
+        const cb = pill.querySelector('input[type="checkbox"]');
+        if (cb) {
+          cb.checked = checked;
+          pill.classList.toggle('checked', checked);
+        }
+      });
+      updateT14SelectedSummary();
+    }
+
+    function filterT14SheetList(query) {
+      const q = (query || '').toLowerCase().trim();
+      const pills = document.querySelectorAll('#t14-sheet-list-container .t14-sheet-pill');
+      pills.forEach(pill => {
+        const s = pill.getAttribute('data-sheet') || pill.textContent;
+        if (!q || s.toLowerCase().includes(q)) {
+          pill.style.display = 'flex';
+        } else {
+          pill.style.display = 'none';
+        }
+      });
+    }
+
     async function fetchGSheetsForTask14(autoLoadData = false) {
-      const sel = document.getElementById('select-t14-sheet');
-      sel.innerHTML = '<option value="">⏳ Đang nạp danh sách các sheet ngày...</option>';
+      const listContainer = document.getElementById('t14-sheet-list-container');
+      if (listContainer) {
+        listContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:16px; color:#2563eb; font-size:13px;">⏳ Đang quét danh sách các sheet ngày từ Google Sheets...</div>';
+      }
       hideAlert('alert-t14');
       const url = document.getElementById('url-t14').value.trim();
 
@@ -7697,8 +7824,8 @@ function handleRequest(e) {
 
       try {
         formData.append('task', '14');
-      formData.append('sub_action', 'get-sheets');
-      const res = await fetch('/api/task-14?action=task-14&sub_action=get-sheets', {
+        formData.append('sub_action', 'get-sheets');
+        const res = await fetch('/api/task-14?action=task-14&sub_action=get-sheets', {
           method: 'POST',
           body: formData
         });
@@ -7707,55 +7834,47 @@ function handleRequest(e) {
           throw new Error(data.error || 'Lỗi nạp sheet ngày');
         }
 
-        sel.innerHTML = '';
         if (!data.sheets || data.sheets.length === 0) {
           throw new Error('Không tìm thấy sheet nào trong file Google Sheets!');
         }
 
-        data.sheets.forEach((s, idx) => {
-          const opt = document.createElement('option');
-          opt.value = s;
-          opt.textContent = `📅 Sheet: ${s}`;
-          if (idx === data.sheets.length - 1) {
-            opt.selected = true;
-          }
-          sel.appendChild(opt);
-        });
-
+        populateT14SheetList(data.sheets);
         showAlert('alert-t14', 'success', `✅ Đã nạp thành công ${data.sheets.length} sheet ngày! Chọn ngày để xem thống kê.`);
         if (autoLoadData) {
           await loadTask14Data();
         }
       } catch (err) {
-        sel.innerHTML = '<option value="">❌ Không đọc được sheet. Vui lòng kiểm tra lại!</option>';
+        if (listContainer) {
+          listContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:16px; color:#ef4444; font-size:13px;">❌ Không đọc được sheet. Vui lòng kiểm tra lại!</div>';
+        }
         showAlert('alert-t14', 'error', '❌ Lỗi: ' + err.message);
       }
     }
 
     function onTask14SheetChanged() {
-      // User changed sheet, auto refresh view
       loadTask14Data();
     }
 
     async function loadTask14Data() {
-      const sheet = document.getElementById('select-t14-sheet').value;
-      if (!sheet) {
-        showAlert('alert-t14', 'error', '⚠️ Vui lòng nhấn "Nạp Danh Sách Sheet Ngày" và chọn sheet cần xem!');
+      const sheets = getSelectedT14Sheets();
+      if (!sheets || sheets.length === 0) {
+        showAlert('alert-t14', 'error', '⚠️ Vui lòng tick chọn ít nhất 1 sheet ngày cần xem!');
         return;
       }
       hideAlert('alert-t14');
       setLoading('t14-view', true);
       const container = document.getElementById('bccv-results-container');
 
+      const sheetParam = sheets.join(',');
       const formData = new FormData();
       formData.append('url', document.getElementById('url-t14').value);
-      formData.append('sheet_name', sheet);
+      formData.append('sheet_name', sheetParam);
       formData.append('action', 'get-data');
 
       try {
         formData.append('task', '14');
-      formData.append('sub_action', 'get-data');
-      const res = await fetch('/api/task-14?action=task-14&sub_action=get-data', {
+        formData.append('sub_action', 'get-data');
+        const res = await fetch('/api/task-14?action=task-14&sub_action=get-data', {
           method: 'POST',
           body: formData
         });
@@ -7765,21 +7884,22 @@ function handleRequest(e) {
         }
 
         t14Records = data.records || [];
-        t14CurrentSheet = data.sheet_name || sheet;
+        t14CurrentSheet = sheets.length > 1 ? (sheets.length <= 3 ? `Gộp ngày ${sheets.join(', ')}` : `Gộp ${sheets.length} ngày (${sheets[0]} - ${sheets[sheets.length-1]})`) : sheets[0];
 
         document.getElementById('t14-kpi-total').textContent = (data.total_cases || 0).toLocaleString();
         document.getElementById('t14-kpi-types').textContent = (data.total_error_types || 0).toLocaleString();
         document.getElementById('t14-kpi-depts').textContent = (data.total_departments || 0).toLocaleString();
-        document.getElementById('t14-sheet-badge').textContent = `Ngày ${t14CurrentSheet}`;
+        document.getElementById('t14-sheet-badge').textContent = sheets.length > 1 ? `🗓️ ${t14CurrentSheet}` : `Ngày ${t14CurrentSheet}`;
 
         renderTask14Table(t14Records);
         if (container) container.style.display = 'block';
 
-        showAlert('alert-t14', 'success', `✅ Đã tổng hợp thành công ${data.total_cases} ca từ sheet "${t14CurrentSheet}"!`);
+        const sheetDesc = sheets.length > 1 ? `${sheets.length} sheet (${t14CurrentSheet})` : `sheet "${sheets[0]}"`;
+        showAlert('alert-t14', 'success', `✅ Đã tổng hợp thành công ${data.total_cases} ca từ ${sheetDesc}!`);
       } catch (err) {
         showAlert('alert-t14', 'error', '❌ Lỗi: ' + err.message);
       } finally {
-        setLoading('t14-view', false, '🚀 Xem Báo Cáo Thống Kê');
+        setLoading('t14-view', false, '🚀 Xem Báo Cáo Thống Kê (Gộp Dữ Liệu)');
       }
     }
 
@@ -7874,30 +7994,39 @@ function handleRequest(e) {
     }
 
     async function exportTask14Excel() {
-      const sheet = document.getElementById('select-t14-sheet').value;
-      if (!sheet) {
-        showAlert('alert-t14', 'error', '⚠️ Vui lòng nhấn "Nạp Danh Sách Sheet Ngày" và chọn sheet cần xuất!');
+      const sheets = getSelectedT14Sheets();
+      if (!sheets || sheets.length === 0) {
+        showAlert('alert-t14', 'error', '⚠️ Vui lòng tick chọn ít nhất 1 sheet cần xuất Excel!');
         return;
       }
       hideAlert('alert-t14');
       setLoading('t14-excel', true);
 
-      const defaultFilename = `BC_CV_HANG_NGAY_PCNTT_${sheet.split('/').join('-')}.xlsx`;
+      let defaultFilename = '';
+      if (sheets.length === 1) {
+        defaultFilename = `BC_CV_HANG_NGAY_PCNTT_${sheets[0].split('/').join('-')}.xlsx`;
+      } else if (sheets.length <= 3) {
+        defaultFilename = `BC_CV_HANG_NGAY_PCNTT_GOP_${sheets.join('-').split('/').join('-')}.xlsx`;
+      } else {
+        defaultFilename = `BC_CV_HANG_NGAY_PCNTT_GOP_${sheets.length}_NGAY_${sheets[0].split('/').join('-')}_${sheets[sheets.length-1].split('/').join('-')}.xlsx`;
+      }
+
       const picker = await promptSaveFile(defaultFilename);
       if (picker.canceled) {
         setLoading('t14-excel', false, '📄 Xuất Excel (A4 Ngang)');
         return;
       }
 
+      const sheetParam = sheets.join(',');
       const formData = new FormData();
       formData.append('url', document.getElementById('url-t14').value);
-      formData.append('sheet_name', sheet);
+      formData.append('sheet_name', sheetParam);
       formData.append('action', 'export-excel');
 
       try {
         formData.append('task', '14');
-      formData.append('sub_action', 'export-excel');
-      const res = await fetch('/api/task-14?action=task-14&sub_action=export-excel', {
+        formData.append('sub_action', 'export-excel');
+        const res = await fetch('/api/task-14?action=task-14&sub_action=export-excel', {
           method: 'POST',
           body: formData
         });
@@ -11179,14 +11308,15 @@ def handle_task_7():
 def aggregate_sheet_bccv(url=None, sheet_name=""):
     url = url or DEFAULT_BCCV_GSHEET_URL
     spreadsheet_id = extract_spreadsheet_id(url)
-    encoded = urllib.parse.quote(sheet_name)
-    csv_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/gviz/tq?tqx=out:csv&sheet={encoded}"
-    req = urllib.request.Request(csv_url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=15) as resp:
-        raw_bytes = resp.read()
-        content = raw_bytes.decode("utf-8", errors="ignore")
-    rows = list(csv.reader(io.StringIO(content)))
-    if not rows:
+    
+    if isinstance(sheet_name, list):
+        sheet_list = sheet_name
+    elif "," in str(sheet_name):
+        sheet_list = [s.strip() for s in str(sheet_name).split(",") if s.strip()]
+    else:
+        sheet_list = [str(sheet_name).strip()] if str(sheet_name).strip() else []
+
+    if not sheet_list:
         return []
 
     error_counts = {}
@@ -11232,53 +11362,67 @@ def aggregate_sheet_bccv(url=None, sheet_name=""):
         (34, "Sửa cảm biến máy in")
     ]
 
-    for r in rows[1:]:
-        dept = r[1].strip() if len(r) > 1 else ""
-        if not dept or dept.upper() in ("TỔNG CỘNG", "STT", "KHOA, PHÒNG, TRUNG TÂM", "KHOA/PHÒNG"):
-            continue
+    for s_name in sheet_list:
+        try:
+            encoded = urllib.parse.quote(s_name)
+            csv_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/gviz/tq?tqx=out:csv&sheet={encoded}"
+            req = urllib.request.Request(csv_url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                raw_bytes = resp.read()
+                content = raw_bytes.decode("utf-8", errors="ignore")
+            rows = list(csv.reader(io.StringIO(content)))
+            if not rows:
+                continue
 
-        other_text = r[34].strip() if len(r) > 34 else ""
-
-        for col_idx, err_label in COL_MAPPINGS:
-            idx0 = col_idx - 1
-            if len(r) > idx0 and r[idx0].strip():
-                v = r[idx0].strip()
-                try:
-                    c = int(float(v))
-                except Exception:
-                    c = 1
-                if c <= 0 or c > 50:
+            for r in rows[1:]:
+                dept = r[1].strip() if len(r) > 1 else ""
+                if not dept or dept.upper() in ("TỔNG CỘNG", "STT", "KHOA, PHÒNG, TRUNG TÂM", "KHOA/PHÒNG"):
                     continue
 
-                target_label = err_label
-                if col_idx == 10:
-                    if other_text and ("công khám" in other_text.lower() or "kiểu khám" in other_text.lower()):
-                        target_label = "Sửa công khám, kiểu khám"
+                other_text = r[34].strip() if len(r) > 34 else ""
 
-                add_count(target_label, dept, c)
+                for col_idx, err_label in COL_MAPPINGS:
+                    idx0 = col_idx - 1
+                    if len(r) > idx0 and r[idx0].strip():
+                        v = r[idx0].strip()
+                        try:
+                            c = int(float(v))
+                        except Exception:
+                            c = 1
+                        if c <= 0 or c > 50:
+                            continue
 
-        if other_text and other_text not in ("0", "None"):
-            ot_low = other_text.lower()
-            if "công khám" in ot_low or "kiểu khám" in ot_low:
-                if not (len(r) > 9 and r[9].strip()):
-                    add_count("Sửa công khám, kiểu khám", dept, 1)
-            elif "mức hưởng" in ot_low or "muc huong" in ot_low:
-                add_count("Cập nhật / Sửa mức hưởng BH", dept, 1)
-            elif "kcb" in ot_low or "kcbbđ" in ot_low:
-                add_count("Sửa nơi KCB ban đầu / Tuyến BH", dept, 1)
-            elif "ngày hẹn" in ot_low or "ngay hen" in ot_low:
-                add_count("Sửa ngày hẹn khám lại", dept, 1)
-            elif "chuyển khám" in ot_low:
-                add_count("Xóa phiếu chuyển khám chuyên khoa", dept, 1)
-            elif "hướng nhân dân" in ot_low or "hướng nd" in ot_low:
-                add_count("Chuyển sang hướng nhân dân", dept, 1)
-            elif "chữ ký số" in ot_low or "cks" in ot_low:
-                add_count("Hủy chữ ký số (CKS)", dept, 1)
-            elif "bệnh án" in ot_low or "b/án" in ot_low:
-                add_count("Hủy bệnh án", dept, 1)
-            else:
-                clean_ot = other_text[0].upper() + other_text[1:]
-                add_count(clean_ot[:60], dept, 1)
+                        target_label = err_label
+                        if col_idx == 10:
+                            if other_text and ("công khám" in other_text.lower() or "kiểu khám" in other_text.lower()):
+                                target_label = "Sửa công khám, kiểu khám"
+
+                        add_count(target_label, dept, c)
+
+                if other_text and other_text not in ("0", "None"):
+                    ot_low = other_text.lower()
+                    if "công khám" in ot_low or "kiểu khám" in ot_low:
+                        if not (len(r) > 9 and r[9].strip()):
+                            add_count("Sửa công khám, kiểu khám", dept, 1)
+                    elif "mức hưởng" in ot_low or "muc huong" in ot_low:
+                        add_count("Cập nhật / Sửa mức hưởng BH", dept, 1)
+                    elif "kcb" in ot_low or "kcbbđ" in ot_low:
+                        add_count("Sửa nơi KCB ban đầu / Tuyến BH", dept, 1)
+                    elif "ngày hẹn" in ot_low or "ngay hen" in ot_low:
+                        add_count("Sửa ngày hẹn khám lại", dept, 1)
+                    elif "chuyển khám" in ot_low:
+                        add_count("Xóa phiếu chuyển khám chuyên khoa", dept, 1)
+                    elif "hướng nhân dân" in ot_low or "hướng nd" in ot_low:
+                        add_count("Chuyển sang hướng nhân dân", dept, 1)
+                    elif "chữ ký số" in ot_low or "cks" in ot_low:
+                        add_count("Hủy chữ ký số (CKS)", dept, 1)
+                    elif "bệnh án" in ot_low or "b/án" in ot_low:
+                        add_count("Hủy bệnh án", dept, 1)
+                    else:
+                        clean_ot = other_text[0].upper() + other_text[1:]
+                        add_count(clean_ot[:60], dept, 1)
+        except Exception:
+            continue
 
     result_list = []
     for err_name, depts in error_counts.items():
@@ -11305,7 +11449,20 @@ def aggregate_sheet_bccv(url=None, sheet_name=""):
 def build_bccv_excel(records, sheet_name=""):
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = f"BC CV {sheet_name}"[:31]
+
+    parts = [s.strip() for s in str(sheet_name).split(",") if s.strip()]
+    if len(parts) > 1:
+        if len(parts) <= 3:
+            title_suffix = f"GỘP NGÀY {', '.join(parts)}"
+            tab_title = f"BC Gộp {parts[0]}-{parts[-1]}"
+        else:
+            title_suffix = f"GỘP {len(parts)} NGÀY ({parts[0]} - {parts[-1]})"
+            tab_title = f"BC Gộp {len(parts)} ngày"
+    else:
+        title_suffix = f"NGÀY {sheet_name}"
+        tab_title = f"BC CV {sheet_name}"
+
+    ws.title = tab_title[:31]
 
     thin = Side(style="thin", color="CBD5E1")
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
@@ -11322,7 +11479,7 @@ def build_bccv_excel(records, sheet_name=""):
 
     # Row 2: Title
     ws.merge_cells("A2:D2")
-    ws["A2"] = f"BÁO CÁO CÔNG VIỆC HÀNG NGÀY P.CNTT (NGÀY {sheet_name})"
+    ws["A2"] = f"BÁO CÁO CÔNG VIỆC HÀNG NGÀY P.CNTT ({title_suffix})"
     ws["A2"].font = Font(name="Times New Roman", size=16, bold=True, color="1E3A8A")
     ws["A2"].alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[2].height = 32
@@ -11439,7 +11596,14 @@ def handle_task_14():
 
         if action in ("export-excel", "export"):
             excel_io = build_bccv_excel(records, sheet_name)
-            safe_name = f"BC_CV_HANG_NGAY_PCNTT_{sheet_name.replace('/', '-')}.xlsx"
+            parts = [s.strip() for s in str(sheet_name).split(",") if s.strip()]
+            if len(parts) > 1:
+                if len(parts) <= 3:
+                    safe_name = f"BC_CV_HANG_NGAY_PCNTT_GOP_{'-'.join(parts).replace('/', '-')}.xlsx"
+                else:
+                    safe_name = f"BC_CV_HANG_NGAY_PCNTT_GOP_{len(parts)}_NGAY_{parts[0].replace('/', '-')}_{parts[-1].replace('/', '-')}.xlsx"
+            else:
+                safe_name = f"BC_CV_HANG_NGAY_PCNTT_{sheet_name.replace('/', '-')}.xlsx"
             return send_file(
                 excel_io,
                 as_attachment=True,
