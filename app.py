@@ -11410,37 +11410,40 @@ def aggregate_sheet_bccv(url=None, sheet_name=""):
             error_counts[err_name] = {}
         error_counts[err_name][dept] = error_counts[err_name].get(dept, 0) + count
 
-    COL_MAPPINGS = [
-        (5, "Xóa CLS, PTTT"),
-        (6, "Ép thẻ BH"),
-        (7, "Sửa phí"),
-        (8, "Hủy chữ ký số (CKS)"),
-        (9, "Hủy bệnh án"),
-        (10, "Sửa thông tin bệnh nhân (CCCD, địa chỉ, tuổi, nơi KCB...)"),
-        (11, "Sửa ngày giờ CLS/PTTT, giờ đọc kết quả, người thực hiện"),
-        (12, "Sửa mã bệnh kèm theo, bệnh chính"),
-        (13, "Hỗ trợ ký số PM, QLVBĐH"),
-        (14, "Sửa giấy RV, kết thúc ra viện, chuyển tuyến"),
-        (15, "Đăng bài trên website"),
-        (16, "Sửa cách dùng thuốc, ngày giờ thuốc, vật tư"),
-        (17, "Phân quyền USER, đổi nick user"),
-        (18, "Lỗi không kết thúc được hồ sơ (tồn thuốc, thuốc chưa cấp)"),
-        (19, "Sửa ngày giờ, sửa xóa phiếu xuất khác"),
-        (20, "Sửa, xóa ảnh trên PACS"),
-        (21, "Mở HS ký số bổ sung"),
-        (22, "Sửa xóa giường, cập nhật giường, thêm giường"),
-        (23, "Chuyển thuốc CP-DG"),
-        (24, "Sửa lỗi xuất toán tự động"),
-        # Phần cứng
-        (26, "Đổ mực máy in"),
-        (27, "Cài đặt Windows, phần mềm máy tính"),
-        (28, "Sửa lỗi mạng LAN, Internet"),
-        (29, "Sửa máy tính (phần cứng, linh kiện)"),
-        (30, "Thay / Sửa nguồn máy tính"),
-        (31, "Thay / Nâng cấp ổ cứng"),
-        (32, "Sửa máy in, thay linh kiện"),
-        (33, "Thay lô ép máy in"),
-        (34, "Sửa cảm biến máy in")
+    # Các từ khóa nhận diện lỗi phần mềm chuẩn
+    SW_CANONICAL = [
+        ("xoá cls", "Xóa CLS, PTTT"),
+        ("xóa cls", "Xóa CLS, PTTT"),
+        ("ép thẻ", "Ép thẻ BH"),
+        ("sửa phí", "Sửa phí"),
+        ("huỷ cks", "Hủy chữ ký số (CKS)"),
+        ("hủy cks", "Hủy chữ ký số (CKS)"),
+        ("huỷ b/án", "Hủy bệnh án"),
+        ("hủy b/án", "Hủy bệnh án"),
+        ("thông tin bn", "Sửa thông tin bệnh nhân (CCCD, địa chỉ, tuổi, nơi KCB...)"),
+        ("ngày giờ cls", "Sửa ngày giờ CLS/PTTT, giờ đọc kết quả, người thực hiện"),
+        ("mã bệnh", "Sửa mã bệnh kèm theo, bệnh chính"),
+        ("ký số pm", "Hỗ trợ ký số PM, QLVBĐH"),
+        ("giấy rv", "Sửa giấy RV, kết thúc ra viện, chuyển tuyến"),
+        ("đăng bài", "Đăng bài trên website"),
+        ("cách dùng thuốc", "Sửa cách dùng thuốc, ngày giờ thuốc, vật tư"),
+        ("phân quyền user", "Phân quyền USER, đổi nick user"),
+        ("không kết thúc", "Lỗi không kết thúc được hồ sơ (tồn thuốc, thuốc chưa cấp)"),
+        ("phiếu xuất khác", "Sửa ngày giờ, sửa xóa phiếu xuất khác"),
+        ("pacs", "Sửa, xóa ảnh trên PACS"),
+        ("ký số bổ sung", "Mở HS ký số bổ sung"),
+        ("giường", "Sửa xóa giường, cập nhật giường, thêm giường"),
+        ("chuyển  thuốc cp", "Chuyển thuốc CP-DG"),
+        ("chuyển thuốc cp", "Chuyển thuốc CP-DG"),
+        ("xuất toán", "Sửa lỗi xuất toán tự động"),
+        ("vimes xử lý", "Vimes Xử Lý")
+    ]
+
+    # Các công việc phần cứng KHÔNG thống kê (loại trừ hoàn toàn)
+    HW_EXCLUDE_KEYWORDS = [
+        "đổ mực", "cài win", "lỗi mạng", "sửa máy tính", "main", "nguồn", 
+        "ổ cứng", "vỏ lụa", "lô ép", "cảm biến", "chuột", "bàn phím", 
+        "camera", "cartrigd", "kẹt giấy", "toner", "replace", "lỗi windows"
     ]
 
     for s_name in sheet_list:
@@ -11455,53 +11458,108 @@ def aggregate_sheet_bccv(url=None, sheet_name=""):
             if not rows:
                 continue
 
+            header = rows[0]
+
+            # Giới hạn vùng cột nghiệp vụ trước khi tới thông tin cán bộ/hành chính
+            max_col = len(header)
+            for c, h in enumerate(header):
+                hl = h.lower()
+                if "cán bộ" in hl or "tình trạng" in hl:
+                    max_col = c
+                    break
+
+            # Xác định cột "Sửa chữa khác" của phần cứng (chỉ lấy cột này trong phần cứng)
+            other_hw_col = None
+            for c, h in enumerate(header):
+                hl = h.lower()
+                if "sửa chữa khác" in hl or "sửa lỗi khác" in hl or ("phần cứng" in hl and "khác" in hl):
+                    other_hw_col = c
+                    break
+            if other_hw_col is None:
+                if len(header) > 25:
+                    other_hw_col = 25
+
+            # Tự động ánh xạ các cột Báo cáo công việc phần mềm (bỏ các cột phần cứng khác)
+            mapped_sw_cols = []
+            for c in range(2, max_col):
+                if c == other_hw_col:
+                    continue
+                hl = header[c].lower()
+                if any(hw in hl for hw in HW_EXCLUDE_KEYWORDS):
+                    continue
+                for kw, label in SW_CANONICAL:
+                    if kw in hl:
+                        mapped_sw_cols.append((c, label))
+                        break
+
+            # Fallback nếu header quá ngắn hoặc không khớp từ khóa
+            if not mapped_sw_cols:
+                fixed_defaults = [
+                    (4, "Xóa CLS, PTTT"), (5, "Ép thẻ BH"), (6, "Sửa phí"),
+                    (7, "Hủy chữ ký số (CKS)"), (8, "Hủy bệnh án"),
+                    (9, "Sửa thông tin bệnh nhân (CCCD, địa chỉ, tuổi, nơi KCB...)"),
+                    (10, "Sửa ngày giờ CLS/PTTT, giờ đọc kết quả, người thực hiện"),
+                    (11, "Sửa mã bệnh kèm theo, bệnh chính"),
+                    (12, "Hỗ trợ ký số PM, QLVBĐH"),
+                    (13, "Sửa giấy RV, kết thúc ra viện, chuyển tuyến"),
+                    (14, "Đăng bài trên website"),
+                    (15, "Sửa cách dùng thuốc, ngày giờ thuốc, vật tư"),
+                    (16, "Phân quyền USER, đổi nick user"),
+                    (17, "Lỗi không kết thúc được hồ sơ (tồn thuốc, thuốc chưa cấp)"),
+                    (18, "Sửa ngày giờ, sửa xóa phiếu xuất khác"),
+                    (19, "Sửa, xóa ảnh trên PACS"),
+                    (20, "Mở HS ký số bổ sung"),
+                    (21, "Sửa xóa giường, cập nhật giường, thêm giường"),
+                    (22, "Chuyển thuốc CP-DG"),
+                    (23, "Sửa lỗi xuất toán tự động")
+                ]
+                mapped_sw_cols = fixed_defaults
+
             for r in rows[1:]:
                 dept = r[1].strip() if len(r) > 1 else ""
                 if not dept or dept.upper() in ("TỔNG CỘNG", "STT", "KHOA, PHÒNG, TRUNG TÂM", "KHOA/PHÒNG"):
                     continue
 
-                other_text = r[34].strip() if len(r) > 34 else ""
-
-                for col_idx, err_label in COL_MAPPINGS:
-                    idx0 = col_idx - 1
-                    if len(r) > idx0 and r[idx0].strip():
-                        v = r[idx0].strip()
+                # 1. Thống kê công việc phần mềm từ các cột phần mềm
+                for c, err_label in mapped_sw_cols:
+                    if len(r) > c and r[c].strip():
+                        v = r[c].strip()
                         try:
-                            c = int(float(v))
+                            cnt = int(float(v))
                         except Exception:
-                            c = 1
-                        if c <= 0 or c > 50:
+                            cnt = 1
+                        if cnt <= 0 or cnt > 50:
                             continue
+                        add_count(err_label, dept, cnt)
 
-                        target_label = err_label
-                        if col_idx == 10:
-                            if other_text and ("công khám" in other_text.lower() or "kiểu khám" in other_text.lower()):
-                                target_label = "Sửa công khám, kiểu khám"
-
-                        add_count(target_label, dept, c)
-
-                if other_text and other_text not in ("0", "None"):
-                    ot_low = other_text.lower()
-                    if "công khám" in ot_low or "kiểu khám" in ot_low:
-                        if not (len(r) > 9 and r[9].strip()):
-                            add_count("Sửa công khám, kiểu khám", dept, 1)
-                    elif "mức hưởng" in ot_low or "muc huong" in ot_low:
-                        add_count("Cập nhật / Sửa mức hưởng BH", dept, 1)
-                    elif "kcb" in ot_low or "kcbbđ" in ot_low:
-                        add_count("Sửa nơi KCB ban đầu / Tuyến BH", dept, 1)
-                    elif "ngày hẹn" in ot_low or "ngay hen" in ot_low:
-                        add_count("Sửa ngày hẹn khám lại", dept, 1)
-                    elif "chuyển khám" in ot_low:
-                        add_count("Xóa phiếu chuyển khám chuyên khoa", dept, 1)
-                    elif "hướng nhân dân" in ot_low or "hướng nd" in ot_low:
-                        add_count("Chuyển sang hướng nhân dân", dept, 1)
-                    elif "chữ ký số" in ot_low or "cks" in ot_low:
-                        add_count("Hủy chữ ký số (CKS)", dept, 1)
-                    elif "bệnh án" in ot_low or "b/án" in ot_low:
-                        add_count("Hủy bệnh án", dept, 1)
-                    else:
-                        clean_ot = other_text[0].upper() + other_text[1:]
-                        add_count(clean_ot[:60], dept, 1)
+                # 2. Thống kê cột "Sửa chữa khác" của phần cứng
+                if other_hw_col is not None and len(r) > other_hw_col:
+                    ot = r[other_hw_col].strip()
+                    if ot and ot not in ("0", "None", "-"):
+                        lines = [line.strip() for line in ot.split("\n") if line.strip()]
+                        for line_item in lines:
+                            ot_low = line_item.lower()
+                            if "công khám" in ot_low or "kiểu khám" in ot_low:
+                                add_count("Sửa công khám, kiểu khám", dept, 1)
+                            elif "mức hưởng" in ot_low or "muc huong" in ot_low:
+                                add_count("Cập nhật / Sửa mức hưởng BH", dept, 1)
+                            elif "kcb" in ot_low or "kcbbđ" in ot_low:
+                                add_count("Sửa nơi KCB ban đầu / Tuyến BH", dept, 1)
+                            elif "ngày hẹn" in ot_low or "ngay hen" in ot_low:
+                                add_count("Sửa ngày hẹn khám lại", dept, 1)
+                            elif "chuyển khám" in ot_low:
+                                add_count("Xóa phiếu chuyển khám chuyên khoa", dept, 1)
+                            elif "hướng nhân dân" in ot_low or "hướng nd" in ot_low:
+                                add_count("Chuyển sang hướng nhân dân", dept, 1)
+                            elif "chữ ký số" in ot_low or "cks" in ot_low:
+                                add_count("Hủy chữ ký số (CKS)", dept, 1)
+                            elif "bệnh án" in ot_low or "b/án" in ot_low:
+                                add_count("Hủy bệnh án", dept, 1)
+                            else:
+                                clean_ot = line_item.lstrip("+-*•0123456789: ").strip()
+                                if clean_ot:
+                                    clean_ot = clean_ot[0].upper() + clean_ot[1:]
+                                    add_count(clean_ot[:65], dept, 1)
         except Exception:
             continue
 
